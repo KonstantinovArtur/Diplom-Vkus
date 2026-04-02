@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="'Накладная #' + ${invoice.id}">Накладная</title>
+    <style>
+        .wrap { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
+        .card { background:#fff; border:1px solid #e6e9ef; border-radius:16px; padding:16px; box-shadow:0 8px 24px rgba(10,20,60,.06); }
+        .top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
+        .title { font-size:20px; font-weight:900; color:#0b1b4d; }
+        .meta { display:grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap:10px; margin-top:10px; }
+        .meta .box { border:1px solid #eef1f6; background:#fafbff; border-radius:14px; padding:12px; }
+        .muted { color:#6b7280; font-size:13px; }
+        .btn { display:inline-block; padding:8px 12px; border-radius:12px; border:1px solid #d8deea; background:#fff; font-weight:800; cursor:pointer; text-decoration:none; color:#0b1b4d; }
+        .btn-primary { background:#1d3b8b; color:#fff; border-color:#1d3b8b; }
+        .btn-danger { background:#fff; color:#991b1b; border-color:#fecaca; }
+        .msg-ok { margin:0 0 12px; padding:10px 12px; border-radius:12px; background:#ecfdf5; border:1px solid #a7f3d0; font-weight:800; color:#065f46; }
+        .msg-err { margin:0 0 12px; padding:10px 12px; border-radius:12px; background:#fef2f2; border:1px solid #fecaca; font-weight:800; color:#991b1b; }
+        .grid2 { display:grid; grid-template-columns: 2fr 1fr; gap:16px; }
+        table { width:100%; border-collapse:collapse; }
+        th, td { padding:10px 8px; border-bottom:1px solid #eef1f6; text-align:left; vertical-align:top; }
+        th { font-weight:900; color:#0b1b4d; }
+        .num { text-align:right; white-space:nowrap; }
+        .summary-box { margin-top:14px; display:grid; grid-template-columns:repeat(3, minmax(220px, 1fr)); gap:12px; }
+        .summary-card { border:1px solid #eef1f6; background:#fafbff; border-radius:14px; padding:12px; }
+        .summary-card .label { color:#6b7280; font-size:13px; margin-bottom:6px; }
+        .summary-card .value { font-size:22px; font-weight:900; color:#0b1b4d; }
+        .field { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+        .field label { font-weight:800; color:#0b1b4d; }
+        .field input, .field select { padding:10px 12px; border-radius:12px; border:1px solid #d8deea; outline:none; }
+        .field input:focus, .field select:focus { border-color:#0b1b4d; }
+        .err { color:#b00020; font-weight:700; font-size:13px; }
+        .readonly-note { padding:10px 12px; border-radius:12px; background:#f8fafc; border:1px dashed #cbd5e1; color:#475569; font-size:13px; }
+
+        .reason-badge {
+            display:inline-block;
+            padding:6px 10px;
+            border-radius:999px;
+            font-size:12px;
+            font-weight:800;
+            border:1px solid #dbe4f0;
+            background:#f8fafc;
+            color:#334155;
+            white-space:nowrap;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="wrap">
+    <div class="card">
+
+        <div th:if="${ok}" class="msg-ok" th:text="${ok}">OK</div>
+        <div th:if="${err}" class="msg-err" th:text="${err}">Ошибка</div>
+
+        <div class="top">
+            <div>
+                <div class="title" th:text="'Накладная #' + ${invoice.id}">Накладная</div>
+                <div class="muted" style="margin-top:6px;">
+                    Поставщик: <b th:text="${invoice.supplier.name}">—</b>
+                    &nbsp;•&nbsp; Дата: <b th:text="${invoice.invoiceDate}">—</b>
+                    &nbsp;•&nbsp; Номер: <b th:text="${invoice.invoiceNumber}">—</b>
+                    &nbsp;•&nbsp; Статус:
+                    <b th:if="${invoice.status == 'draft'}">Черновик</b>
+                    <b th:if="${invoice.status == 'ready_for_check'}">Ожидает проверки</b>
+                    <b th:if="${invoice.status == 'checked'}">Проверена продавцом</b>
+                    <b th:if="${invoice.status == 'posted'}">Проведена</b>
+                    <b th:if="${invoice.status != 'draft' and invoice.status != 'ready_for_check' and invoice.status != 'checked' and invoice.status != 'posted'}"
+                       th:text="${invoice.status}">status</b>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <a class="btn" th:href="@{/warehouse/invoices}">Назад</a>
+
+                <form th:if="${canSendToCheck}"
+                      th:action="@{/warehouse/invoices/{id}/send-to-check(id=${invoice.id})}"
+                      method="post"
+                      onsubmit="return confirm('Отправить накладную продавцу на проверку? После этого редактирование будет недоступно.');"
+                      style="margin:0;">
+                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button class="btn btn-primary" type="submit">Отправить на проверку</button>
+                </form>
+
+                <form th:if="${canPost}"
+                      th:action="@{/warehouse/invoices/{id}/post(id=${invoice.id})}"
+                      method="post"
+                      onsubmit="return confirm('Провести накладную и оприходовать товары на склад?');"
+                      style="margin:0;">
+                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button class="btn btn-primary" type="submit">Провести</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="meta">
+            <div class="box">
+                <div class="muted">Поставщик</div>
+                <div style="font-weight:900;" th:text="${invoice.supplier.name}">Поставщик</div>
+            </div>
+            <div class="box">
+                <div class="muted">Статус</div>
+                <div style="font-weight:900;">
+                    <span th:if="${invoice.status == 'draft'}">Черновик</span>
+                    <span th:if="${invoice.status == 'ready_for_check'}">Ожидает проверки</span>
+                    <span th:if="${invoice.status == 'checked'}">Проверена продавцом</span>
+                    <span th:if="${invoice.status == 'posted'}">Проведена</span>
+                    <span th:if="${invoice.status != 'draft' and invoice.status != 'ready_for_check' and invoice.status != 'checked' and invoice.status != 'posted'}"
+                          th:text="${invoice.status}">status</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid2" style="margin-top:16px;">
+
+            <div>
+                <div class="title" style="font-size:18px;">Позиции накладной</div>
+
+                <table style="margin-top:10px;">
+                    <thead>
+                    <tr>
+                        <th style="width:70px;">ID</th>
+                        <th>Товар</th>
+                        <th style="width:90px;">Заказано</th>
+                        <th style="width:90px;">Факт</th>
+                        <th style="width:130px;">Цена</th>
+                        <th style="width:150px;">Сумма по документу</th>
+                        <th style="width:150px;">Сумма по факту</th>
+                        <th style="width:140px;">Причина расхождения</th>
+                        <th style="width:130px;">Годен до</th>
+                        <th style="width:140px;">Действия</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="it : ${items}">
+                        <td class="num" th:text="${it.id}">1</td>
+                        <td th:text="${it.product.name}">Товар</td>
+                        <td class="num" th:text="${it.qty}">1</td>
+                        <td class="num">
+    <span th:if="${invoice.status == 'draft' or invoice.status == 'ready_for_check'}"
+          th:text="${it.receivedQty != null ? it.receivedQty : it.qty}">1</span>
+
+                            <span th:if="${invoice.status == 'checked' or invoice.status == 'posted'}"
+                                  th:text="${it.receivedQty != null ? it.receivedQty : '—'}">—</span>
+                        </td>                        <td class="num" th:text="${it.unitPrice != null ? #numbers.formatDecimal(it.unitPrice, 1, 2) : '—'}">—</td>
+                        <td class="num"
+                            th:text="${it.unitPrice != null ? #numbers.formatDecimal(it.unitPrice * it.qty, 1, 2) : '—'}">—</td>
+                        <td class="num"
+                            th:text="${it.unitPrice != null ? #numbers.formatDecimal(it.unitPrice * (it.receivedQty != null ? it.receivedQty : it.qty), 1, 2) : '—'}">—</td>
+
+                        <td>
+                            <span th:if="${it.acceptanceReason == null}" class="muted">—</span>
+
+                            <span th:if="${it.acceptanceReason == 'ok'}" class="reason-badge">ОК</span>
+                            <span th:if="${it.acceptanceReason == 'defect'}" class="reason-badge">Брак</span>
+                            <span th:if="${it.acceptanceReason == 'shortage'}" class="reason-badge">Недопоставка</span>
+                            <span th:if="${it.acceptanceReason == 'missing'}" class="reason-badge">Товар отсутствовал</span>
+                            <span th:if="${it.acceptanceReason == 'quantity_error'}" class="reason-badge">Ошибка в количестве</span>
+                        </td>
+
+                        <td th:text="${it.expiresAt != null ? it.expiresAt : '—'}">—</td>
+
+                        <td>
+                            <form th:if="${canEdit}"
+                                  th:action="@{/warehouse/invoices/{invoiceId}/items/{itemId}/delete(invoiceId=${invoice.id}, itemId=${it.id})}"
+                                  method="post"
+                                  onsubmit="return confirm('Удалить позицию?');"
+                                  style="display:inline;">
+                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button class="btn btn-danger" type="submit">Удалить</button>
+                            </form>
+                            <span th:if="${!canEdit}" class="muted">Недоступно</span>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(items)}">
+                        <td colspan="10" class="muted">Пока нет позиций. Добавь справа.</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div class="summary-box">
+                    <div class="summary-card">
+                        <div class="label">Итого по документу</div>
+                        <div class="value" th:text="${#numbers.formatDecimal(totalPlannedAmount, 1, 2)}">0.00</div>
+                    </div>
+
+                    <div class="summary-card">
+                        <div class="label">Итого по факту</div>
+                        <div class="value" th:text="${#numbers.formatDecimal(totalActualAmount, 1, 2)}">0.00</div>
+                    </div>
+
+                    <div class="summary-card">
+                        <div class="label">Основная сумма для учёта</div>
+                        <div class="value" th:text="${#numbers.formatDecimal(totalAmount, 1, 2)}">0.00</div>
+                    </div>
+                </div>
+
+                <div class="muted" style="margin-top:10px;">
+                    <b>Итого по документу</b> считается по заказанному количеству.<br>
+                    <b>Итого по факту</b> считается по фактически принятому количеству продавцом.<br>
+                    Для складского учёта и дальнейших расчётов используется именно <b>сумма по факту</b>.
+                </div>
+            </div>
+
+            <div>
+                <div class="title" style="font-size:18px;">Добавить позицию</div>
+
+                <div th:if="${canEdit}">
+                    <form th:action="@{/warehouse/invoices/{id}/items/add(id=${invoice.id})}"
+                          method="post" th:object="${itemForm}">
+
+                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <div class="field">
+                            <label>Товар</label>
+                            <select th:field="*{productId}" id="productSelect">
+                                <option value="" disabled selected>Выберите товар</option>
+                                <option th:each="p : ${products}"
+                                        th:value="${p.id}"
+                                        th:attr="data-shelf-life-days=${p.shelfLifeDays != null ? p.shelfLifeDays : ''}"
+                                        th:text="${p.name + (p.productCode != null ? ' (' + p.productCode + ')' : '')}">
+                                    P
+                                </option>
+                            </select>
+                            <div class="err" th:if="${#fields.hasErrors('productId')}" th:errors="*{productId}">error</div>
+                        </div>
+
+                        <div class="field">
+                            <label>Количество</label>
+                            <input type="number" min="1" th:field="*{qty}"/>
+                            <div class="err" th:if="${#fields.hasErrors('qty')}" th:errors="*{qty}">error</div>
+                        </div>
+
+                        <div class="field">
+                            <label>Цена</label>
+                            <div class="readonly-note">Цена будет автоматически взята из прайса выбранного поставщика.</div>
+                        </div>
+
+                        <div class="field">
+                            <label>Годен до</label>
+                            <input type="date" th:field="*{expiresAt}" id="expiresAtInput"/>
+                            <div class="err" th:if="${#fields.hasErrors('expiresAt')}" th:errors="*{expiresAt}">error</div>
+                            <div class="muted">Если у товара задан срок хранения, дата подставится автоматически.</div>
+                        </div>
+
+                        <button class="btn btn-primary" type="submit">Добавить</button>
+
+                        <div class="muted" style="margin-top:10px;">
+                            Добавлять позиции можно только в статусе draft.
+                        </div>
+                    </form>
+                </div>
+
+                <div th:if="${!canEdit}" class="readonly-note">
+                    Редактирование недоступно. Накладная уже отправлена на проверку, проверена или проведена.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<script>
+    (function () {
+        const productSelect = document.getElementById('productSelect');
+        const expiresAtInput = document.getElementById('expiresAtInput');
+
+        if (!productSelect || !expiresAtInput) return;
+
+        function formatDate(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function applyExpiryFromSelectedProduct() {
+            const option = productSelect.options[productSelect.selectedIndex];
+            if (!option) return;
+
+            const shelfLifeDaysRaw = option.getAttribute('data-shelf-life-days');
+            if (!shelfLifeDaysRaw) return;
+
+            const shelfLifeDays = parseInt(shelfLifeDaysRaw, 10);
+            if (isNaN(shelfLifeDays) || shelfLifeDays < 1) return;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            today.setDate(today.getDate() + shelfLifeDays);
+
+            expiresAtInput.value = formatDate(today);
+        }
+
+        productSelect.addEventListener('change', applyExpiryFromSelectedProduct);
+
+        if (productSelect.value && !expiresAtInput.value) {
+            applyExpiryFromSelectedProduct();
+        }
+    })();
+</script>
+
+</body>
+</html>

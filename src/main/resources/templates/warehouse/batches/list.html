@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Партии</title>
+    <style>
+        .wrap{max-width:1100px;margin:20px auto;padding:0 16px}
+        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,.06)}
+        .title{font-size:20px;font-weight:900;color:#0b1b4d;margin:0 0 12px}
+        table{width:100%;border-collapse:collapse}
+        th,td{padding:10px 8px;border-bottom:1px solid #eef1f6;text-align:left}
+        th{font-weight:900;color:#0b1b4d}
+        .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid #d8deea;background:#eef2ff;font-weight:900;color:#0b1b4d;font-size:12px}
+        .muted{color:#6b7280;font-size:13px}
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="wrap">
+    <div class="card">
+        <div class="title">Партии</div>
+
+        <table>
+            <thead>
+            <tr>
+                <th style="width:80px">ID</th>
+                <th>Товар</th>
+                <th style="width:170px">Поступила</th>
+                <th style="width:140px">Годна до</th>
+                <th style="width:120px">Пришло</th>
+                <th style="width:120px">Доступно</th>
+                <th style="width:120px">Статус</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${rows}">
+                <td th:text="${r.id}">1</td>
+                <td th:text="${r.product_name}">—</td>
+                <td th:text="${r.received_at}">—</td>
+                <td th:text="${r.expires_at} ?: '—'">—</td>
+                <td th:text="${r.qty_received}">0</td>
+                <td th:text="${r.qty_available}">0</td>
+                <td><span class="pill" th:text="${r.status}">active</span></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(rows)}">
+                <td colspan="7" class="muted">Пока нет партий.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

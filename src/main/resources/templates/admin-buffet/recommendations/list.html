@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Рекомендуемые товары</title>
+    <style>
+        .wrap{max-width:1100px;margin:24px auto;font-family:system-ui,Segoe UI,Arial}
+        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,.06)}
+        .top{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
+        table{width:100%;border-collapse:separate;border-spacing:0 8px}
+        th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;text-align:left;color:#425}
+        td{background:#fff;border:1px solid #e6e9ef;padding:10px 12px;vertical-align:middle}
+        tr td:first-child{border-radius:12px 0 0 12px}
+        tr td:last-child{border-radius:0 12px 12px 0}
+        .btn{display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #d8deea;text-decoration:none;color:#0b1b4d;font-weight:700;background:#fff;cursor:pointer}
+        .btn:hover{border-color:#0b1b4d}
+        .btn.danger{border-color:#fecaca;color:#991b1b}
+        .btn.danger:hover{border-color:#991b1b}
+        .btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+        .ok{background:#ecfdf5;border:1px solid #a7f3d0;padding:10px 12px;border-radius:12px;margin:12px 0;color:#065f46;font-weight:700}
+        .err{background:#fef2f2;border:1px solid #fecaca;padding:10px 12px;border-radius:12px;margin:12px 0;color:#991b1b;font-weight:700}
+        .grid{display:grid;grid-template-columns:1fr 1fr 160px;gap:12px}
+        label{display:block;font-size:12px;font-weight:800;color:#0b1b4d;margin-bottom:6px}
+        input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;font:inherit}
+        .muted{color:#667085;font-size:13px}
+        .chip{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid #e6e9ef;background:#fff;color:#0b1b4d;font-weight:800;font-size:12px}
+        .chip.off{opacity:.55}
+        .hr{border:none;border-top:1px solid #eef2f7;margin:16px 0}
+        .head-title{font-size:20px;font-weight:900;color:#0b1b4d}
+        .empty{padding:12px;border:1px dashed #d8deea;border-radius:12px;color:#667085}
+        .mini-input{width:90px;padding:8px 10px;border-radius:10px;border:1px solid #d8deea}
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="card">
+        <div class="top">
+            <div>
+                <div class="head-title">Рекомендуемые товары</div>
+                <div class="muted">Настройка товаров, которые будут показываться покупателю после добавления товара в корзину.</div>
+            </div>
+        </div>
+
+        <div th:if="${ok}" class="ok" th:text="${ok}">OK</div>
+        <div th:if="${err}" class="err" th:text="${err}">Ошибка</div>
+
+        <form method="get" th:action="@{/admin-buffet/recommendations}">
+            <label>Основной товар</label>
+            <div class="btn-row">
+                <select name="productId" style="max-width:420px">
+                    <option th:if="${#lists.isEmpty(products)}" value="">Нет товаров в ассортименте</option>
+                    <option th:each="p : ${products}"
+                            th:value="${p.id}"
+                            th:selected="${selectedProductId != null and p.id == selectedProductId}"
+                            th:text="${p.name}">
+                    </option>
+                </select>
+                <button type="submit" class="btn">Показать</button>
+            </div>
+        </form>
+
+        <hr class="hr">
+
+        <div th:if="${selectedProductId == null}" class="empty">
+            У текущего буфета пока нет товаров в ассортименте.
+        </div>
+
+        <div th:if="${selectedProductId != null}">
+            <div style="font-weight:900;color:#0b1b4d;margin-bottom:10px">Добавить рекомендацию</div>
+
+            <form th:action="@{/admin-buffet/recommendations/add}" method="post">
+                <input type="hidden" name="productId" th:value="${selectedProductId}">
+                <div class="grid">
+                    <div>
+                        <label>Рекомендуемый товар</label>
+                        <select name="recommendedProductId" required>
+                            <option value="" selected disabled>-- выберите товар --</option>
+                            <option th:each="p : ${candidateProducts}"
+                                    th:value="${p.id}"
+                                    th:text="${p.name}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label>Порядок</label>
+                        <input type="number" name="sortOrder" value="0">
+                    </div>
+
+                    <div>
+                        <label>&nbsp;</label>
+                        <button class="btn" type="submit">Добавить</button>
+                    </div>
+                </div>
+            </form>
+
+            <hr class="hr">
+
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Рекомендуемый товар</th>
+                    <th>Порядок</th>
+                    <th>Статус</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(recommendations)}">
+                    <td colspan="5" class="muted">Для этого товара рекомендации пока не заданы.</td>
+                </tr>
+
+                <tr th:each="r : ${recommendations}">
+                    <td th:text="${r.id}">1</td>
+
+                    <td>
+                        <div style="font-weight:900;color:#0b1b4d" th:text="${r.recommendedProduct.name}">Кофе</div>
+                        <div class="muted" th:text="${r.recommendedProduct.category != null ? r.recommendedProduct.category.name : '—'}">Категория</div>
+                    </td>
+
+                    <td>
+                        <form class="btn-row"
+                              th:action="@{/admin-buffet/recommendations/{id}/sort(id=${r.id})}"
+                              method="post">
+                            <input type="hidden" name="productId" th:value="${selectedProductId}">
+                            <input class="mini-input" type="number" name="sortOrder" th:value="${r.sortOrder}">
+                            <button class="btn" type="submit">Сохранить</button>
+                        </form>
+                    </td>
+
+                    <td>
+                        <span class="chip" th:classappend="${r.isActive} ? '' : ' off'"
+                              th:text="${r.isActive} ? 'активна' : 'выключена'">активна</span>
+                    </td>
+
+                    <td>
+                        <div class="btn-row">
+                            <form th:action="@{/admin-buffet/recommendations/{id}/toggle(id=${r.id})}" method="post">
+                                <input type="hidden" name="productId" th:value="${selectedProductId}">
+                                <button class="btn" type="submit"
+                                        th:text="${r.isActive ? 'Отключить' : 'Включить'}">Отключить</button>
+                            </form>
+
+                            <form th:action="@{/admin-buffet/recommendations/{id}/delete(id=${r.id})}" method="post">
+                                <input type="hidden" name="productId" th:value="${selectedProductId}">
+                                <button class="btn danger" type="submit"
+                                        onclick="return confirm('Удалить рекомендацию?')">Удалить</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Накладные</title>
+    <style>
+        .wrap { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
+        .card { background:#fff; border:1px solid #e6e9ef; border-radius:16px; padding:16px; box-shadow:0 8px 24px rgba(10,20,60,.06); }
+        table { width:100%; border-collapse: collapse; }
+        th, td { padding:10px 8px; border-bottom:1px solid #eef1f6; text-align:left; }
+        th { font-weight:900; color:#0b1b4d; }
+        .top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
+        .title { font-size:20px; font-weight:900; color:#0b1b4d; }
+        .btn { display:inline-block; padding:8px 12px; border-radius:12px; border:1px solid #d8deea; background:#fff; font-weight:800; cursor:pointer; text-decoration:none; color:#0b1b4d; }
+        .btn-primary { background:#1d3b8b; color:#fff; border-color:#1d3b8b; }
+        .muted { color:#6b7280; font-size:13px; }
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="wrap">
+    <div class="card">
+        <div class="top">
+            <div class="title">Склад · Накладные</div>
+            <a class="btn btn-primary" th:href="@{/warehouse/invoices/new}">+ Создать накладную</a>
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th style="width:80px;">ID</th>
+                <th style="width:170px;">Дата</th>
+                <th>Поставщик</th>
+                <th style="width:220px;">Номер</th>
+                <th style="width:140px;">Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="i : ${invoices}">
+                <td th:text="${i.id}">1</td>
+                <td th:text="${i.invoiceDate}">2026-01-01</td>
+                <td th:text="${i.supplier.name}">Поставщик</td>
+                <td th:text="${i.invoiceNumber}">A-123</td>
+                <td>
+                    <a class="btn" th:href="@{/warehouse/invoices/{id}(id=${i.id})}">Открыть</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(invoices)}">
+                <td colspan="5" class="muted">Накладных пока нет. Создай первую.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Продавец · Проверка накладной</title>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<main style="max-width:1180px;margin:18px auto;padding:0 12px;">
+    <h2 style="margin:0 0 12px 0;">Продавец · Проверка накладной</h2>
+
+    <div th:if="${msg}"
+         style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;background:#eef2ff;margin-bottom:12px;"
+         th:text="${msg}">Сообщение</div>
+
+    <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
+            <div>
+                <div style="font-weight:900;font-size:20px;" th:text="'Накладная #' + ${header.id()}">Накладная</div>
+                <div style="margin-top:6px;color:#0b1b4d;font-weight:800;">
+                    Поставщик: <span th:text="${header.supplierName()}">—</span>
+                    &nbsp;•&nbsp; Номер: <span th:text="${header.invoiceNumber()}">—</span>
+                    &nbsp;•&nbsp; Дата: <span th:text="${header.invoiceDate()}">—</span>
+                </div>
+                <div style="margin-top:6px;color:#6b7280;">
+                    Статус: <b th:text="${header.status()}">draft</b>
+                </div>
+            </div>
+
+            <a th:href="@{/seller/invoices}"
+               style="text-decoration:none;border:1px solid #d8deea;padding:8px 10px;border-radius:12px;font-weight:800;color:#0b1b4d;">
+                К списку
+            </a>
+        </div>
+
+        <form th:action="@{/seller/invoices/{id}/check(id=${header.id()})}" method="post" th:object="${form}">
+            <input type="hidden" th:field="*{invoiceId}"/>
+            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <table style="width:100%;border-collapse:collapse;margin-top:10px;">
+                <thead>
+                <tr style="text-align:left;border-bottom:1px solid #e6e9ef;">
+                    <th style="padding:10px 8px;">Товар</th>
+                    <th style="padding:10px 8px;width:120px;">Ожидалось</th>
+                    <th style="padding:10px 8px;width:180px;">Факт (принято)</th>
+                    <th style="padding:10px 8px;width:280px;">Причина</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="it, st : ${items}" style="border-bottom:1px solid #f0f2f7;">
+                    <td style="padding:10px 8px;font-weight:800;" th:text="${it.productName()}">Товар</td>
+
+                    <td style="padding:10px 8px;">
+                        <span th:text="${it.qty()}">0</span>
+                    </td>
+
+                    <td style="padding:10px 8px;">
+                        <input type="hidden"
+                               th:field="*{items[__${st.index}__].invoiceItemId}"
+                               th:value="${it.id()}"/>
+
+                        <input th:field="*{items[__${st.index}__].receivedQty}"
+                               type="number"
+                               min="0"
+                               th:attr="data-expected=${it.qty()}, data-row-index=${st.index}"
+                               class="received-input"
+                               style="width:100%;padding:10px 12px;border:1px solid #d8deea;border-radius:12px;"/>
+                    </td>
+
+                    <td style="padding:10px 8px;">
+                        <select th:field="*{items[__${st.index}__].acceptanceReason}"
+                                th:attr="data-expected=${it.qty()}, data-row-index=${st.index}"
+                                class="reason-select"
+                                style="width:100%;padding:10px 12px;border:1px solid #d8deea;border-radius:12px;">
+                            <option value="ok">ОК</option>
+                            <option value="defect">Брак</option>
+                            <option value="shortage">Недопоставка</option>
+                            <option value="missing">Товар отсутствовал</option>
+                            <option value="quantity_error">Ошибка в количестве</option>
+                        </select>
+
+                        <div class="reason-hint"
+                             th:attr="data-row-index=${st.index}"
+                             style="margin-top:6px;color:#6b7280;font-size:12px;">
+                            Если факт равен ожидаемому, причина будет автоматически «ОК».
+                        </div>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(items)}">
+                    <td colspan="4" style="padding:12px 8px;color:#6b7280;">Позиции отсутствуют.</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div style="display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap;">
+                <button type="submit"
+                        th:disabled="${header.status() != 'ready_for_check'}"
+                        style="border:0;background:#1d3b8b;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
+                    Подтвердить проверку
+                </button>
+
+                <span style="color:#6b7280;" th:if="${header.status() == 'checked'}">
+                    Накладная уже проверена продавцом.
+                </span>
+
+                <span style="color:#6b7280;" th:if="${header.status() == 'posted'}">
+                    Накладная уже проведена складом — редактирование запрещено.
+                </span>
+            </div>
+        </form>
+    </section>
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<script>
+    (function () {
+        const receivedInputs = document.querySelectorAll('.received-input');
+        const reasonSelects = document.querySelectorAll('.reason-select');
+
+        function allowedReasons(expected, received) {
+            if (received === expected) return ['ok'];
+            if (received < expected) return ['defect', 'shortage', 'missing'];
+            return ['quantity_error'];
+        }
+
+        function labelFor(reason) {
+            switch (reason) {
+                case 'ok': return 'ОК';
+                case 'defect': return 'Брак';
+                case 'shortage': return 'Недопоставка';
+                case 'missing': return 'Товар отсутствовал';
+                case 'quantity_error': return 'Ошибка в количестве';
+                default: return reason;
+            }
+        }
+
+        function applyRow(index) {
+            const qtyInput = document.querySelector('.received-input[data-row-index="' + index + '"]');
+            const reasonSelect = document.querySelector('.reason-select[data-row-index="' + index + '"]');
+            const hint = document.querySelector('.reason-hint[data-row-index="' + index + '"]');
+
+            if (!qtyInput || !reasonSelect) return;
+
+            const expected = parseInt(qtyInput.dataset.expected || '0', 10);
+            const received = parseInt(qtyInput.value || '0', 10);
+
+            const allowed = allowedReasons(expected, received);
+
+            Array.from(reasonSelect.options).forEach(opt => {
+                opt.hidden = !allowed.includes(opt.value);
+            });
+
+            if (!allowed.includes(reasonSelect.value)) {
+                reasonSelect.value = allowed[0];
+            }
+
+            if (allowed.length === 1 && allowed[0] === 'ok') {
+                reasonSelect.value = 'ok';
+            }
+
+            if (hint) {
+                if (received === expected) {
+                    hint.textContent = 'Количество совпадает. Причина автоматически: «ОК».';
+                } else if (received < expected) {
+                    hint.textContent = 'Выбери причину: «Брак», «Недопоставка» или «Товар отсутствовал».';
+                } else {
+                    hint.textContent = 'Допустимая причина при излишке: «Ошибка в количестве».';
+                }
+            }
+        }
+
+        receivedInputs.forEach(input => {
+            input.addEventListener('input', function () {
+                applyRow(this.dataset.rowIndex);
+            });
+        });
+
+        reasonSelects.forEach(select => {
+            applyRow(select.dataset.rowIndex);
+        });
+    })();
+</script>
+
+</body>
+</html>

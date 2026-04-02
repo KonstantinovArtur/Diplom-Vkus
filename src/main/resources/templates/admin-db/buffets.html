@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Буфеты</title>
+  <style>
+    .wrap { max-width: 1100px; margin: 18px auto; padding: 0 12px; }
+    .card { background:#fff; border:1px solid #e6e9ef; border-radius:16px; padding:14px; box-shadow:0 8px 24px rgba(10,20,60,.06); }
+    .row { display:flex; gap:12px; flex-wrap:wrap; }
+    .row > * { flex: 1 1 180px; }
+    label { display:block; font-weight:800; margin-bottom:6px; color:#0b1b4d; }
+    input, select { width:100%; padding:10px 12px; border:1px solid #d8deea; border-radius:12px; }
+    table { width:100%; border-collapse:collapse; margin-top:14px; }
+    th, td { padding:10px 10px; border-bottom:1px solid #eef1f6; text-align:left; vertical-align:top; }
+    th { color:#0b1b4d; font-weight:900; }
+    .btn { display:inline-block; padding:10px 12px; border-radius:12px; border:1px solid #d8deea; background:#fff; font-weight:800; cursor:pointer; }
+    .btn-primary { background:#1d3b8b; color:#fff; border:0; }
+    .btn-danger { background:#b71c1c; color:#fff; border:0; }
+    .msg { margin: 0 0 12px 0; padding:10px 12px; border-radius:12px; background:#eef2ff; border:1px solid #d8deea; color:#0b1b4d; font-weight:800; }
+    .err { margin-top:6px; color:#b71c1c; font-weight:800; font-size:13px; }
+    .badge { display:inline-block; padding:4px 10px; border-radius:999px; border:1px solid #d8deea; background:#f6f7fb; font-weight:800; font-size:12px; }
+    .badge-on { background:#e8fff0; }
+    .badge-off { background:#ffecec; }
+    .actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .chk { display:flex; align-items:center; gap:10px; padding-top:26px; }
+    .chk input { width:auto; }
+  </style>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+<div class="wrap">
+  <!-- если подключаешь общий header -->
+  <!-- <div th:replace="fragments/header :: header"></div> -->
+
+  <div class="card">
+    <div th:if="${ok}" class="msg" th:text="${ok}">OK</div>
+
+    <h2 style="margin:0 0 12px 0; color:#0b1b4d;">Управление буфетами</h2>
+
+    <form th:action="@{/admin-db/buffets/save}" method="post" th:object="${form}">
+      <input type="hidden" th:field="*{id}"/>
+
+      <div class="row">
+        <div>
+          <label>Здание</label>
+          <select th:field="*{buildingId}">
+            <option th:each="b : ${buildings}" th:value="${b.id}" th:text="${b.name}">Здание</option>
+          </select>
+          <div class="err" th:if="${#fields.hasErrors('buildingId')}" th:errors="*{buildingId}"></div>
+        </div>
+
+        <div>
+          <label>Название буфета</label>
+          <input type="text" th:field="*{name}" placeholder="Например: Буфет №1"/>
+          <div class="err" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+        </div>
+
+        <div>
+          <label>Открытие</label>
+          <input type="time" th:field="*{openTime}"/>
+          <div class="err" th:if="${#fields.hasErrors('openTime')}" th:errors="*{openTime}"></div>
+        </div>
+
+        <div>
+          <label>Закрытие</label>
+          <input type="time" th:field="*{closeTime}"/>
+          <div class="err" th:if="${#fields.hasErrors('closeTime')}" th:errors="*{closeTime}"></div>
+        </div>
+
+        <div class="chk">
+          <input type="checkbox" th:field="*{isActive}"/>
+          <span style="font-weight:900; color:#0b1b4d;">Активен</span>
+        </div>
+      </div>
+
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" type="submit"
+                th:text="${form.id == null ? 'Добавить' : 'Сохранить'}">Сохранить</button>
+
+        <a class="btn" th:if="${form.id != null}" th:href="@{/admin-db/buffets}">Отмена</a>
+      </div>
+    </form>
+
+    <table>
+      <thead>
+      <tr>
+        <th style="width:60px;">ID</th>
+        <th>Здание</th>
+        <th>Буфет</th>
+        <th style="width:110px;">Статус</th>
+        <th style="width:170px;">Время</th>
+        <th style="width:220px;">Действия</th>
+      </tr>
+      </thead>
+
+      <tbody>
+      <tr th:each="x : ${buffets}">
+        <td th:text="${x.id}">1</td>
+        <td th:text="${x.building.name}">Корпус</td>
+        <td th:text="${x.name}">Буфет</td>
+        <td>
+                    <span class="badge"
+                          th:classappend="${x.isActive} ? ' badge-on' : ' badge-off'"
+                          th:text="${x.isActive} ? 'Активен' : 'Выключен'">Активен</span>
+        </td>
+        <td>
+          <span th:text="${x.openTime != null ? x.openTime : '--:--'}">08:00</span>
+          —
+          <span th:text="${x.closeTime != null ? x.closeTime : '--:--'}">18:00</span>
+        </td>
+        <td>
+          <div class="actions">
+            <a class="btn" th:href="@{/admin-db/buffets(edit=${x.id})}">Изменить</a>
+
+            <form th:action="@{/admin-db/buffets/{id}/delete(id=${x.id})}"
+                  method="post" style="margin:0;"
+                  onsubmit="return confirm('Удалить буфет?');">
+              <button class="btn btn-danger" type="submit">Удалить</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+</body>
+</html>

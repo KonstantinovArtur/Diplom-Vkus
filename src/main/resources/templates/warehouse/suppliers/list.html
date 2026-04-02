@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Поставщики</title>
+    <style>
+        .wrap { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
+        .card { background:#fff; border:1px solid #e6e9ef; border-radius:16px; padding:16px; box-shadow:0 8px 24px rgba(10,20,60,.06); }
+        .grid { display:grid; grid-template-columns: 1.5fr 1fr; gap:16px; align-items:start; }
+        table { width:100%; border-collapse: collapse; }
+        th, td { padding:10px 8px; border-bottom:1px solid #eef1f6; text-align:left; vertical-align:top; }
+        th { font-weight:900; color:#0b1b4d; }
+        .actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+        .btn { display:inline-block; padding:8px 12px; border-radius:12px; border:1px solid #d8deea; background:#fff; font-weight:800; cursor:pointer; text-decoration:none; color:#0b1b4d; }
+        .btn:hover { border-color:#0b1b4d; }
+        .btn-primary { background:#1d3b8b; color:#fff; border-color:#1d3b8b; }
+        .btn-danger { background:#fff; color:#b00020; border-color:#f0c8cf; }
+        .msg-ok { margin:0 0 12px; padding:10px 12px; border-radius:12px; background:#ecfdf3; border:1px solid #b7f0c9; font-weight:800; }
+        .msg-err { margin:0 0 12px; padding:10px 12px; border-radius:12px; background:#fff1f2; border:1px solid #fecdd3; font-weight:800; color:#b00020; }
+        .field { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+        .field label { font-weight:800; color:#0b1b4d; }
+        .field input, .field textarea { padding:10px 12px; border-radius:12px; border:1px solid #d8deea; outline:none; }
+        .field input:focus, .field textarea:focus { border-color:#0b1b4d; }
+        .err { color:#b00020; font-weight:700; font-size:13px; }
+        .muted { color:#6b7280; font-size:13px; margin-top:6px; }
+        .top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
+        .title { font-size:20px; font-weight:900; color:#0b1b4d; }
+        .import-errors { margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; background:#fff7ed; border:1px solid #fed7aa; }
+        .import-errors ul { margin: 8px 0 0 18px; }
+        .file-input { max-width: 210px; }
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="wrap">
+    <div class="card">
+
+        <div th:if="${ok}" class="msg-ok" th:text="${ok}">OK</div>
+        <div th:if="${err}" class="msg-err" th:text="${err}">ERR</div>
+
+        <div th:if="${importErrors != null and !#lists.isEmpty(importErrors)}" class="import-errors">
+            <b>Ошибки импорта:</b>
+            <ul>
+                <li th:each="e : ${importErrors}" th:text="${e}">Ошибка</li>
+            </ul>
+        </div>
+
+        <div class="grid">
+
+            <div>
+                <div class="top">
+                    <div class="title">Поставщики</div>
+                    <a class="btn" th:href="@{/warehouse/suppliers}">Сбросить</a>
+                </div>
+
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:70px;">ID</th>
+                        <th>Название</th>
+                        <th style="width:160px;">Телефон</th>
+                        <th style="width:200px;">Email</th>
+                        <th style="width:360px;">Прайс-лист</th>
+                        <th style="width:220px;">Действия</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="s : ${suppliers}">
+                        <td th:text="${s.id}">1</td>
+                        <td style="font-weight:900;" th:text="${s.name}">Поставщик</td>
+                        <td th:text="${s.phone}">—</td>
+                        <td th:text="${s.email}">—</td>
+                        <td>
+                            <form th:action="@{/warehouse/suppliers/{id}/price-list/upload(id=${s.id})}"
+                                  method="post"
+                                  enctype="multipart/form-data"
+                                  class="actions">
+                                <input class="file-input" type="file" name="file" accept=".xlsx,.xls" required>
+                                <button class="btn" type="submit">Загрузить прайс</button>
+                            </form>
+                            <div class="muted">Формат: Код товара | Наименование | Цена</div>
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <a class="btn" th:href="@{/warehouse/suppliers(edit=${s.id})}">Изменить</a>
+                                <form th:action="@{/warehouse/suppliers/{id}/delete(id=${s.id})}" method="post"
+                                      onsubmit="return confirm('Удалить поставщика?');">
+                                    <button class="btn btn-danger" type="submit">Удалить</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(suppliers)}">
+                        <td colspan="6" class="muted">Поставщиков пока нет — добавьте справа.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <div class="top">
+                    <div class="title" th:text="${editId != null ? 'Редактирование' : 'Добавить поставщика'}">Форма</div>
+                </div>
+
+                <form th:action="@{/warehouse/suppliers/save}" method="post" th:object="${form}">
+                    <input type="hidden" th:field="*{id}"/>
+
+                    <div class="field">
+                        <label>Название</label>
+                        <input type="text" th:field="*{name}" placeholder="например: ООО Поставщик"/>
+                        <div class="err" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">error</div>
+                    </div>
+
+                    <div class="field">
+                        <label>Телефон</label>
+                        <input type="text" th:field="*{phone}" placeholder="+7 ..."/>
+                        <div class="err" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}">error</div>
+                    </div>
+
+                    <div class="field">
+                        <label>Email</label>
+                        <input type="text" th:field="*{email}" placeholder="supplier@mail.ru"/>
+                        <div class="err" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">error</div>
+                    </div>
+
+                    <div class="field">
+                        <label>Комментарий</label>
+                        <textarea rows="4" th:field="*{comment}" placeholder="опционально"></textarea>
+                        <div class="err" th:if="${#fields.hasErrors('comment')}" th:errors="*{comment}">error</div>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn btn-primary" type="submit"
+                                th:text="${editId != null ? 'Сохранить' : 'Добавить'}">Сохранить</button>
+
+                        <a class="btn" th:if="${editId != null}" th:href="@{/warehouse/suppliers}">Отмена</a>
+                    </div>
+
+                    <div class="muted">Сначала добавь поставщика и загрузи прайс, потом создавай накладную.</div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

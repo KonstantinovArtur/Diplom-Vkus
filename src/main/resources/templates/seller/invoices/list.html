@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Продавец · Накладные</title>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<main style="max-width:1100px;margin:18px auto;padding:0 12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;">
+        <div>
+            <h2 style="margin:0;">Накладные</h2>
+            <div style="margin-top:6px;color:#6b7280;">
+                Здесь отображаются только накладные, отправленные продавцу на проверку, уже проверенные или проведённые.
+            </div>
+        </div>
+    </div>
+
+    <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
+        <table style="width:100%;border-collapse:collapse;">
+            <thead>
+            <tr style="text-align:left;border-bottom:1px solid #e6e9ef;">
+                <th style="padding:10px 8px;width:90px;">ID</th>
+                <th style="padding:10px 8px;">Поставщик</th>
+                <th style="padding:10px 8px;width:220px;">Номер</th>
+                <th style="padding:10px 8px;width:160px;">Дата</th>
+                <th style="padding:10px 8px;width:200px;">Статус</th>
+                <th style="padding:10px 8px;width:150px;">Действие</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${rows}" style="border-bottom:1px solid #f0f2f7;">
+                <td style="padding:10px 8px;" th:text="${r.id()}">1</td>
+                <td style="padding:10px 8px;font-weight:800;" th:text="${r.supplierName()}">Поставщик</td>
+                <td style="padding:10px 8px;" th:text="${r.invoiceNumber()}">Номер</td>
+                <td style="padding:10px 8px;" th:text="${r.invoiceDate()}">Дата</td>
+                <td style="padding:10px 8px;">
+                    <span th:if="${r.status() == 'ready_for_check'}"
+                          style="display:inline-block;padding:6px 10px;border-radius:999px;background:#fff7ed;color:#9a3412;font-weight:800;border:1px solid #fdba74;">
+                        Ожидает проверки
+                    </span>
+
+                    <span th:if="${r.status() == 'checked'}"
+                          style="display:inline-block;padding:6px 10px;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-weight:800;border:1px solid #93c5fd;">
+                        Проверена
+                    </span>
+
+                    <span th:if="${r.status() == 'posted'}"
+                          style="display:inline-block;padding:6px 10px;border-radius:999px;background:#ecfdf5;color:#065f46;font-weight:800;border:1px solid #86efac;">
+                        Проведена
+                    </span>
+
+                    <span th:if="${r.status() != 'ready_for_check' and r.status() != 'checked' and r.status() != 'posted'}"
+                          th:text="${r.status()}">
+                        status
+                    </span>
+                </td>
+                <td style="padding:10px 8px;">
+                    <a th:href="@{/seller/invoices/{id}(id=${r.id()})}"
+                       style="text-decoration:none;border:1px solid #d8deea;padding:8px 10px;border-radius:12px;font-weight:800;color:#0b1b4d;display:inline-block;">
+                        Открыть
+                    </a>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(rows)}">
+                <td colspan="6" style="padding:14px 8px;color:#6b7280;">
+                    У продавца пока нет доступных накладных.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

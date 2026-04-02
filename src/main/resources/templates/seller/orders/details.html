@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Заказ</title>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<main style="max-width:1000px;margin:18px auto;padding:0 12px;">
+
+    <div th:if="${err}"
+         style="background:#fff5f5;border:1px solid #fecaca;color:#991b1b;border-radius:14px;padding:12px;font-weight:900;margin-bottom:12px;"
+         th:text="${err}"></div>
+
+    <div th:if="${msg}"
+         style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:14px;padding:12px;font-weight:900;margin-bottom:12px;"
+         th:text="${msg}"></div>
+
+    <h2 style="margin:0 0 12px 0;">
+        Заказ № <span th:text="${order.id}">1</span>
+    </h2>
+
+    <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
+
+        <th:block th:with="
+            payOk=${payment != null and payment.status == 'succeeded'},
+            st=${order.status},
+            canAssembling=${payOk and (st == 'created' or st == 'accepted')},
+            canReady=${st == 'assembling'},
+            canIssue=${st == 'ready'},
+            canCancel=${!(st == 'issued' or st == 'cancelled')}
+        ">
+
+            <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                <div>
+                    <div style="color:#6b7280;font-weight:900;">Статус</div>
+                    <div style="font-weight:900;color:#0b1b4d;font-size:22px;"
+                         th:switch="${order.status}">
+                        <span th:case="'created'">Создан</span>
+                        <span th:case="'accepted'">Принят</span>
+                        <span th:case="'assembling'">В сборке</span>
+                        <span th:case="'ready'">Готов к выдаче</span>
+                        <span th:case="'issued'">Выдан</span>
+                        <span th:case="'cancelled'">Отменён</span>
+                        <span th:case="*">—</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="color:#6b7280;font-weight:900;">Оплата</div>
+                    <div style="font-weight:900;color:#0b1b4d;"
+                         th:switch="${payment != null ? payment.status : null}">
+                        <span th:case="'pending'">Ожидает оплаты</span>
+                        <span th:case="'succeeded'">Оплачено</span>
+                        <span th:case="'failed'">Ошибка оплаты</span>
+                        <span th:case="'cancelled'">Отменена</span>
+                        <span th:case="*">—</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="color:#6b7280;font-weight:900;">Итого</div>
+                    <div style="font-weight:900;color:#0b1b4d;font-size:22px;"
+                         th:text="${#numbers.formatDecimal(order.finalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</div>
+                </div>
+            </div>
+
+            <hr style="border:0;border-top:1px solid #e6e9ef;margin:12px 0;"/>
+
+            <h3 style="margin:0 0 10px 0;color:#0b1b4d;">Состав заказа</h3>
+
+            <!-- Обычные товары -->
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <div th:each="it : ${items}"
+                     style="border:1px solid #e6e9ef;border-radius:14px;padding:10px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                    <div style="font-weight:900;color:#0b1b4d;" th:text="${it.product.name}">Товар</div>
+                    <div style="color:#6b7280;font-weight:900;">x <span th:text="${it.qty}">1</span></div>
+                    <div style="font-weight:900;color:#0b1b4d;"
+                         th:text="${#numbers.formatDecimal(it.finalLineAmount, 1, 'COMMA', 2, 'POINT')}">0.00</div>
+                </div>
+            </div>
+
+            <!-- Комбо -->
+            <div th:if="${combos != null and !#lists.isEmpty(combos)}" style="margin-top:14px;">
+                <h3 style="margin:0 0 10px 0;color:#0b1b4d;">Комбо</h3>
+
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <div th:each="cc : ${combos}"
+                         style="border:1px solid #e6e9ef;border-radius:14px;padding:10px;">
+
+                        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                            <div style="font-weight:900;color:#0b1b4d;"
+                                 th:text="${cc.comboName}">Комбо</div>
+
+                            <div style="color:#6b7280;font-weight:900;">
+                                x <span th:text="${cc.qty}">1</span>
+                            </div>
+
+                            <div style="font-weight:900;color:#0b1b4d;">
+                                <span th:text="${#numbers.formatDecimal(cc.comboPriceSnapshot * cc.qty, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:8px;color:#6b7280;font-weight:800;">Состав:</div>
+                        <ul style="margin:6px 0 0 18px;color:#0b1b4d;font-weight:800;">
+                            <li th:each="ci : ${cc.items}">
+                                <span th:text="${ci.slotName}">Слот</span>:
+                                <span th:text="${ci.productName}">Товар</span>
+                                <span th:text="${' x' + ci.qty}">x1</span>
+                                <span th:if="${ci.extraPriceSnapshot != null}"
+                                      th:text="${' (+' + #numbers.formatDecimal(ci.extraPriceSnapshot, 1, 'COMMA', 2, 'POINT') + ')'}"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border:0;border-top:1px solid #e6e9ef;margin:12px 0;"/>
+
+            <h3 style="margin:0 0 10px 0;color:#0b1b4d;">Действия</h3>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+
+                <form th:action="@{|/seller/orders/${order.id}/assembling|}" method="post">
+                    <button type="submit"
+                            th:disabled="${!canAssembling}"
+                            style="border:1px solid #d8deea;background:#fff;color:#0b1b4d;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;"
+                            th:styleappend="${!canAssembling} ? 'opacity:.45;cursor:not-allowed;' : ''">
+                        В сборку
+                    </button>
+                </form>
+
+                <form th:action="@{|/seller/orders/${order.id}/ready|}" method="post">
+                    <button type="submit"
+                            th:disabled="${!canReady}"
+                            style="border:1px solid #d8deea;background:#fff;color:#0b1b4d;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;"
+                            th:styleappend="${!canReady} ? 'opacity:.45;cursor:not-allowed;' : ''">
+                        Готов к выдаче
+                    </button>
+                </form>
+
+                <form th:action="@{|/seller/orders/${order.id}/issue|}" method="post"
+                      style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <input name="pickupCode" placeholder="Код выдачи"
+                           th:disabled="${!canIssue}"
+                           style="width:160px;border:1px solid #d8deea;border-radius:12px;padding:10px 12px;font-weight:800;outline:none;"
+                           th:styleappend="${!canIssue} ? 'opacity:.45;cursor:not-allowed;' : ''">
+                    <button type="submit"
+                            th:disabled="${!canIssue}"
+                            style="border:0;background:#2563eb;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;"
+                            th:styleappend="${!canIssue} ? 'opacity:.45;cursor:not-allowed;' : ''">
+                        Выдать
+                    </button>
+                </form>
+
+                <form th:action="@{|/seller/orders/${order.id}/cancel|}" method="post"
+                      onsubmit="return confirm('Отменить заказ? Деньги вернутся (заглушка), товар вернётся на склад.');">
+                    <button type="submit"
+                            th:disabled="${!canCancel}"
+                            style="border:0;background:#ef4444;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;"
+                            th:styleappend="${!canCancel} ? 'opacity:.45;cursor:not-allowed;' : ''">
+                        Отменить
+                    </button>
+                </form>
+            </div>
+
+            <div style="margin-top:10px;color:#6b7280;font-weight:800;font-size:13px;line-height:1.4;">
+                <div th:if="${!payOk}">
+                    “В сборку” доступно только после успешной оплаты (status = succeeded).
+                </div>
+                <div th:if="${payOk and !canReady and st != 'assembling'}">
+                    “Готов к выдаче” доступно только когда заказ в статусе assembling.
+                </div>
+                <div th:if="${!canIssue}">
+                    Выдача по коду доступна только когда заказ в статусе ready.
+                </div>
+            </div>
+
+        </th:block>
+
+        <div style="margin-top:14px;">
+            <a th:href="@{/seller/orders}"
+               style="display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;text-decoration:none;font-weight:900;color:#0b1b4d;">
+                ← Назад к списку
+            </a>
+        </div>
+    </section>
+
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

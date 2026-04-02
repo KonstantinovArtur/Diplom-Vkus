@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Категории месяца</title>
+    <style>
+        .wrap{max-width:1000px;margin:24px auto;font-family:system-ui,Segoe UI,Arial}
+        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,0.06)}
+        .top{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
+        .btn{display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #d8deea;text-decoration:none;color:#0b1b4d;font-weight:700;background:#fff;cursor:pointer}
+        .btn:hover{border-color:#0b1b4d}
+        .ok{background:#ecfdf5;border:1px solid #a7f3d0;padding:10px 12px;border-radius:12px;margin:12px 0;color:#065f46;font-weight:700}
+        .err{background:#fef2f2;border:1px solid #fecaca;padding:10px 12px;border-radius:12px;margin:12px 0;color:#991b1b;font-weight:700}
+        .grid{display:grid;grid-template-columns:2fr 1fr;gap:12px;align-items:end}
+        label{display:block;font-size:12px;font-weight:800;color:#0b1b4d;margin-bottom:6px}
+        input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;font:inherit}
+        .row{border:1px solid #eef2f7;border-radius:14px;padding:12px;margin:10px 0}
+        .muted{color:#667085;font-size:13px}
+        .actions{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+        .hint{font-size:12px;color:#667085}
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="card">
+        <div class="top">
+            <div>
+                <div style="font-size:20px;font-weight:900;color:#0b1b4d">Категории месяца</div>
+                <div class="muted">Админ выбирает 4 категории (1–3%). Покупатель выберет одну раз в месяц.</div>
+            </div>
+            <a class="btn" th:href="@{/admin-buffet}">Назад</a>
+        </div>
+
+        <div th:if="${ok}" class="ok" th:text="${ok}">OK</div>
+
+        <form method="get" th:action="@{/admin-buffet/monthly-discount}">
+            <div class="grid">
+                <div>
+                    <label>Год</label>
+                    <input type="number" name="year" th:value="${year}" min="2000" max="2100"/>
+                </div>
+                <div>
+                    <label>Месяц</label>
+                    <input type="number" name="month" th:value="${month}" min="1" max="12"/>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn" type="submit">Открыть</button>
+            </div>
+        </form>
+
+        <hr style="border:none;border-top:1px solid #eef2f7;margin:16px 0"/>
+
+        <form th:action="@{/admin-buffet/monthly-discount/save}" method="post" th:object="${form}">
+
+            <input type="hidden" th:field="*{year}"/>
+            <input type="hidden" th:field="*{month}"/>
+
+            <div th:if="${#fields.hasGlobalErrors()}" class="err">
+                <div th:each="e : ${#fields.globalErrors()}" th:text="${e}">Ошибка</div>
+            </div>
+
+            <div class="muted" style="margin-bottom:10px">
+                Месяц: <b th:text="*{month}">2</b> / <b th:text="*{year}">2026</b>
+            </div>
+
+            <div th:each="row, st : *{items}" class="row">
+                <div style="font-weight:900;color:#0b1b4d;margin-bottom:8px">
+                    Категория #<span th:text="${st.index + 1}">1</span>
+                </div>
+
+                <div class="grid">
+                    <div>
+                        <label>Категория</label>
+                        <select th:field="*{items[__${st.index}__].categoryId}">
+                            <option value="" disabled>-- выберите категорию --</option>
+                            <option th:each="c : ${categories}"
+                                    th:value="${c.id}"
+                                    th:text="${c.name}">
+                            </option>
+                        </select>
+                        <div class="hint" th:if="${#fields.hasErrors('items[' + st.index + '].categoryId')}"
+                             th:errors="*{items[__${st.index}__].categoryId}">Ошибка</div>
+                    </div>
+
+                    <div>
+                        <label>Скидка, %</label>
+                        <input type="text" th:field="*{items[__${st.index}__].percent}" placeholder="1.00"/>
+                        <div class="hint" th:if="${#fields.hasErrors('items[' + st.index + '].percent')}"
+                             th:errors="*{items[__${st.index}__].percent}">Ошибка</div>
+                        <div class="hint">1.00–3.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn" type="submit">Сохранить 4 категории</button>
+            </div>
+        </form>
+
+        <div class="muted" style="margin-top:10px">
+            Если на выбранный месяц оффер не был создан — система автоматически копирует последний оффер этого буфета.
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

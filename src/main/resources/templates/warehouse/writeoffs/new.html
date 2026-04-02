@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Списание (вручную по партии)</title>
+    <style>
+        .wrap { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
+        .card { background:#fff; border:1px solid #e6e9ef; border-radius:16px; padding:16px; box-shadow:0 8px 24px rgba(10,20,60,.06); }
+        .title { font-size:20px; font-weight:900; color:#0b1b4d; margin-bottom:12px; }
+        .field { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+        .field label { font-weight:800; color:#0b1b4d; }
+        .field input, .field select, .field textarea { padding:10px 12px; border-radius:12px; border:1px solid #d8deea; outline:none; }
+        .btn { display:inline-block; padding:10px 14px; border-radius:12px; border:1px solid #d8deea; background:#fff; font-weight:800; cursor:pointer; color:#0b1b4d; }
+        .btn-primary { background:#1d3b8b; color:#fff; border-color:#1d3b8b; }
+        .muted { color:#6b7280; font-size:13px; }
+        .err { color:#b00020; font-weight:700; font-size:13px; }
+        .msg-ok { margin:0 0 12px; padding:10px 12px; border-radius:12px; background:#ecfdf3; border:1px solid #b7f0c9; font-weight:800; }
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="wrap">
+    <div class="card">
+
+        <div th:if="${ok}" class="msg-ok" th:text="${ok}">OK</div>
+        <div th:if="${err}" class="msg-err" th:text="${err}">Ошибка</div>
+
+        <div class="title">Списание по партиям (вручную)</div>
+
+        <form th:action="@{/warehouse/writeoffs}" method="post" th:object="${form}">
+            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="field">
+                <label>Причина</label>
+                <select th:field="*{reason}">
+                    <option value="expired">Просрочка</option>
+                    <option value="damaged">Брак</option>
+                    <option value="inventory_adjustment">Инвентаризация</option>
+                    <option value="other">Другое</option>
+                </select>
+                <div class="err" th:if="${#fields.hasErrors('reason')}" th:errors="*{reason}">error</div>
+            </div>
+
+            <div class="field">
+                <label>Комментарий (опц.)</label>
+                <textarea rows="3" th:field="*{comment}"></textarea>
+            </div>
+
+            <div class="field">
+                <label>Товар</label>
+                <select id="productSelect" th:field="*{productId}">
+                    <option value="" disabled selected>Выберите товар</option>
+                    <option th:each="p : ${products}" th:value="${p.id}" th:text="${p.name}">P</option>
+                </select>
+                <div class="err" th:if="${#fields.hasErrors('productId')}" th:errors="*{productId}">error</div>
+            </div>
+
+            <div class="field">
+                <label>Партия</label>
+                <select id="batchSelect" th:field="*{batchId}" disabled>
+                    <option value="" disabled selected>Сначала выберите товар</option>
+                </select>
+                <div class="muted" id="batchHint">Показываются только активные партии с доступным количеством.</div>
+                <div class="err" th:if="${#fields.hasErrors('batchId')}" th:errors="*{batchId}">error</div>
+            </div>
+
+            <div class="field">
+                <label>Количество</label>
+                <input type="number" min="1" th:field="*{qty}"/>
+                <div class="err" th:if="${#fields.hasErrors('qty')}" th:errors="*{qty}">error</div>
+            </div>
+
+            <button class="btn btn-primary" type="submit">Провести списание</button>
+
+            <div class="muted" style="margin-top:10px;">
+                Списание уменьшит qty_available у выбранной партии, обновит inventory_items и добавит inventory_movements.
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<script>
+    const productSelect = document.getElementById('productSelect');
+    const batchSelect = document.getElementById('batchSelect');
+    const batchHint = document.getElementById('batchHint');
+
+    async function loadBatches(productId) {
+        batchSelect.innerHTML = '';
+        batchSelect.disabled = true;
+
+        if (!productId) {
+            const opt = document.createElement('option');
+            opt.textContent = 'Сначала выберите товар';
+            opt.disabled = true;
+            opt.selected = true;
+            batchSelect.appendChild(opt);
+            return;
+        }
+
+        const resp = await fetch(`/warehouse/writeoffs/batches?productId=${productId}`, { headers: { 'Accept': 'application/json' } });
+        const data = await resp.json();
+
+        if (!data || data.length === 0) {
+            const opt = document.createElement('option');
+            opt.textContent = 'Нет доступных партий';
+            opt.disabled = true;
+            opt.selected = true;
+            batchSelect.appendChild(opt);
+            batchHint.textContent = 'Для этого товара нет партий со свободным остатком.';
+            return;
+        }
+
+        const ph = document.createElement('option');
+        ph.textContent = 'Выберите партию';
+        ph.disabled = true;
+        ph.selected = true;
+        batchSelect.appendChild(ph);
+
+        data.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.id;
+            opt.textContent = b.label;
+            batchSelect.appendChild(opt);
+        });
+
+        batchSelect.disabled = false;
+        batchHint.textContent = 'Партии отсортированы по сроку годности (раньше — выше).';
+    }
+
+    productSelect.addEventListener('change', (e) => {
+        loadBatches(e.target.value);
+    });
+
+    // если вдруг форма перерисовалась с выбранным productId (после ошибок)
+    if (productSelect.value) {
+        loadBatches(productSelect.value);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Статистика буфета</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .wrap{max-width:1100px;margin:24px auto;font-family:system-ui,Segoe UI,Arial}
+        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,.06)}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        .kpi{display:flex;gap:16px;flex-wrap:wrap}
+        .kpi .box{flex:1;min-width:220px;border:1px solid #e6e9ef;border-radius:14px;padding:12px;background:#fafbff}
+        table{width:100%;border-collapse:separate;border-spacing:0 8px}
+        td,th{padding:10px 12px;background:#fafbff;border:1px solid #eef1f6}
+        th{background:#f2f6ff;text-align:left}
+        .actions{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+        .btn{display:inline-block;padding:10px 14px;border-radius:12px;border:1px solid #d6dcf0;background:#2b6fff;color:#fff;text-decoration:none;cursor:pointer}
+        .btn2{background:#fff;color:#2b6fff}
+        input{padding:8px 10px;border:1px solid #d6dcf0;border-radius:10px}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="card">
+        <h2 style="margin:0 0 12px 0">Статистика</h2>
+
+        <form class="actions" method="get" th:action="@{/admin-buffet/stats}">
+            <div>
+                <div>С</div>
+                <input type="date" name="from" th:value="${from}">
+            </div>
+            <div>
+                <div>По</div>
+                <input type="date" name="to" th:value="${to}">
+            </div>
+            <button class="btn" type="submit">Показать</button>
+
+            <a class="btn btn2"
+               th:href="@{/admin-buffet/stats/export(from=${from},to=${to})}">
+                Выгрузить Excel
+            </a>
+        </form>
+
+        <div class="kpi" style="margin-top:14px">
+            <div class="box">
+                <div style="opacity:.7">Количество заказов</div>
+                <div style="font-size:24px;font-weight:700" th:text="${ordersTotal}">0</div>
+            </div>
+            <div class="box">
+                <div style="opacity:.7">Выручка за период</div>
+                <div style="font-size:24px;font-weight:700" th:text="${revenueTotal}">0</div>
+            </div>
+            <div class="box">
+                <div style="opacity:.7">Затраты по накладным</div>
+                <div style="font-size:24px;font-weight:700" th:text="${costsTotal}">0</div>
+            </div>
+            <div class="box">
+                <div style="opacity:.7">Прибыль за период</div>
+                <div style="font-size:24px;font-weight:700" th:text="${profitTotal}">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+        <h3 style="margin-top:0">Прибыльность по дням</h3>
+        <canvas id="profitChart"></canvas>
+    </div>
+
+    <div class="grid" style="margin-top:16px">
+        <div class="card">
+            <h3 style="margin-top:0">Продажи по дням (выручка)</h3>
+            <canvas id="salesChart"></canvas>
+        </div>
+        <div class="card">
+            <h3 style="margin-top:0">Количество заказов по дням</h3>
+            <canvas id="ordersChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+        <h3 style="margin-top:0">Топ товаров</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Товар</th>
+                <th>Кол-во</th>
+                <th>Выручка</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="t : ${topProducts}">
+                <td th:text="${t.productName}">—</td>
+                <td th:text="${t.qty}">0</td>
+                <td th:text="${t.revenue}">0</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script th:inline="javascript">
+    const daily = /*[[${daily}]]*/ [];
+    const profitability = /*[[${profitability}]]*/ [];
+
+    const labels = daily.map(x => x.day);
+    const revenue = daily.map(x => Number(x.revenue));
+    const orders = daily.map(x => Number(x.ordersCount));
+
+    const profitLabels = profitability.map(x => x.day);
+    const costs = profitability.map(x => Number(x.costs));
+    const profitRevenue = profitability.map(x => Number(x.revenue));
+    const profit = profitability.map(x => Number(x.profit));
+
+    new Chart(document.getElementById('profitChart'), {
+        type: 'line',
+        data: {
+            labels: profitLabels,
+            datasets: [
+                { label: 'Выручка', data: profitRevenue },
+                { label: 'Затраты', data: costs },
+                { label: 'Прибыль', data: profit }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false }
+        }
+    });
+
+    new Chart(document.getElementById('salesChart'), {
+        type: 'line',
+        data: { labels, datasets: [{ label: 'Выручка', data: revenue }] },
+        options: { responsive: true }
+    });
+
+    new Chart(document.getElementById('ordersChart'), {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Заказы', data: orders }] },
+        options: { responsive: true }
+    });
+</script>
+
+</body>
+</html>

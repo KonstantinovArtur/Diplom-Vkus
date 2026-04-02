@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Оформление заказа</title>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<main style="max-width:900px;margin:18px auto;padding:0 12px;">
+    <h2 style="margin:0 0 12px 0;">Оформление заказа</h2>
+
+    <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
+        <p style="color:#334155;font-weight:800;margin:0 0 10px 0;">
+            Подтвердите оформление. Товары будут <b>сразу списаны со склада</b> (вариант А).
+        </p>
+
+        <form th:action="@{/orders/checkout}" method="post" style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button type="submit"
+                    style="border:0;background:#1d3b8b;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
+                Подтвердить заказ
+            </button>
+
+            <a th:href="@{/cart}"
+               style="display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;text-decoration:none;font-weight:900;color:#0b1b4d;">
+                Вернуться в корзину
+            </a>
+        </form>
+    </section>
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

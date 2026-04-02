@@ -1,0 +1,86 @@
+# =========================
+# IntelliJ IDEA
+# =========================
+.idea/
+*.iml
+out/
+
+# =========================
+# Java / Kotlin / JVM
+# =========================
+*.class
+*.jar
+*.war
+*.ear
+
+# =========================
+# Maven
+# =========================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# =========================
+# Gradle
+# =========================
+.gradle/
+build/
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+log/
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Env / secrets / local config
+# =========================
+.env
+.env.*
+*.env
+
+src/main/resources/application-local.properties
+src/main/resources/application-secret.properties
+src/main/resources/application-private.properties
+
+
+# Если хранишь отдельные локальные yaml-файлы
+src/main/resources/application-local.yml
+src/main/resources/application-secret.yml
+src/main/resources/application-private.yml
+src/main/resources/application-local.yaml
+src/main/resources/application-secret.yaml
+src/main/resources/application-private.yaml
+
+# =========================
+# Project-specific folders
+# =========================
+backups/
+audit-archive/
+
+# =========================
+# Temporary files
+# =========================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# =========================
+# Generated reports / test output
+# =========================
+surefire-reports/
+failsafe-reports/
+test-output/
+
+# =========================
+# VS Code (if ever used)
+# =========================
+.vscode/

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Движения склада</title>
+    <style>
+        .wrap{max-width:1100px;margin:20px auto;padding:0 16px}
+        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,.06)}
+        .title{font-size:20px;font-weight:900;color:#0b1b4d;margin:0 0 12px}
+        table{width:100%;border-collapse:collapse}
+        th,td{padding:10px 8px;border-bottom:1px solid #eef1f6;text-align:left;vertical-align:top}
+        th{font-weight:900;color:#0b1b4d}
+        .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid #d8deea;background:#eef2ff;font-weight:900;color:#0b1b4d;font-size:12px}
+        .muted{color:#6b7280;font-size:13px}
+        .num{font-variant-numeric:tabular-nums}
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="wrap">
+    <div class="card">
+        <div class="title">Движения склада</div>
+
+        <table>
+            <thead>
+            <tr>
+                <th style="width:70px">ID</th>
+                <th>Товар</th>
+                <th style="width:120px">Тип</th>
+                <th style="width:90px">Кол-во</th>
+                <th style="width:90px">Batch</th>
+                <th style="width:140px">Ссылка</th>
+                <th style="width:190px">Когда</th>
+                <th style="width:160px">Кто</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${rows}">
+                <td class="num" th:text="${r.id}">1</td>
+                <td th:text="${r.product_name}">—</td>
+                <td>
+                      <span class="pill" th:switch="${r.type}">
+                          <span th:case="'receipt'">Поступление</span>
+                          <span th:case="'sale'">Продажа</span>
+                          <span th:case="'writeoff'">Списание</span>
+                          <span th:case="'adjustment'">Корректировка</span>
+                          <span th:case="*"
+                                th:text="${r.type}">—</span>
+                      </span>
+                </td>
+
+                <td class="num" th:text="${r.qty}">0</td>
+                <td class="num" th:text="${r.batch_id} ?: '—'">—</td>
+                <td class="muted" th:text="${(r.ref_type ?: '—') + ' #' + (r.ref_id ?: '—')}">—</td>
+                <td th:text="${r.created_at}">—</td>
+                <td th:text="${r.created_by_name}">—</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(rows)}">
+                <td colspan="8" class="muted">Пока нет движений.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

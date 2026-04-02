@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Месячная скидка</title>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<main style="max-width:1100px;margin:18px auto;padding:0 12px;">
+    <h2 style="margin:0 0 12px 0;">Месячная скидка</h2>
+
+    <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
+
+        <div style="color:#6b7280;font-weight:800;margin-bottom:12px;">
+            Период: <span th:text="${month}">1</span>/<span th:text="${year}">2026</span>
+        </div>
+
+        <div th:if="${noBuffet}" style="color:#b45309;font-weight:900;">
+            Сначала выберите буфет вверху справа.
+        </div>
+
+        <div th:if="${noOffer}" style="color:#6b7280;font-weight:800;">
+            На этот месяц нет предложений по скидке для выбранного буфета.
+        </div>
+
+        <div th:if="${param.error != null and param.error[0] == 'invalid'}"
+             style="color:#b91c1c;font-weight:900;margin-bottom:10px;">
+            Нельзя выбрать эту позицию, потому что она не относится к текущему предложению месяца.
+        </div>
+
+        <div th:if="${param.error != null and param.error[0] == 'already-selected'}"
+             style="color:#b45309;font-weight:900;margin-bottom:10px;">
+            Скидка на текущий месяц уже выбрана. Новый выбор станет доступен в следующем месяце.
+        </div>
+
+        <form th:if="${!noBuffet and !noOffer}" th:action="@{/buyer/monthly-discount/select}" method="post">
+            <input th:if="${_csrf != null}"
+                   type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}" />
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:12px;">
+                <label th:each="it : ${items}"
+                       style="border:1px solid #e6e9ef;border-radius:16px;padding:12px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.04);background:#fff;"
+                       th:styleappend="${selectionLocked} ? 'opacity:.88;' : 'cursor:pointer;'">
+
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
+                        <div>
+                            <div style="font-weight:900;color:#0b1b4d;font-size:16px;"
+                                 th:text="${it.category.name}">Категория</div>
+
+                            <div style="margin-top:6px;color:#0b1b4d;font-weight:900;background:#eef2ff;border:1px solid #d8deea;padding:6px 10px;border-radius:999px;display:inline-block;">
+                                Скидка <span th:text="${it.percent}">2</span>%
+                            </div>
+                        </div>
+
+                        <input type="radio" name="offerItemId"
+                               th:value="${it.id}"
+                               th:checked="${selectedOfferItemId != null and it.id == selectedOfferItemId}"
+                               th:disabled="${selectionLocked}"
+                               style="transform:scale(1.2);margin-top:4px;" />
+                    </div>
+
+                    <div th:if="${selectedOfferItemId != null and it.id == selectedOfferItemId}"
+                         style="margin-top:10px;color:#16a34a;font-weight:900;">
+                        Выбрано
+                    </div>
+                </label>
+            </div>
+
+            <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <button type="submit"
+                        th:disabled="${selectionLocked}"
+                        th:style="${selectionLocked}
+                            ? 'border:0;background:#94a3b8;color:#fff;padding:10px 14px;border-radius:12px;font-weight:900;cursor:not-allowed;'
+                            : 'border:0;background:#1d3b8b;color:#fff;padding:10px 14px;border-radius:12px;font-weight:900;cursor:pointer;'">
+                    Сохранить выбор
+                </button>
+
+                <span th:if="${!selectionLocked}" style="color:#6b7280;font-weight:800;">
+                    Выбор можно сделать только один раз за текущий месяц.
+                </span>
+
+                <span th:if="${selectionLocked}" style="color:#16a34a;font-weight:800;">
+                    Выбор на этот месяц уже зафиксирован. Новый выбор станет доступен в следующем месяце.
+                </span>
+            </div>
+        </form>
+
+    </section>
+</main>
+
+</body>
+</html>

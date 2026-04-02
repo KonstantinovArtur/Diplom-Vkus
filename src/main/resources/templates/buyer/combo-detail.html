@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title th:text="${tpl.name}">Комбо</title>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main style="max-width:900px;margin:18px auto;padding:0 12px;">
+    <h1 th:text="${tpl.name}">Комбо</h1>
+
+    <div style="margin:8px 0 14px 0;">
+        Базовая цена комбо:
+        <b th:text="${#numbers.formatDecimal(tpl.basePrice, 1, 'COMMA', 2, 'POINT')}">0.00</b>
+    </div>
+
+    <form th:action="@{/combos/{id}/add-to-cart(id=${tpl.id})}" method="post">
+        <div style="margin:10px 0;">
+            Кол-во комбо:
+            <input type="number" name="qty" value="1" min="1" style="width:90px;">
+        </div>
+
+        <hr style="margin:14px 0;">
+
+        <!-- 1 слот = 1 select -->
+        <div th:each="s : ${slotsSorted}" style="margin:14px 0;">
+            <h3 th:text="${s.name}">Слот</h3>
+
+            <select th:name="${'slot_' + s.id}" style="min-width:260px;">
+                <option value="" disabled selected>-- выберите --</option>
+
+                <!-- товары слота = option, НЕ select -->
+                <option th:each="sp : ${s.products}"
+                        th:value="${sp.product.id}"
+                        th:text="${sp.product.name + (sp.extraPrice != null ? ' (+' + #numbers.formatDecimal(sp.extraPrice, 1, 'COMMA', 2, 'POINT') + ')' : '')}">
+                </option>
+            </select>
+        </div>
+
+        <button type="submit" style="margin-top:14px;">
+            Добавить комбо в корзину
+        </button>
+    </form>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Комбо</title>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<h2>Комбо-наборы</h2>
+
+<div th:if="${#lists.isEmpty(combos)}">Комбо пока нет</div>
+
+<ul>
+    <li th:each="c : ${combos}">
+        <b th:text="${c.name}">Комбо</b>
+        — <span th:text="${c.basePrice}">0</span>
+        <a th:href="@{/combos/{id}(id=${c.id})}">Выбрать</a>
+    </li>
+</ul>
+
+</body>
+</html>

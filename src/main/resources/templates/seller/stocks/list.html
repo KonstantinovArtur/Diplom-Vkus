@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Остатки</title>
+    <style>
+        textarea::placeholder {
+            color: #9ca3af;      /* серый */
+            font-weight: 700;
+        }
+    </style>
+
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<main style="max-width:1100px;margin:18px auto;padding:0 12px;">
+    <h2 style="margin:0 0 12px 0;">Продавец · Остатки</h2>
+
+    <div style="display:grid;grid-template-columns: 1.6fr 1fr;gap:14px;align-items:start;">
+
+        <!-- Таблица -->
+        <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
+                <div>
+                    <strong>Список товаров</strong>
+                    <div style="margin-top:6px;color:#6b7280;font-weight:700;">
+                        Буфет ID: <span th:text="${buffetId}">-</span>
+                    </div>
+                </div>
+
+                <input id="q"
+                       placeholder="Поиск по названию..."
+                       style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;min-width:260px;"
+                       onkeyup="filterRows()" />
+            </div>
+
+            <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                <tr style="text-align:left;border-bottom:1px solid #e6e9ef;">
+                    <th style="padding:10px 8px;">Товар</th>
+                    <th style="padding:10px 8px;text-align:right;">Цена</th>
+                    <th style="padding:10px 8px;text-align:right;">Остаток</th>
+                    <th style="padding:10px 8px;width:130px;">Статус</th>
+                </tr>
+                </thead>
+
+                <tbody id="tbody">
+                <tr th:each="r : ${rows}" style="border-bottom:1px solid #f0f2f7;">
+                    <td style="padding:10px 8px;">
+                        <div style="font-weight:800;" th:text="${r.name()}">Название</div>
+                        <div style="color:#6b7280;font-weight:700;margin-top:4px;">
+                            ID: <span th:text="${r.productId()}">0</span>
+                        </div>
+                    </td>
+
+                    <td style="padding:10px 8px;text-align:right;"
+                        th:text="${#numbers.formatDecimal(r.basePrice(), 1, 'COMMA', 2, 'POINT')}">
+                        0.00
+                    </td>
+
+                    <td style="padding:10px 8px;text-align:right;" th:text="${r.qty()}">0</td>
+
+                    <td style="padding:10px 8px;">
+                        <span th:if="${r.qty() > 0}"
+                              style="font-weight:900;color:#0b1b4d;">
+                            В наличии
+                        </span>
+                        <span th:if="${r.qty() == 0}"
+                              style="font-weight:900;color:#7a0b0b;">
+                            Нет
+                        </span>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(rows)}">
+                    <td colspan="4" style="padding:12px 8px;color:#6b7280;">
+                        Пока нет товаров.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Инфо -->
+        <!-- ПРАВАЯ КАРТОЧКА: запрос складу -->
+        <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
+            <strong>Запрос складу</strong>
+
+            <div th:if="${msg}"
+                 style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;background:#eef2ff;margin-top:10px;margin-bottom:10px;"
+                 th:text="${msg}">
+                Сообщение
+            </div>
+
+            <form th:action="@{/seller/stocks/request-warehouse}"
+                  method="post"
+                  th:object="${warehouseMailForm}"
+                  style="margin-top:10px;display:grid;gap:10px;">
+
+                <input th:if="${_csrf != null}" type="hidden"
+                       th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <label style="display:grid;gap:6px;">
+                    <span style="font-weight:800;">Сотрудник склада</span>
+                    <select th:field="*{warehouseUserId}"
+                            style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;background:#fff;">
+                        <option value="" disabled selected>Выберите сотрудника</option>
+                        <option th:each="u : ${warehouseUsers}"
+                                th:value="${u.id()}"
+                                th:text="${u.label()}">
+                            Сотрудник
+                        </option>
+                    </select>
+                    <small th:if="${#fields.hasErrors('warehouseUserId')}"
+                           th:errors="*{warehouseUserId}" style="color:#b42318;font-weight:700;"></small>
+                </label>
+
+                <label style="display:grid;gap:6px;">
+                    <span style="font-weight:800;">Тема</span>
+                    <input th:field="*{subject}"
+                           style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;" />
+                    <small th:if="${#fields.hasErrors('subject')}"
+                           th:errors="*{subject}" style="color:#b42318;font-weight:700;"></small>
+                </label>
+
+                <label style="display:grid;gap:6px;">
+                    <span style="font-weight:800;">Текст письма</span>
+                    <textarea name="body" rows="8"
+                              th:placeholder="|Здравствуйте!
+
+Прошу закупить и доставить товары для буфета (Название буфета).
+Перечисление товаров(Багет 20шт.)
+
+Спасибо!|"
+                              style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;resize:vertical;"></textarea>
+
+                    <small th:if="${#fields.hasErrors('body')}"
+                           th:errors="*{body}" style="color:#b42318;font-weight:700;"></small>
+                </label>
+
+                <button type="submit"
+                        style="border:0;background:#1d3b8b;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
+                    Отправить на склад
+                </button>
+            </form>
+        </section>
+
+
+    </div>
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<script>
+    function filterRows() {
+        const q = document.getElementById('q').value.toLowerCase();
+        document.querySelectorAll('#tbody tr').forEach(tr => {
+            const name = tr.children[0].innerText.toLowerCase();
+            tr.style.display = name.includes(q) ? '' : 'none';
+        });
+    }
+</script>
+
+</body>
+</html>

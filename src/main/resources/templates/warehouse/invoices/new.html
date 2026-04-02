@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Создать накладную</title>
+    <style>
+        .wrap { max-width: 720px; margin: 20px auto; padding: 0 16px; }
+        .card { background:#fff; border:1px solid #e6e9ef; border-radius:16px; padding:16px; box-shadow:0 8px 24px rgba(10,20,60,.06); }
+        .title { font-size:20px; font-weight:900; color:#0b1b4d; margin-bottom:12px; }
+        .field { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+        .field label { font-weight:800; color:#0b1b4d; }
+        .field input, .field select { padding:10px 12px; border-radius:12px; border:1px solid #d8deea; outline:none; }
+        .field input:focus, .field select:focus { border-color:#0b1b4d; }
+        .err { color:#b00020; font-weight:700; font-size:13px; }
+        .btn { display:inline-block; padding:10px 12px; border-radius:12px; border:1px solid #d8deea; background:#fff; font-weight:900; cursor:pointer; text-decoration:none; color:#0b1b4d; }
+        .btn-primary { background:#1d3b8b; color:#fff; border-color:#1d3b8b; }
+        .muted { color:#6b7280; font-size:13px; margin-top:8px; }
+        .actions { display:flex; gap:10px; }
+        .warn { margin:0 0 12px; padding:10px 12px; border-radius:12px; background:#fff7ed; border:1px solid #fed7aa; font-weight:800; color:#7c2d12; }
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="wrap">
+    <div class="card">
+        <div class="title">Создать накладную</div>
+
+        <div th:if="${#lists.isEmpty(suppliers)}" class="warn">
+            Нет поставщиков. Сначала добавьте поставщика в разделе «Поставщики».
+        </div>
+
+        <form th:action="@{/warehouse/invoices/new}" method="post" th:object="${form}">
+            <div class="field">
+                <label>Поставщик</label>
+                <select th:field="*{supplierId}" th:disabled="${#lists.isEmpty(suppliers)}">
+                    <option value="" disabled selected>Выберите поставщика</option>
+                    <option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.name}">S</option>
+                </select>
+                <div class="err" th:if="${#fields.hasErrors('supplierId')}" th:errors="*{supplierId}">error</div>
+            </div>
+
+
+
+
+            <div class="actions">
+                <button class="btn btn-primary" type="submit" th:disabled="${#lists.isEmpty(suppliers)}">Создать</button>
+                <a class="btn" th:href="@{/warehouse/invoices}">Назад</a>
+                <a class="btn" th:href="@{/warehouse/suppliers}">Поставщики</a>
+            </div>
+
+            <div class="muted">После создания накладной откроется страница добавления позиций.</div>
+        </form>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

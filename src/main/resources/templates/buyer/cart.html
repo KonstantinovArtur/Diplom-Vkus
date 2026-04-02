@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Корзина</title>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<main style="max-width:1100px;margin:18px auto;padding:0 12px;">
+    <div th:if="${err}"
+         style="background:#fee2e2;border:1px solid #fecaca;padding:12px;
+            border-radius:12px;color:#991b1b;font-weight:900;margin-bottom:12px;">
+        <span th:text="${err}">Ошибка</span>
+    </div>
+
+    <h2 style="margin:0 0 12px 0;">Корзина</h2>
+
+    <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
+
+        <!-- Корзина пустая (и товары, и комбо) -->
+        <div th:if="${#lists.isEmpty(lines) and (#lists.isEmpty(combos) or combos == null)}"
+             style="color:#6b7280;font-weight:800;">
+            Корзина пустая. <a th:href="@{/menu}">Перейти в меню</a>
+        </div>
+
+        <!-- Есть хоть что-то -->
+        <div th:if="${!(#lists.isEmpty(lines) and (#lists.isEmpty(combos) or combos == null))}"
+             style="display:flex;flex-direction:column;gap:12px;">
+
+            <!-- ===================== -->
+            <!-- 1) Обычные товары      -->
+            <!-- ===================== -->
+            <div th:if="${!#lists.isEmpty(lines)}" style="display:flex;flex-direction:column;gap:12px;">
+
+                <article th:each="it : ${lines}"
+                         style="border:1px solid #e6e9ef;border-radius:16px;overflow:hidden;display:flex;gap:12px;align-items:stretch;">
+
+                    <div style="width:140px;background:#f4f6fb;display:flex;align-items:center;justify-content:center;">
+                        <img th:if="${it.hasImage()}"
+                             th:src="@{/products/{id}/image(id=${it.productId()})}"
+                             alt="img"
+                             style="width:140px;height:120px;object-fit:cover;" />
+
+                        <div th:if="${!it.hasImage()}"
+                             style="color:#9aa3b2;font-weight:900;">
+                            Нет изображения
+                        </div>
+                    </div>
+
+                    <div style="flex:1;padding:12px;">
+                        <div style="display:flex;justify-content:space-between;gap:12px;">
+                            <div>
+                                <div style="font-weight:900;color:#0b1b4d;font-size:16px;" th:text="${it.name()}">Название</div>
+                                <div style="margin-top:4px;color:#6b7280;font-weight:800;font-size:13px;" th:text="${it.categoryName()}">Категория</div>
+
+                                <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+                                   <span th:if="${it.batchPercent() != null}"
+                                         style="display:inline-block;font-weight:900;color:#0b1b4d;background:#fff7ed;border:1px solid #d8deea;padding:6px 10px;border-radius:999px;max-width:420px;white-space:normal;line-height:1.2;">
+                                      <span th:text="${it.batchText()}">Уценка</span>
+                                    </span>
+                                    <span th:if="${it.promoPercent() != null}"
+                                          style="white-space:nowrap;display:inline-block;font-weight:900;color:#0b1b4d;background:#eef2ff;border:1px solid #d8deea;padding:6px 10px;border-radius:999px;">
+                                      <span th:text="${it.promoText()}">Акция</span>
+                                    </span>
+
+                                    <span th:if="${it.monthlyPercent() != null}"
+                                          style="white-space:nowrap;display:inline-block;font-weight:900;color:#0b1b4d;background:#ecfeff;border:1px solid #d8deea;padding:6px 10px;border-radius:999px;">
+                                      <span th:text="${it.monthlyText()}">Скидка месяца</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div style="text-align:right;">
+                                <div style="color:#6b7280;font-weight:800;font-size:13px;">Цена за шт.</div>
+                                <div style="font-weight:900;color:#0b1b4d;font-size:18px;"
+                                     th:text="${#numbers.formatDecimal(it.finalUnitPrice(), 1, 'COMMA', 2, 'POINT')}">0.00</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+                            <form th:action="@{/cart/setQty}" method="post" style="display:flex;gap:8px;align-items:center;">
+                                <input type="hidden" name="productId" th:value="${it.productId()}"/>
+                                <input type="number" name="qty" min="0" th:value="${it.qty()}"
+                                       style="width:90px;padding:10px 12px;border:1px solid #d8deea;border-radius:12px;"/>
+                                <button type="submit"
+                                        style="border:0;background:#1d3b8b;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
+                                    Обновить
+                                </button>
+                                <span style="color:#94a3b8;font-weight:800;font-size:12px;">0 = удалить</span>
+                            </form>
+
+                            <div style="display:flex;gap:10px;align-items:center;">
+                                <div style="color:#6b7280;font-weight:800;">Сумма:</div>
+                                <div style="font-weight:900;color:#0b1b4d;font-size:18px;"
+                                     th:text="${#numbers.formatDecimal(it.lineTotal(), 1, 'COMMA', 2, 'POINT')}">0.00</div>
+
+                                <form th:action="@{/cart/remove}" method="post" style="margin:0;">
+                                    <input type="hidden" name="productId" th:value="${it.productId()}"/>
+                                    <button type="submit"
+                                            style="border:1px solid #e6e9ef;background:#fff;color:#b91c1c;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
+                                        Удалить
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+
+            <!-- ===================== -->
+            <!-- 2) Комбо-наборы        -->
+            <!-- ===================== -->
+            <div th:if="${combos != null and !#lists.isEmpty(combos)}"
+                 style="margin-top:6px;border-top:1px solid #e6e9ef;padding-top:12px;">
+
+                <div style="font-weight:900;color:#0b1b4d;font-size:16px;margin:0 0 10px 0;">
+                    Комбо-наборы
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <article th:each="cc : ${combos}"
+                             style="border:1px solid #e6e9ef;border-radius:16px;overflow:hidden;display:flex;gap:12px;align-items:stretch;">
+
+                        <div style="width:140px;background:#f4f6fb;display:flex;align-items:center;justify-content:center;">
+                            <div style="color:#0b1b4d;font-weight:900;text-align:center;">
+                                COMBO
+                            </div>
+                        </div>
+
+                        <div style="flex:1;padding:12px;">
+                            <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+                                <div>
+                                    <div style="font-weight:900;color:#0b1b4d;font-size:16px;"
+                                         th:text="${cc.comboTemplate.name}">Комбо</div>
+
+                                    <div style="margin-top:6px;color:#6b7280;font-weight:800;font-size:13px;">
+                                        Состав:
+                                    </div>
+
+                                    <ul style="margin:6px 0 0 18px;color:#0b1b4d;font-weight:800;">
+                                        <li th:each="it : ${cc.items}">
+                                            <span th:text="${it.comboSlot.name}">Слот</span>:
+                                            <span th:text="${it.product.name}">Товар</span>
+                                            <span th:if="${it.extraPriceSnapshot != null}"
+                                                  th:text="${' (+' + #numbers.formatDecimal(it.extraPriceSnapshot, 1, 'COMMA', 2, 'POINT') + ')'}"></span>
+                                        </li>
+                                    </ul>
+
+                                </div>
+
+                                <div style="text-align:right;">
+                                    <div style="color:#6b7280;font-weight:800;font-size:13px;">Цена комбо (за 1)</div>
+                                    <div style="font-weight:900;color:#0b1b4d;font-size:18px;"
+                                         th:text="${#numbers.formatDecimal(cc.comboPriceSnapshot, 1, 'COMMA', 2, 'POINT')}">0.00</div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+
+                                <!-- qty комбо: пока не делали setQty, поэтому просто показываем -->
+                                <div style="display:flex;gap:10px;align-items:center;">
+                                    <div style="color:#6b7280;font-weight:800;">Кол-во:</div>
+                                    <div style="font-weight:900;color:#0b1b4d;"
+                                         th:text="${cc.qty}">1</div>
+                                </div>
+
+                                <div style="display:flex;gap:10px;align-items:center;">
+                                    <div style="color:#6b7280;font-weight:800;">Сумма:</div>
+                                    <div style="font-weight:900;color:#0b1b4d;font-size:18px;"
+                                         th:text="${#numbers.formatDecimal(cc.comboPriceSnapshot * cc.qty, 1, 'COMMA', 2, 'POINT')}">0.00</div>
+
+                                    <form th:action="@{/cart/remove-combo}" method="post" style="margin:0;">
+                                        <input type="hidden" name="cartComboId" th:value="${cc.id}"/>
+                                        <button type="submit"
+                                                style="border:1px solid #e6e9ef;background:#fff;color:#b91c1c;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
+                                            Удалить комбо
+                                        </button>
+                                    </form>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </article>
+                </div>
+            </div>
+
+            <!-- ===================== -->
+            <!-- 3) Итоги и действия    -->
+            <!-- ===================== -->
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border-top:1px solid #e6e9ef;padding-top:12px;">
+
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                    <form th:action="@{/cart/clear}" method="post" style="margin:0;">
+                        <button type="submit"
+                                style="border:1px solid #e6e9ef;background:#fff;color:#0b1b4d;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
+                            Очистить корзину
+                        </button>
+                    </form>
+
+                    <!-- Если хочешь отдельную кнопку "очистить комбо", можно добавить позже -->
+                </div>
+
+                <div style="display:flex;gap:12px;align-items:center;">
+                    <div style="color:#6b7280;font-weight:900;">Итого:</div>
+                    <div style="font-weight:900;color:#0b1b4d;font-size:22px;"
+                         th:text="${#numbers.formatDecimal(total, 1, 'COMMA', 2, 'POINT')}">0.00</div>
+
+                    <a th:href="@{/orders/checkout}"
+                       style="display:inline-block;border:0;background:#1d3b8b;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;text-decoration:none;">
+                        Оформить
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

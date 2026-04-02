@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<header th:fragment="header">
+    <style>
+        .app-header {
+            background: #fff;
+            border: 1px solid #e6e9ef;
+            border-radius: 16px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            box-shadow: 0 8px 24px rgba(10, 20, 60, 0.06);
+        }
+        .brand {
+            font-weight: 900;
+            font-size: 22px;
+            color: #0b1b4d;
+            white-space: nowrap;
+        }
+        .nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .nav a {
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            border: 1px solid #d8deea;
+            color: #0b1b4d;
+            font-weight: 700;
+            background: #fff;
+        }
+        .nav a:hover { border-color: #0b1b4d; }
+
+        .right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+        .userbox {
+            text-align: right;
+            color: #0b1b4d;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+        .userbox .role {
+            display: inline-block;
+            margin-top: 4px;
+            font-weight: 700;
+            font-size: 12px;
+            color: #0b1b4d;
+            background: #eef2ff;
+            border: 1px solid #d8deea;
+            padding: 4px 10px;
+            border-radius: 999px;
+        }
+        .btn-logout {
+            border: 0;
+            background: #1d3b8b;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .btn-logout:hover { opacity: .92; }
+        .buffet-select {
+            margin-top: 6px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .buffet-select select {
+            padding: 8px 10px;
+            border: 1px solid #d8deea;
+            border-radius: 12px;
+            font-weight: 800;
+            color: #0b1b4d;
+            background: #fff;
+            max-width: 260px;
+        }
+
+    </style>
+
+    <div class="app-header">
+        <div class="brand">Буфет МПТ</div>
+
+        <nav class="nav">
+            <!-- Покупатель -->
+            <th:block th:if="${hasBuyerRole}">
+                <a th:href="@{/menu}">Меню</a>
+                <a th:href="@{/combos}">Комбо</a>
+                <a th:href="@{/buyer/monthly-discount}">Категории скидок</a>
+                <a th:href="@{/cart}">Корзина</a>
+                <a th:href="@{/orders/my}">Мои заказы</a>
+            </th:block>
+
+            <!-- Продавец -->
+            <th:block th:if="${hasSellerRole}">
+                <a th:href="@{/seller/stocks}">Список товаров</a>
+                <a th:href="@{/seller/invoices}">Накладные</a>
+
+                <a th:href="@{/seller/orders}">Заказы</a>
+            </th:block>
+
+            <!-- Сотрудник склада -->
+            <th:block th:if="${hasWarehouseRole}">
+                <a th:href="@{/warehouse/batches}">Партии</a>
+                <a th:href="@{/warehouse/invoices}">Заказ товаров</a>
+                <a th:href="@{/warehouse/suppliers}">Поставщики</a>
+                <a th:href="@{/warehouse/movements}">Движения склада</a>
+                <a th:href="@{/warehouse/writeoffs/new}">Списания</a>
+            </th:block>
+
+            <!-- Админ буфета -->
+            <th:block th:if="${hasBuffetAdminRole}">
+                <a th:href="@{/admin-buffet/products}">Товары</a>
+                <a th:href="@{/admin-buffet/discounts}">Акции</a>
+                <a th:href="@{/admin-buffet/combos}">Комбо</a>
+                <a th:href="@{/admin-buffet/recommendations}">Рекомендации</a>
+                <a th:href="@{/admin-buffet/monthly-discount}">Личные скидки</a>
+                <a th:href="@{/admin-buffet/batches}">Скидки по годности</a>
+                <a th:href="@{/admin-buffet/stats}">Статистика</a>
+            </th:block>
+
+            <!-- Админ БД -->
+            <th:block th:if="${hasDbAdminRole}">
+                <a th:href="@{/admin-db/products}">Товары</a>
+                <a th:href="@{/admin-db/categories}">Категории</a>
+                <a th:href="@{/admin-db/roles}">Роли</a>
+                <a th:href="@{/admin-db/users}">Пользователи</a>
+                <a th:href="@{/admin-db/buffets}">Буфеты</a>
+                <a th:href="@{/admin-db/buildings}">Здания</a>
+                <a th:href="@{/admin-db/backups}">Бекап и Восстановление</a>
+                <a th:href="@{/admin-db/audit}">Логи</a>
+                <a th:href="@{/admin-db/audit-archive}">Архив логов</a>
+            </th:block>
+        </nav>
+
+        <div class="right">
+            <div class="userbox">
+                <div th:text="${currentUserFullName} ?: 'Пользователь'">ФИО</div>
+
+
+
+                <!-- ВЫБОР БУФЕТА (рядом с ФИО) -->
+                <th:block th:if="${hasBuyerRole or hasSellerRole or hasWarehouseRole or hasBuffetAdminRole or hasDbAdminRole}">
+                    <form class="buffet-select" th:action="@{/buffet/select}" method="post">
+                        <input th:if="${_csrf != null}"
+                               type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}" />
+
+                        <select name="buffetId" onchange="this.form.submit()">
+                            <option th:if="${currentBuffetId == null}" value="" selected disabled>
+                                Выберите буфет
+                            </option>
+
+                            <option th:each="bf : ${buffetOptions}"
+                                    th:value="${bf.id()}"
+                                    th:selected="${currentBuffetId != null and bf.id() == currentBuffetId}"
+                                    th:text="${bf.label()}">
+                                Буфет
+                            </option>
+                        </select>
+                    </form>
+                </th:block>
+
+
+
+                <span class="role">
+                    <th:block th:if="${hasBuyerRole}">Покупатель</th:block>
+                    <th:block th:if="${hasBuyerRole and (hasSellerRole or hasWarehouseRole or hasBuffetAdminRole or hasDbAdminRole)}">, </th:block>
+
+                    <th:block th:if="${hasSellerRole}">Продавец</th:block>
+                    <th:block th:if="${hasSellerRole and (hasWarehouseRole or hasBuffetAdminRole or hasDbAdminRole)}">, </th:block>
+
+                    <th:block th:if="${hasWarehouseRole}">Сотрудник склада</th:block>
+                    <th:block th:if="${hasWarehouseRole and (hasBuffetAdminRole or hasDbAdminRole)}">, </th:block>
+
+                    <th:block th:if="${hasBuffetAdminRole}">Администратор буфета</th:block>
+                    <th:block th:if="${hasBuffetAdminRole and hasDbAdminRole}">, </th:block>
+
+                    <th:block th:if="${hasDbAdminRole}">Администратор БД</th:block>
+
+                    <th:block th:if="${!hasBuyerRole and !hasSellerRole and !hasWarehouseRole and !hasBuffetAdminRole and !hasDbAdminRole}">
+                        —
+                    </th:block>
+                </span>
+            </div>
+
+            <form th:action="@{/logout}" method="post">
+                <button class="btn-logout" type="submit">Выйти</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+</body>
+</html>

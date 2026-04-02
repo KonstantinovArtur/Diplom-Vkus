@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Бэкапы БД</title>
+    <style>
+        /* Стили как в /admin-db/products */
+        .wrap{max-width:1100px;margin:24px auto;font-family:system-ui,Segoe UI,Arial}
+        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,06)}
+        .top{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
+        table{width:100%;border-collapse:separate;border-spacing:0 8px}
+        th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;text-align:left;color:#425}
+        td{background:#fff;border:1px solid #e6e9ef;padding:10px 12px;vertical-align:middle}
+        tr td:first-child{border-radius:12px 0 0 12px}
+        tr td:last-child{border-radius:0 12px 12px 0}
+        .btn{display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #d8deea;text-decoration:none;color:#0b1b4d;font-weight:700;background:#fff;cursor:pointer}
+        .btn:hover{border-color:#0b1b4d}
+        .btn.danger{border-color:#fecaca;color:#991b1b;background:#fff}
+        .btn.danger:hover{border-color:#991b1b}
+        .ok{background:#ecfdf5;border:1px solid #a7f3d0;padding:10px 12px;border-radius:12px;margin:12px 0;color:#065f46;font-weight:700}
+        .err{background:#fef2f2;border:1px solid #fecaca;padding:10px 12px;border-radius:12px;margin:12px 0;color:#991b1b;font-weight:700}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        label{display:block;font-size:12px;font-weight:800;color:#0b1b4d;margin-bottom:6px}
+        input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;font:inherit}
+        .muted{color:#667085;font-size:13px}
+        .actions{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+        .row-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+        .hr{border:none;border-top:1px solid #eef2f7;margin:16px 0}
+        .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid #e6e9ef;background:#fff;color:#0b1b4d;font-weight:800;font-size:12px}
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="card">
+        <div class="top">
+            <div>
+                <div style="font-size:20px;font-weight:900;color:#0b1b4d">Бэкап и восстановление БД</div>
+                <div class="muted">Создание, скачивание, восстановление и удаление резервных копий.</div>
+            </div>
+            <a class="btn" th:href="@{/admin-db/backups}">Сбросить</a>
+        </div>
+
+        <div th:if="${ok}" class="ok" th:text="${ok}">OK</div>
+        <div th:if="${err}" class="err" th:text="${err}">ERR</div>
+
+        <div class="grid" style="margin-top:12px">
+            <div>
+                <div style="font-weight:900;color:#0b1b4d;margin-bottom:8px">Создать бэкап</div>
+                <div class="muted" style="margin-bottom:10px">
+                    Формат: <span class="chip">pg_dump -Fc</span> (рекомендуется)
+                </div>
+
+                <form method="post" th:action="@{/admin-db/backups/create}">
+                    <button class="btn" type="submit">Создать бэкап</button>
+                </form>
+            </div>
+
+            <div>
+                <div style="font-weight:900;color:#0b1b4d;margin-bottom:8px">Восстановить из файла</div>
+                <div class="muted" style="margin-bottom:10px">
+                    Поддержка: <span class="chip">.dump</span> <span class="chip">.backup</span> <span class="chip">.sql</span>
+                </div>
+
+                <form method="post"
+                      th:action="@{/admin-db/backups/restore-upload}"
+                      enctype="multipart/form-data"
+                      onsubmit="return confirm('Точно восстановить БД из выбранного файла? Это перезапишет данные!');">
+                    <input type="file" name="file" accept=".dump,.backup,.sql" required />
+                    <div class="actions">
+                        <button class="btn danger" type="submit">Восстановить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <hr class="hr">
+
+        <div style="display:flex;gap:12px;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+            <div style="font-weight:900;color:#0b1b4d">Список бэкапов</div>
+            <div class="muted">Самые новые — сверху</div>
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Файл</th>
+                <th>Создан</th>
+                <th>Размер (MB)</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="b : ${backups}">
+                <td>
+                    <div style="font-weight:900;color:#0b1b4d" th:text="${b.name}">backup.dump</div>
+                    <div class="muted" th:text="${b.absolutePath}">path</div>
+                </td>
+
+                <td th:text="${b.modifiedAtPretty}">25.02.2026 12:00:00</td>
+
+                <td>
+                    <span class="chip">
+                        <span th:text="${b.sizeMb}">0.00</span> MB
+                    </span>
+                    <div class="muted" th:text="${b.sizeBytes} + ' байт'">0 байт</div>
+                </td>
+
+                <td>
+                    <div class="row-actions">
+                        <a class="btn" th:href="@{'/admin-db/backups/download/' + ${b.name}}">Скачать</a>
+
+                        <form method="post" th:action="@{/admin-db/backups/restore}" style="margin:0"
+                              onsubmit="return confirm('Точно восстановить БД из ' + this.name.value + '? Это перезапишет данные!');">
+                            <input type="hidden" name="name" th:value="${b.name}" />
+                            <button class="btn danger" type="submit">Восстановить</button>
+                        </form>
+
+                        <form method="post" th:action="@{/admin-db/backups/delete}" style="margin:0"
+                              onsubmit="return confirm('Удалить бэкап ' + this.name.value + '?');">
+                            <input type="hidden" name="name" th:value="${b.name}" />
+                            <button class="btn" type="submit">Удалить</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(backups)}">
+                <td colspan="4" class="muted" style="padding:14px 12px">
+                    Бэкапов пока нет.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</div>
+
+</body>
+</html>

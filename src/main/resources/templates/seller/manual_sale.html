@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Ручная продажа (тест)</title>
+    <style>
+        .wrap { max-width: 900px; margin: 20px auto; padding: 0 16px; }
+        .card { background:#fff; border:1px solid #e6e9ef; border-radius:16px; padding:16px; box-shadow:0 8px 24px rgba(10,20,60,.06); }
+        .title { font-size:20px; font-weight:900; color:#0b1b4d; margin-bottom:12px; }
+        .field { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+        .field label { font-weight:800; color:#0b1b4d; }
+        .field input, .field select { padding:10px 12px; border-radius:12px; border:1px solid #d8deea; outline:none; }
+        .btn { display:inline-block; padding:8px 12px; border-radius:12px; border:1px solid #d8deea; background:#fff; font-weight:800; cursor:pointer; color:#0b1b4d; }
+        .btn-primary { background:#1d3b8b; color:#fff; border-color:#1d3b8b; }
+        .err { color:#b00020; font-weight:700; font-size:13px; }
+        .msg-ok { margin:0 0 12px; padding:10px 12px; border-radius:12px; background:#ecfdf3; border:1px solid #b7f0c9; font-weight:800; }
+        .muted { color:#6b7280; font-size:13px; }
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="wrap">
+    <div class="card">
+        <div class="title">Ручная продажа (для теста списания по партиям)</div>
+
+        <div th:if="${ok}" class="msg-ok" th:text="${ok}">OK</div>
+
+        <form method="post" th:object="${form}">
+            <div class="field">
+                <label>Товар</label>
+                <select th:field="*{productId}">
+                    <option value="" disabled selected>Выберите товар</option>
+                    <option th:each="p : ${products}" th:value="${p.id}" th:text="${p.name}">P</option>
+                </select>
+                <div class="err" th:if="${#fields.hasErrors('productId')}" th:errors="*{productId}">error</div>
+            </div>
+
+            <div class="field">
+                <label>Количество</label>
+                <input type="number" min="1" th:field="*{qty}"/>
+                <div class="err" th:if="${#fields.hasErrors('qty')}" th:errors="*{qty}">error</div>
+            </div>
+
+            <button class="btn btn-primary" type="submit"
+                    onclick="return confirm('Списать товар из партий?');">Списать</button>
+            <div class="muted" style="margin-top:10px;">
+                Это временная страница для проверки работы партий/движений.
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

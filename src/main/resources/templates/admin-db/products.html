@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Товары</title>
+    <style>
+        .wrap{max-width:1100px;margin:24px auto;font-family:system-ui,Segoe UI,Arial}
+        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,.06)}
+        .top{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
+        table{width:100%;border-collapse:separate;border-spacing:0 8px}
+        th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;text-align:left;color:#425}
+        td{background:#fff;border:1px solid #e6e9ef;padding:10px 12px;vertical-align:middle}
+        tr td:first-child{border-radius:12px 0 0 12px}
+        tr td:last-child{border-radius:0 12px 12px 0}
+        .btn{display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #d8deea;text-decoration:none;color:#0b1b4d;font-weight:700;background:#fff;cursor:pointer}
+        .btn:hover{border-color:#0b1b4d}
+        .btn.danger{border-color:#fecaca;color:#991b1b;background:#fff}
+        .btn.danger:hover{border-color:#991b1b}
+        .ok{background:#ecfdf5;border:1px solid #a7f3d0;padding:10px 12px;border-radius:12px;margin:12px 0;color:#065f46;font-weight:700}
+        .err{background:#fef2f2;border:1px solid #fecaca;padding:10px 12px;border-radius:12px;margin:12px 0;color:#991b1b;font-weight:700}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        label{display:block;font-size:12px;font-weight:800;color:#0b1b4d;margin-bottom:6px}
+        input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;font:inherit}
+        textarea{min-height:90px;resize:vertical}
+        .muted{color:#667085;font-size:13px}
+        .actions{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+        .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid #e6e9ef;background:#fff;color:#0b1b4d;font-weight:800;font-size:12px}
+        .chip.off{opacity:.55}
+        .thumb{height:44px;width:44px;border-radius:12px;border:1px solid #e6e9ef;object-fit:cover;display:block}
+        .hr{border:none;border-top:1px solid #eef2f7;margin:16px 0}
+        .row-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+        .code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:800;color:#0b1b4d}
+        .readonly-note{
+            padding:10px 12px;
+            border-radius:12px;
+            border:1px solid #d8deea;
+            background:#f8fafc;
+            color:#0b1b4d;
+            font-weight:700;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="card">
+        <div class="top">
+            <div>
+                <div style="font-size:20px;font-weight:900;color:#0b1b4d">Товары</div>
+                <div class="muted">CRUD товаров. Код товара присваивается автоматически по ID.</div>
+            </div>
+            <a class="btn" th:href="@{/admin-db/products}">Сбросить</a>
+        </div>
+
+        <div th:if="${ok}" class="ok" th:text="${ok}">OK</div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Создан</th>
+                <th>Категория</th>
+                <th>Код</th>
+                <th>Название</th>
+                <th>Цена</th>
+                <th>Срок хранения</th>
+                <th>Статус</th>
+                <th>Картинка</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="p : ${products}">
+                <td th:text="${p.id}">1</td>
+                <td th:text="${p.createdAt}">2026-01-01</td>
+                <td th:text="${p.category != null ? p.category.name : '—'}">Категория</td>
+                <td class="code" th:text="${p.productCode != null ? p.productCode : '—'}">P001</td>
+                <td>
+                    <div style="font-weight:900;color:#0b1b4d" th:text="${p.name}">Название</div>
+                    <div class="muted" th:if="${p.description != null and !#strings.isEmpty(p.description)}"
+                         th:text="${p.description}">Описание</div>
+                </td>
+                <td th:text="${p.basePrice}">0.00</td>
+                <td th:text="${p.shelfLifeDays != null ? (p.shelfLifeDays + ' дн.') : '—'}">—</td>
+                <td>
+                    <span class="chip" th:classappend="${p.isActive} ? '' : ' off'"
+                          th:text="${p.isActive} ? 'активен' : 'скрыт'">активен</span>
+                </td>
+                <td>
+                    <img class="thumb"
+                         th:if="${p.imageData != null}"
+                         th:src="@{/admin-db/products/{id}/image(id=${p.id})}"
+                         alt="img">
+                    <span class="muted" th:unless="${p.imageData != null}">нет</span>
+                </td>
+                <td>
+                    <div class="row-actions">
+                        <a class="btn" th:href="@{/admin-db/products(edit=${p.id})}">Изменить</a>
+
+                        <form th:action="@{/admin-db/products/delete}" method="post" style="margin:0">
+                            <input type="hidden" name="id" th:value="${p.id}">
+                            <button class="btn danger" type="submit"
+                                    onclick="return confirm('Удалить товар?')">Удалить</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <hr class="hr">
+
+        <div>
+            <div style="display:flex;gap:12px;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+                <div style="font-weight:900;color:#0b1b4d">
+                    <span th:text="${editId != null ? 'Редактирование товара' : 'Создание товара'}">Создание товара</span>
+                </div>
+                <div class="muted" th:if="${editId != null}">
+                    ID: <span th:text="${editId}">1</span>
+                </div>
+            </div>
+
+            <form th:action="@{/admin-db/products/save}"
+                  method="post"
+                  th:object="${form}"
+                  enctype="multipart/form-data">
+
+                <input type="hidden" th:field="*{id}"/>
+
+                <div th:if="${#fields.hasGlobalErrors()}" class="err">
+                    <div th:each="e : ${#fields.globalErrors()}" th:text="${e}">Ошибка</div>
+                </div>
+
+                <div class="grid">
+                    <div>
+                        <label>Категория</label>
+                        <select th:field="*{categoryId}">
+                            <option value="" disabled>-- выберите категорию --</option>
+                            <option th:each="c : ${categories}"
+                                    th:value="${c.id}"
+                                    th:text="${c.parent != null ? (c.parent.name + ' → ' + c.name) : c.name}">
+                            </option>
+                        </select>
+                        <div class="muted" th:if="${#fields.hasErrors('categoryId')}"
+                             th:errors="*{categoryId}">Ошибка</div>
+                    </div>
+
+                    <div>
+                        <label>Статус</label>
+                        <select th:field="*{isActive}">
+                            <option th:value="true">активен</option>
+                            <option th:value="false">скрыт</option>
+                        </select>
+                        <div class="muted" th:if="${#fields.hasErrors('isActive')}"
+                             th:errors="*{isActive}">Ошибка</div>
+                    </div>
+
+                    <div style="grid-column:1 / -1">
+                        <label>Код товара</label>
+                        <div class="readonly-note" th:if="${editProduct == null}">
+                            Код будет присвоен автоматически после первого сохранения по ID товара.
+                        </div>
+                        <div class="readonly-note" th:if="${editProduct != null}">
+                            <span>Текущий код: </span>
+                            <span class="code" th:text="${editProduct.productCode != null ? editProduct.productCode : 'будет присвоен автоматически'}">P001</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label>Базовая цена</label>
+                        <input type="text" th:field="*{basePrice}" placeholder="0.00">
+                        <div class="muted" th:if="${#fields.hasErrors('basePrice')}"
+                             th:errors="*{basePrice}">Ошибка</div>
+                    </div>
+
+                    <div>
+                        <label>Срок хранения (дней)</label>
+                        <input type="number" th:field="*{shelfLifeDays}" min="1" placeholder="например 7">
+                        <div class="muted" th:if="${#fields.hasErrors('shelfLifeDays')}"
+                             th:errors="*{shelfLifeDays}">Ошибка</div>
+                        <div class="muted">Используется для автоподстановки срока годности в накладных.</div>
+                    </div>
+
+                    <div style="grid-column:1 / -1">
+                        <label>Название</label>
+                        <input type="text" th:field="*{name}" placeholder="Например: Кофе американо">
+                        <div class="muted" th:if="${#fields.hasErrors('name')}"
+                             th:errors="*{name}">Ошибка</div>
+                    </div>
+
+                    <div style="grid-column:1 / -1">
+                        <label>Описание</label>
+                        <textarea th:field="*{description}" placeholder="Необязательно"></textarea>
+                        <div class="muted" th:if="${#fields.hasErrors('description')}"
+                             th:errors="*{description}">Ошибка</div>
+                    </div>
+
+                    <div>
+                        <label>Картинка</label>
+                        <input type="file" name="image" accept="image/png,image/jpeg,image/webp">
+                        <div class="muted">PNG/JPEG/WebP, до 2MB</div>
+                    </div>
+
+                    <div style="grid-column:1 / -1" th:if="${editProduct != null && editProduct.imageData != null}">
+                        <div class="muted" style="margin-bottom:8px">Текущая картинка:</div>
+                        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+                            <img class="thumb" style="height:84px;width:84px"
+                                 th:src="@{/admin-db/products/{id}/image(id=${editProduct.id})}" alt="img">
+                            <label style="display:flex;gap:8px;align-items:center;margin:0;font-weight:800;color:#0b1b4d">
+                                <input type="checkbox" name="removeImage" value="true">
+                                Удалить картинку
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="grid-column:1 / -1" th:if="${editProduct != null && editProduct.imageData == null}">
+                        <div class="muted">Картинка не установлена.</div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn" type="submit">Сохранить</button>
+                    <a class="btn" th:href="@{/admin-db/products}">Отмена</a>
+
+                    <form th:if="${editId != null}" th:action="@{/admin-db/products/delete}" method="post" style="margin:0">
+                        <input type="hidden" name="id" th:value="${editId}">
+                        <button class="btn danger" type="submit"
+                                onclick="return confirm('Удалить товар?')">Удалить</button>
+                    </form>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</div>
+
+</body>
+</html>

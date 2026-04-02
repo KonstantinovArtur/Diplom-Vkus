@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Заказ оформлен</title>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<main style="max-width:1000px;margin:18px auto;padding:0 12px;">
+    <h2 style="margin:0 0 12px 0;">Заказ оформлен</h2>
+
+    <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div>
+                <div style="color:#6b7280;font-weight:900;">Номер заказа</div>
+                <div style="font-weight:900;color:#0b1b4d;font-size:22px;" th:text="${order.id}">0</div>
+            </div>
+
+            <div>
+                <div style="color:#6b7280;font-weight:900;">Код выдачи</div>
+                <div style="font-weight:900;color:#0b1b4d;font-size:22px;" th:text="${order.pickupCode}">0000</div>
+                <div style="color:#6b7280;font-weight:800;font-size:12px;"
+                     th:if="${order.pickupCodeExpiresAt != null}">
+                    Действует до: <span th:text="${#temporals.format(order.pickupCodeExpiresAt, 'dd.MM.yyyy HH:mm')}">—</span>
+                </div>
+            </div>
+
+            <div>
+                <div style="color:#6b7280;font-weight:900;">Оплата</div>
+                <div style="font-weight:900;color:#0b1b4d;"
+                     th:text="${payment != null ? payment.status : '—'}">—</div>
+            </div>
+        </div>
+
+        <hr style="border:0;border-top:1px solid #e6e9ef;margin:12px 0;"/>
+
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
+            <div style="color:#6b7280;font-weight:900;">Итого:</div>
+            <div style="font-weight:900;color:#0b1b4d;font-size:22px;"
+                 th:text="${#numbers.formatDecimal(order.finalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</div>
+        </div>
+
+        <h3 style="margin:14px 0 10px 0;color:#0b1b4d;">Состав заказа</h3>
+
+        <!-- Обычные товары -->
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <div th:each="it : ${items}"
+                 style="border:1px solid #e6e9ef;border-radius:14px;padding:10px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                <div style="font-weight:900;color:#0b1b4d;" th:text="${it.product.name}">Товар</div>
+                <div style="color:#6b7280;font-weight:900;">x <span th:text="${it.qty}">1</span></div>
+                <div style="font-weight:900;color:#0b1b4d;"
+                     th:text="${#numbers.formatDecimal(it.finalLineAmount, 1, 'COMMA', 2, 'POINT')}">0.00</div>
+            </div>
+        </div>
+
+        <!-- ✅ Комбо -->
+        <div th:if="${combos != null and !#lists.isEmpty(combos)}" style="margin-top:14px;">
+            <h3 style="margin:0 0 10px 0;color:#0b1b4d;">Комбо</h3>
+
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <div th:each="cc : ${combos}"
+                     style="border:1px solid #e6e9ef;border-radius:14px;padding:10px;">
+
+                    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                        <div style="font-weight:900;color:#0b1b4d;" th:text="${cc.comboName}">Комбо</div>
+
+                        <div style="color:#6b7280;font-weight:900;">
+                            x <span th:text="${cc.qty}">1</span>
+                        </div>
+
+                        <div style="font-weight:900;color:#0b1b4d;"
+                             th:text="${#numbers.formatDecimal(cc.comboPriceSnapshot * cc.qty, 1, 'COMMA', 2, 'POINT')}">0.00</div>
+                    </div>
+
+                    <div style="margin-top:8px;color:#6b7280;font-weight:800;">Состав:</div>
+                    <ul style="margin:6px 0 0 18px;color:#0b1b4d;font-weight:800;">
+                        <li th:each="ci : ${cc.items}">
+                            <span th:text="${ci.slotName}">Слот</span>:
+                            <span th:text="${ci.productName}">Товар</span>
+                            <span th:text="${' x' + ci.qty}">x1</span>
+                            <span th:if="${ci.extraPriceSnapshot != null}"
+                                  th:text="${' (+' + #numbers.formatDecimal(ci.extraPriceSnapshot, 1, 'COMMA', 2, 'POINT') + ')'}"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align:right;">
+            <div style="font-weight:900;color:#0b1b4d;">Оплата</div>
+            <div style="font-weight:900;" th:text="${payment == null ? 'нет' : payment.status}">pending</div>
+
+            <form th:if="${payment != null and payment.status == 'pending'}"
+                  th:action="@{/orders/{id}/pay(id=${order.id})}" method="post" style="margin-top:10px;">
+                <button type="submit"
+                        style="border:0;background:#16a34a;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
+                    Оплатить (заглушка)
+                </button>
+            </form>
+
+            <div th:if="${payment != null and payment.status == 'succeeded'}"
+                 style="margin-top:10px;color:#16a34a;font-weight:900;">
+                Оплачено
+            </div>
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+            <a th:href="@{/menu}"
+               style="display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;text-decoration:none;font-weight:900;color:#0b1b4d;">
+                В меню
+            </a>
+
+            <a th:href="@{/orders/my}"
+               style="display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;text-decoration:none;font-weight:900;color:#0b1b4d;">
+                Мои заказы
+            </a>
+        </div>
+    </section>
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

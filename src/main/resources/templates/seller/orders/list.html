@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Заказы</title>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<main style="max-width:1000px;margin:18px auto;padding:0 12px;">
+    <h2 style="margin:0 0 12px 0;">Заказы буфета</h2>
+
+    <section th:if="${#lists.isEmpty(orders)}"
+             style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
+        Заказов пока нет
+    </section>
+
+    <section th:each="o : ${orders}"
+             style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
+            <div>
+                <div style="font-weight:900;color:#0b1b4d;font-size:18px;">
+                    Заказ № <span th:text="${o.id}">1</span>
+                </div>
+
+                <div style="color:#6b7280;font-weight:800;font-size:12px;margin-top:4px;">
+                    <span th:text="${#temporals.format(o.createdAt, 'dd.MM.yyyy HH:mm')}">—</span>
+                    • Статус:
+                    <b th:switch="${o.status}">
+                        <span th:case="'created'">Создан</span>
+                        <span th:case="'accepted'">Принят</span>
+                        <span th:case="'assembling'">В сборке</span>
+                        <span th:case="'ready'">Готов к выдаче</span>
+                        <span th:case="'issued'">Выдан</span>
+                        <span th:case="'cancelled'">Отменён</span>
+                        <span th:case="*">—</span>
+                    </b>
+                </div>
+
+                <div style="color:#6b7280;font-weight:800;font-size:12px;margin-top:4px;">
+                    Итого: <b th:text="${#numbers.formatDecimal(o.finalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</b>
+                </div>
+            </div>
+
+            <a th:href="@{|/seller/orders/${o.id}|}"
+               style="display:inline-block;border:1px solid #d8deea;background:#fff;color:#0b1b4d;
+                      padding:10px 12px;border-radius:12px;font-weight:900;text-decoration:none;">
+                Открыть
+            </a>
+        </div>
+    </section>
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>
