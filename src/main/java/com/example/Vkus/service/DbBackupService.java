@@ -275,8 +275,27 @@ public class DbBackupService {
     }
 
     private DbConn parseJdbcUrl(String url) {
-        String cleaned = url;
-        if (cleaned.startsWith("jdbc:")) cleaned = cleaned.substring(5);
+        if (!StringUtils.hasText(url)) {
+            throw new IllegalArgumentException("spring.datasource.url пустой");
+        }
+
+        String cleaned = url.trim();
+
+        if (cleaned.startsWith("jdbc:")) {
+            cleaned = cleaned.substring(5);
+        }
+
+        // убрать скрытые/непечатные символы
+        cleaned = cleaned.replace("\u200B", "")
+                .replace("\uFEFF", "")
+                .replace("\u00A0", "");
+
+        // убрать query-параметры типа ?sslmode=prefer
+        int q = cleaned.indexOf('?');
+        if (q >= 0) {
+            cleaned = cleaned.substring(0, q);
+        }
+
         URI uri = URI.create(cleaned);
 
         String host = uri.getHost();
@@ -288,6 +307,7 @@ public class DbBackupService {
         if (!StringUtils.hasText(host) || !StringUtils.hasText(dbName)) {
             throw new IllegalArgumentException("Не удалось распарсить spring.datasource.url: " + url);
         }
+
         return new DbConn(host, port, dbName);
     }
 
