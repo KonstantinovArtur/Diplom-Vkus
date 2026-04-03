@@ -24,6 +24,10 @@ public class AuditLogArchiveFile {
     @Column(name = "records_count", nullable = false)
     private Integer recordsCount;
 
+    @Lob
+    @Column(name = "content_json", columnDefinition = "text")
+    private String contentJson;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -54,6 +58,10 @@ public class AuditLogArchiveFile {
         return recordsCount;
     }
 
+    public String getContentJson() {
+        return contentJson;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -72,6 +80,10 @@ public class AuditLogArchiveFile {
 
     public void setRecordsCount(Integer recordsCount) {
         this.recordsCount = recordsCount;
+    }
+
+    public void setContentJson(String contentJson) {
+        this.contentJson = contentJson;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {

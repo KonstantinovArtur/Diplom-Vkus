@@ -5,16 +5,11 @@ import com.example.Vkus.entity.AuditLogArchiveFile;
 import com.example.Vkus.repository.AuditLogArchiveFileRepository;
 import com.example.Vkus.repository.AuditLogRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
@@ -30,9 +25,6 @@ public class AuditLogArchiveService {
     private final AuditLogArchiveFileRepository archiveFileRepository;
     private final ObjectMapper objectMapper;
 
-    @Value("${app.audit.archive-dir:audit-archive}")
-    private String archiveDir;
-
     public AuditLogArchiveService(AuditLogRepository auditLogRepository,
                                   AuditLogArchiveFileRepository archiveFileRepository,
                                   ObjectMapper objectMapper) {
@@ -44,7 +36,7 @@ public class AuditLogArchiveService {
     }
 
     @Scheduled(fixedDelay = 60000)
-    @Transactional(readOnly = false)
+    @Transactional
     public void archiveIfNeeded() {
         try {
             System.out.println("[AUDIT-ARCHIVE] Check started");
@@ -65,10 +57,6 @@ public class AuditLogArchiveService {
                 return;
             }
 
-            Path dir = Path.of(archiveDir).toAbsolutePath().normalize();
-            Files.createDirectories(dir);
-            System.out.println("[AUDIT-ARCHIVE] Archive dir: " + dir);
-
             Long fromId = batch.get(0).getId();
             Long toId = batch.get(batch.size() - 1).getId();
 
@@ -76,25 +64,23 @@ public class AuditLogArchiveService {
                     .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
 
             String fileName = "audit_" + timestamp + "_" + fromId + "_" + toId + ".json";
-            Path filePath = dir.resolve(fileName);
 
             List<Map<String, Object>> exportData = batch.stream()
                     .map(this::toExportMap)
                     .toList();
 
-            objectMapper.writerWithDefaultPrettyPrinter()
-                    .writeValue(filePath.toFile(), exportData);
-
-            System.out.println("[AUDIT-ARCHIVE] File written: " + filePath);
+            String jsonContent = objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(exportData);
 
             AuditLogArchiveFile archiveFile = new AuditLogArchiveFile();
             archiveFile.setFileName(fileName);
             archiveFile.setLogFromId(fromId);
             archiveFile.setLogToId(toId);
             archiveFile.setRecordsCount(batch.size());
+            archiveFile.setContentJson(jsonContent);
             archiveFileRepository.save(archiveFile);
 
-            System.out.println("[AUDIT-ARCHIVE] Archive metadata saved");
+            System.out.println("[AUDIT-ARCHIVE] Archive metadata + content saved in DB");
 
             auditLogRepository.deleteAllInBatch(batch);
 

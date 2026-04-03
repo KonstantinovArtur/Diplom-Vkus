@@ -4,9 +4,6 @@ import com.example.Vkus.entity.AuditLogArchiveFile;
 import com.example.Vkus.repository.AuditLogArchiveFileRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,12 +14,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin-db/audit-archive")
@@ -31,9 +25,6 @@ public class AdminDbAuditArchiveController {
 
     private final AuditLogArchiveFileRepository archiveFileRepository;
     private final ObjectMapper objectMapper;
-
-    @Value("${app.audit.archive-dir:audit-archive}")
-    private String archiveDir;
 
     public AdminDbAuditArchiveController(AuditLogArchiveFileRepository archiveFileRepository,
                                          ObjectMapper objectMapper) {
@@ -58,14 +49,21 @@ public class AdminDbAuditArchiveController {
                           Model model) throws Exception {
         AuditLogArchiveFile file = archiveFileRepository.findById(id).orElseThrow();
 
-        Path path = Path.of(archiveDir).resolve(file.getFileName()).normalize();
-        if (!Files.exists(path) || !Files.isReadable(path)) {
-            throw new RuntimeException("Файл архива не найден");
+        if (file.getContentJson() == null || file.getContentJson().isBlank()) {
+            model.addAttribute("archiveFile", file);
+            model.addAttribute("logs", List.of());
+            model.addAttribute("action", action);
+            model.addAttribute("entityType", entityType);
+            model.addAttribute("actorName", actorName);
+            model.addAttribute("from", from);
+            model.addAttribute("to", to);
+            model.addAttribute("fileMissing", true);
+            return "admin-db/audit-archive-preview";
         }
 
         List<Map<String, Object>> logs = objectMapper.readValue(
-                path.toFile(),
-                new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {}
+                file.getContentJson(),
+                new TypeReference<List<Map<String, Object>>>() {}
         );
 
         LocalDateTime fromDt = parseDateTime(from);
@@ -85,43 +83,35 @@ public class AdminDbAuditArchiveController {
         model.addAttribute("actorName", actorName);
         model.addAttribute("from", from);
         model.addAttribute("to", to);
+        model.addAttribute("fileMissing", false);
 
         return "admin-db/audit-archive-preview";
     }
 
     @GetMapping("/view/{id}")
-    public ResponseEntity<Resource> view(@PathVariable Long id) throws Exception {
+    public ResponseEntity<byte[]> view(@PathVariable Long id) {
         AuditLogArchiveFile file = archiveFileRepository.findById(id).orElseThrow();
-        Path path = Path.of(archiveDir).resolve(file.getFileName()).normalize();
 
-        Resource resource = new UrlResource(path.toUri());
-        if (!resource.exists() || !resource.isReadable()) {
-            throw new RuntimeException("Файл архива не найден");
-        }
-
-        String contentType = Files.probeContentType(path);
-        if (contentType == null) {
-            contentType = MediaType.APPLICATION_JSON_VALUE;
+        if (file.getContentJson() == null || file.getContentJson().isBlank()) {
+            return ResponseEntity.notFound().build();
         }
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
+                .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.inline()
                                 .filename(file.getFileName(), StandardCharsets.UTF_8)
                                 .build()
                                 .toString())
-                .body(resource);
+                .body(file.getContentJson().getBytes(StandardCharsets.UTF_8));
     }
 
     @GetMapping("/download/{id}")
-    public ResponseEntity<Resource> download(@PathVariable Long id) throws Exception {
+    public ResponseEntity<byte[]> download(@PathVariable Long id) {
         AuditLogArchiveFile file = archiveFileRepository.findById(id).orElseThrow();
-        Path path = Path.of(archiveDir).resolve(file.getFileName()).normalize();
 
-        Resource resource = new UrlResource(path.toUri());
-        if (!resource.exists() || !resource.isReadable()) {
-            throw new RuntimeException("Файл архива не найден");
+        if (file.getContentJson() == null || file.getContentJson().isBlank()) {
+            return ResponseEntity.notFound().build();
         }
 
         return ResponseEntity.ok()
@@ -131,9 +121,8 @@ public class AdminDbAuditArchiveController {
                                 .filename(file.getFileName(), StandardCharsets.UTF_8)
                                 .build()
                                 .toString())
-                .body(resource);
+                .body(file.getContentJson().getBytes(StandardCharsets.UTF_8));
     }
-
 
     private boolean matchesText(Object value, String filter) {
         if (filter == null || filter.isBlank()) {
@@ -189,5 +178,4 @@ public class AdminDbAuditArchiveController {
             return null;
         }
     }
-
 }

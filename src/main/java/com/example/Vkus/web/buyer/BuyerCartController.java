@@ -195,7 +195,22 @@ public class BuyerCartController {
         return "buyer/cart";
     }
 
+    @PostMapping("/clear")
+    public String clear() {
+        Long userId = currentUser.requireUserId();
+        Long buffetId = currentUser.requireBuffetId();
 
+        cartService.clear(userId, buffetId);
+        cartComboService.clearCombos(userId, buffetId);
+
+        Map<String, Object> meta = new HashMap<>();
+        meta.put("actorUserId", userId);
+        meta.put("buffetId", buffetId);
+
+        audit.log("CART_CLEAR", "cart", null, meta);
+
+        return "redirect:/cart";
+    }
 
     @PostMapping("/add")
     public String add(@RequestParam Long productId,

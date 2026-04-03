@@ -22,6 +22,20 @@
         .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid #e6e9ef;background:#fff;color:#0b1b4d;font-weight:800;font-size:12px}
         .hr{border:none;border-top:1px solid #eef2f7;margin:16px 0}
         pre{margin:0;white-space:pre-wrap;word-break:break-word;font-size:12px;color:#0b1b4d}
+
+        .notice{
+            border:1px solid #f0d7a1;
+            background:#fff8e8;
+            color:#6b4e16;
+            border-radius:14px;
+            padding:14px 16px;
+            margin-top:4px;
+            margin-bottom:4px;
+        }
+        .notice-title{
+            font-weight:900;
+            margin-bottom:4px;
+        }
     </style>
 </head>
 <body>
@@ -46,8 +60,13 @@
 
             <div class="actions">
                 <a class="btn" th:href="@{/admin-db/audit-archive}">Назад к архивам</a>
-                <a class="btn" th:href="@{/admin-db/audit-archive/view/{id}(id=${archiveFile.id})}" target="_blank">Открыть JSON</a>
-                <a class="btn" th:href="@{/admin-db/audit-archive/download/{id}(id=${archiveFile.id})}">Скачать</a>
+                <a class="btn"
+                   th:if="${!fileMissing}"
+                   th:href="@{/admin-db/audit-archive/view/{id}(id=${archiveFile.id})}"
+                   target="_blank">Открыть JSON</a>
+                <a class="btn"
+                   th:if="${!fileMissing}"
+                   th:href="@{/admin-db/audit-archive/download/{id}(id=${archiveFile.id})}">Скачать</a>
             </div>
         </div>
 
@@ -81,7 +100,14 @@
 
         <hr class="hr">
 
-        <table>
+        <div class="notice" th:if="${fileMissing}">
+            <div class="notice-title">Содержимое архива недоступно</div>
+            <div class="muted" style="color:#6b4e16">
+                Этот архив был создан по старой схеме, поэтому JSON не сохранён в базе данных.
+            </div>
+        </div>
+
+        <table th:if="${!fileMissing}">
             <thead>
             <tr>
                 <th>ID</th>
