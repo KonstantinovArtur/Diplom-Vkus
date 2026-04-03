@@ -24,7 +24,6 @@ public class AuditLogArchiveFile {
     @Column(name = "records_count", nullable = false)
     private Integer recordsCount;
 
-    @Lob
     @Column(name = "content_json", columnDefinition = "text")
     private String contentJson;
 
