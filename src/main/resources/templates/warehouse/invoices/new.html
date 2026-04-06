@@ -32,6 +32,8 @@
         </div>
 
         <form th:action="@{/warehouse/invoices/new}" method="post" th:object="${form}">
+            <input type="hidden" name="openedBuffetId" th:value="${openedBuffetId}"/>
+
             <div class="field">
                 <label>Поставщик</label>
                 <select th:field="*{supplierId}" th:disabled="${#lists.isEmpty(suppliers)}">
@@ -40,9 +42,6 @@
                 </select>
                 <div class="err" th:if="${#fields.hasErrors('supplierId')}" th:errors="*{supplierId}">error</div>
             </div>
-
-
-
 
             <div class="actions">
                 <button class="btn btn-primary" type="submit" th:disabled="${#lists.isEmpty(suppliers)}">Создать</button>

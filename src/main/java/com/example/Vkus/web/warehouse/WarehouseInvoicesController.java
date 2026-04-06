@@ -20,12 +20,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Controller
 @RequestMapping("/warehouse/invoices")
@@ -64,30 +66,41 @@ public class WarehouseInvoicesController {
 
     @GetMapping("/new")
     public String createForm(Model model, @ModelAttribute("form") InvoiceCreateForm form) {
+        Long buffetId = currentUserService.getCurrentBuffetIdOrThrow();
         model.addAttribute("suppliers", supplierRepository.findAll());
+        model.addAttribute("openedBuffetId", buffetId);
         return "warehouse/invoices/new";
     }
 
     @PostMapping("/new")
     public String create(@Valid @ModelAttribute("form") InvoiceCreateForm form,
                          BindingResult br,
+                         @RequestParam("openedBuffetId") Long openedBuffetId,
                          Model model,
                          RedirectAttributes ra) {
 
+        Long currentBuffetId = currentUserService.getCurrentBuffetIdOrThrow();
+
+        if (!Objects.equals(openedBuffetId, currentBuffetId)) {
+            ra.addFlashAttribute("err", "Активный буфет был изменён. Откройте создание накладной заново.");
+            return "redirect:/warehouse/invoices";
+        }
+
         if (br.hasErrors()) {
             model.addAttribute("suppliers", supplierRepository.findAll());
+            model.addAttribute("openedBuffetId", currentBuffetId);
             return "warehouse/invoices/new";
         }
 
-        Long buffetId = currentUserService.getCurrentBuffetIdOrThrow();
         Long createdBy = currentUserService.getCurrentUser().getId();
 
-        Invoice invoice = procurementService.createInvoice(buffetId, createdBy, form);
+        Invoice invoice = procurementService.createInvoice(currentBuffetId, createdBy, form);
 
         audit.log("INVOICE_CREATE", "invoice", invoice.getId(), Map.of(
                 "after", snapshotInvoice(invoice),
                 "form", snapshotInvoiceCreateForm(form),
-                "actorUserId", createdBy
+                "actorUserId", createdBy,
+                "buffetId", currentBuffetId
         ));
 
         ra.addFlashAttribute("ok", "Накладная создана. Добавьте позиции.");
@@ -97,14 +110,16 @@ public class WarehouseInvoicesController {
     @GetMapping("/{id}")
     public String view(@PathVariable Long id,
                        Model model,
-                       @ModelAttribute("itemForm") InvoiceItemAddForm itemForm) {
+                       @ModelAttribute("itemForm") InvoiceItemAddForm itemForm,
+                       RedirectAttributes ra) {
 
         Invoice inv = invoiceRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Накладная не найдена"));
 
         Long buffetId = currentUserService.getCurrentBuffetIdOrThrow();
         if (!buffetId.equals(inv.getBuffetId())) {
-            throw new IllegalStateException("Нет доступа к накладной другого буфета");
+            ra.addFlashAttribute("err", "Накладная недоступна для текущего буфета.");
+            return "redirect:/warehouse/invoices";
         }
 
         List<InvoiceItem> items = invoiceItemRepository.findByInvoice_IdOrderByIdAsc(id);
@@ -150,16 +165,17 @@ public class WarehouseInvoicesController {
                           Model model,
                           RedirectAttributes ra) {
 
-        if (br.hasErrors()) {
-            return view(id, model, itemForm);
-        }
-
         Invoice inv = invoiceRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Накладная не найдена"));
 
         Long buffetId = currentUserService.getCurrentBuffetIdOrThrow();
         if (!buffetId.equals(inv.getBuffetId())) {
-            throw new IllegalStateException("Нет доступа к накладной другого буфета");
+            ra.addFlashAttribute("err", "Накладная недоступна для текущего буфета.");
+            return "redirect:/warehouse/invoices";
+        }
+
+        if (br.hasErrors()) {
+            return view(id, model, itemForm, ra);
         }
 
         Map<String, Object> before = snapshotInvoice(inv);
@@ -173,7 +189,8 @@ public class WarehouseInvoicesController {
                     "before", before,
                     "after", snapshotInvoice(afterInv),
                     "itemForm", snapshotInvoiceItemForm(itemForm),
-                    "actorUserId", currentUserService.getCurrentUser().getId()
+                    "actorUserId", currentUserService.getCurrentUser().getId(),
+                    "buffetId", buffetId
             ));
 
             ra.addFlashAttribute("ok", "Позиция добавлена");
@@ -194,7 +211,8 @@ public class WarehouseInvoicesController {
 
         Long buffetId = currentUserService.getCurrentBuffetIdOrThrow();
         if (!buffetId.equals(inv.getBuffetId())) {
-            throw new IllegalStateException("Нет доступа к накладной другого буфета");
+            ra.addFlashAttribute("err", "Накладная недоступна для текущего буфета.");
+            return "redirect:/warehouse/invoices";
         }
 
         Object item = invoiceItemRepository.findById(itemId).orElse(null);
@@ -210,7 +228,8 @@ public class WarehouseInvoicesController {
                     "before", beforeInv,
                     "after", snapshotInvoice(afterInv),
                     "deletedItem", beforeItem,
-                    "actorUserId", currentUserService.getCurrentUser().getId()
+                    "actorUserId", currentUserService.getCurrentUser().getId(),
+                    "buffetId", buffetId
             ));
 
             ra.addFlashAttribute("ok", "Позиция удалена");
@@ -231,7 +250,8 @@ public class WarehouseInvoicesController {
                 .orElseThrow(() -> new IllegalStateException("Накладная не найдена"));
 
         if (!buffetId.equals(inv.getBuffetId())) {
-            throw new IllegalStateException("Нет доступа к накладной другого буфета");
+            ra.addFlashAttribute("err", "Накладная недоступна для текущего буфета.");
+            return "redirect:/warehouse/invoices";
         }
 
         Map<String, Object> before = snapshotInvoice(inv);
@@ -244,7 +264,8 @@ public class WarehouseInvoicesController {
             audit.log("INVOICE_SEND_TO_CHECK", "invoice", id, Map.of(
                     "before", before,
                     "after", snapshotInvoice(afterInv),
-                    "actorUserId", actorUserId
+                    "actorUserId", actorUserId,
+                    "buffetId", buffetId
             ));
 
             ra.addFlashAttribute("ok", "Накладная отправлена продавцу на проверку.");
@@ -264,7 +285,8 @@ public class WarehouseInvoicesController {
         Invoice inv = invoiceRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Накладная не найдена"));
         if (!buffetId.equals(inv.getBuffetId())) {
-            throw new IllegalStateException("Нет доступа к накладной другого буфета");
+            ra.addFlashAttribute("err", "Накладная недоступна для текущего буфета.");
+            return "redirect:/warehouse/invoices";
         }
 
         Map<String, Object> before = snapshotInvoice(inv);
@@ -277,7 +299,8 @@ public class WarehouseInvoicesController {
             audit.log("INVOICE_POST", "invoice", id, Map.of(
                     "before", before,
                     "after", snapshotInvoice(afterInv),
-                    "actorUserId", actorUserId
+                    "actorUserId", actorUserId,
+                    "buffetId", buffetId
             ));
 
             ra.addFlashAttribute("ok", "Накладная проведена. Остатки обновлены.");

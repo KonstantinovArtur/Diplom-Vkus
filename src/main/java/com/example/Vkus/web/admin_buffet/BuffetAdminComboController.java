@@ -50,7 +50,8 @@ public class BuffetAdminComboController {
     public String list(@RequestParam(value = "edit", required = false) Long editId,
                        @RequestParam(value = "ok", required = false) String ok,
                        Authentication auth,
-                       Model model) {
+                       Model model,
+                       RedirectAttributes ra) {
 
         var ctx = svc.requireCtx(auth);
 
@@ -58,9 +59,14 @@ public class BuffetAdminComboController {
         model.addAttribute("combos", svc.listTemplates(ctx.buffetId()));
 
         if (editId != null) {
-            var t = svc.requireOwnedTemplate(editId, ctx.buffetId());
-            model.addAttribute("form", svc.toForm(t));
-            model.addAttribute("editId", editId);
+            try {
+                var t = svc.requireOwnedTemplate(editId, ctx.buffetId());
+                model.addAttribute("form", svc.toForm(t));
+                model.addAttribute("editId", editId);
+            } catch (IllegalStateException e) {
+                ra.addFlashAttribute("err", "Комбо не найдено или недоступно для текущего буфета.");
+                return "redirect:/admin-buffet/combos";
+            }
         } else {
             ComboTemplateForm f = new ComboTemplateForm();
             f.setIsActive(true);
@@ -81,7 +87,12 @@ public class BuffetAdminComboController {
         var ctx = svc.requireCtx(auth);
         boolean isCreate = (form.getId() == null);
 
-        svc.saveTemplate(form, br, ctx.buffetId(), ctx.userId());
+        try {
+            svc.saveTemplate(form, br, ctx.buffetId(), ctx.userId());
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("err", "Комбо не найдено или недоступно для текущего буфета.");
+            return "redirect:/admin-buffet/combos";
+        }
 
         if (br.hasErrors()) {
             model.addAttribute("combos", svc.listTemplates(ctx.buffetId()));
@@ -110,7 +121,13 @@ public class BuffetAdminComboController {
                              RedirectAttributes ra) {
 
         var ctx = svc.requireCtx(auth);
-        svc.deactivateTemplate(id, ctx.buffetId());
+
+        try {
+            svc.deactivateTemplate(id, ctx.buffetId());
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("err", "Комбо не найдено или недоступно для текущего буфета.");
+            return "redirect:/admin-buffet/combos";
+        }
 
         audit.log("COMBO_TEMPLATE_DEACTIVATE", "combo_template", id,
                 meta("buffetId", ctx.buffetId(), "templateId", id));
@@ -145,15 +162,20 @@ public class BuffetAdminComboController {
                        Authentication auth,
                        Model model,
                        @ModelAttribute("slotForm") ComboSlotForm slotForm,
-                       @ModelAttribute("slotProductForm") ComboSlotProductForm slotProductForm) {
+                       @ModelAttribute("slotProductForm") ComboSlotProductForm slotProductForm,
+                       RedirectAttributes ra) {
 
         var ctx = svc.requireCtx(auth);
-        var t = svc.requireOwnedTemplate(id, ctx.buffetId());
 
-        model.addAttribute("t", t);
-        model.addAttribute("products", svc.productsInBuffet(ctx.buffetId()));
-
-        return "admin-buffet/combos/edit";
+        try {
+            var t = svc.requireOwnedTemplate(id, ctx.buffetId());
+            model.addAttribute("t", t);
+            model.addAttribute("products", svc.productsInBuffet(ctx.buffetId()));
+            return "admin-buffet/combos/edit";
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("err", "Комбо не найдено или недоступно для текущего буфета.");
+            return "redirect:/admin-buffet/combos";
+        }
     }
 
     @PostMapping("/{id}/slots/add")
@@ -164,7 +186,13 @@ public class BuffetAdminComboController {
                           RedirectAttributes ra) {
 
         var ctx = svc.requireCtx(auth);
-        svc.addSlot(templateId, form, br, ctx.buffetId());
+
+        try {
+            svc.addSlot(templateId, form, br, ctx.buffetId());
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("err", "Комбо не найдено или недоступно для текущего буфета.");
+            return "redirect:/admin-buffet/combos";
+        }
 
         if (br.hasErrors()) {
             ra.addFlashAttribute("slotErr", "Ошибка добавления слота");
@@ -202,6 +230,9 @@ public class BuffetAdminComboController {
             ra.addFlashAttribute("ok", "Слот удалён");
         } catch (IllegalStateException e) {
             ra.addFlashAttribute("err", e.getMessage());
+            if (e.getMessage() != null && e.getMessage().contains("не найден")) {
+                return "redirect:/admin-buffet/combos";
+            }
         }
 
         return "redirect:/admin-buffet/combos/" + templateId;
@@ -216,7 +247,13 @@ public class BuffetAdminComboController {
                                  RedirectAttributes ra) {
 
         var ctx = svc.requireCtx(auth);
-        svc.addSlotProduct(slotId, form, br, ctx.buffetId());
+
+        try {
+            svc.addSlotProduct(slotId, form, br, ctx.buffetId());
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("err", "Слот или комбо недоступны для текущего буфета.");
+            return "redirect:/admin-buffet/combos";
+        }
 
         if (br.hasErrors()) {
             ra.addFlashAttribute("prodErr", "Не удалось добавить товар (проверь выбор, ассортимент или доплату)");
@@ -242,7 +279,13 @@ public class BuffetAdminComboController {
                                     RedirectAttributes ra) {
 
         var ctx = svc.requireCtx(auth);
-        svc.removeSlotProduct(slotId, productId, ctx.buffetId());
+
+        try {
+            svc.removeSlotProduct(slotId, productId, ctx.buffetId());
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("err", "Слот или комбо недоступны для текущего буфета.");
+            return "redirect:/admin-buffet/combos";
+        }
 
         audit.log("COMBO_SLOT_PRODUCT_REMOVE", "combo_slot", slotId, meta(
                 "buffetId", ctx.buffetId(),

@@ -25,6 +25,17 @@ public interface ComboTemplateRepository extends JpaRepository<ComboTemplate, Lo
     """)
     Optional<ComboTemplate> findByIdFull(Long id);
 
+    @Query("""
+        select distinct ct from ComboTemplate ct
+        left join fetch ct.slots s
+        left join fetch s.products sp
+        left join fetch sp.product p
+        where ct.id = :id
+          and ct.buffet.id = :buffetId
+          and ct.isActive = true
+    """)
+    Optional<ComboTemplate> findByIdFullAndBuffet(Long id, Long buffetId);
+
     List<ComboTemplate> findByBuffet_IdOrderByIdDesc(Long buffetId);
 
     Optional<ComboTemplate> findByIdAndBuffet_Id(Long id, Long buffetId);

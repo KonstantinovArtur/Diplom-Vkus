@@ -41,12 +41,21 @@ public class SellerInvoicesController {
     @GetMapping("/{id}")
     public String view(@PathVariable("id") Long invoiceId,
                        Model model,
-                       @ModelAttribute("form") SellerInvoiceCheckForm form) {
+                       @ModelAttribute("form") SellerInvoiceCheckForm form,
+                       RedirectAttributes ra) {
 
         Long buffetId = currentUserService.getCurrentBuffetIdOrThrow();
 
-        var header = sellerInvoicesService.getHeaderForSeller(invoiceId, buffetId);
-        var items  = sellerInvoicesService.getItems(invoiceId);
+        final SellerInvoicesService.InvoiceHeader header;
+        final java.util.List<SellerInvoicesService.InvoiceItemRow> items;
+
+        try {
+            header = sellerInvoicesService.getHeaderForSeller(invoiceId, buffetId);
+            items = sellerInvoicesService.getItems(invoiceId);
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("msg", e.getMessage());
+            return "redirect:/seller/invoices";
+        }
 
         if (form.getInvoiceId() == null) {
             form.setInvoiceId(invoiceId);
@@ -75,29 +84,51 @@ public class SellerInvoicesController {
         Long buffetId = currentUserService.getCurrentBuffetIdOrThrow();
 
         if (br.hasErrors()) {
-            var header = sellerInvoicesService.getHeaderForSeller(invoiceId, buffetId);
-            var items  = sellerInvoicesService.getItems(invoiceId);
-            model.addAttribute("header", header);
-            model.addAttribute("items", items);
-            return "seller/invoices/view";
+            try {
+                var header = sellerInvoicesService.getHeaderForSeller(invoiceId, buffetId);
+                var items = sellerInvoicesService.getItems(invoiceId);
+                model.addAttribute("header", header);
+                model.addAttribute("items", items);
+                return "seller/invoices/view";
+            } catch (IllegalStateException e) {
+                ra.addFlashAttribute("msg", e.getMessage());
+                return "redirect:/seller/invoices";
+            }
         }
 
         Long sellerUserId = currentUserService.getCurrentUser().getId();
 
-        var beforeHeader = sellerInvoicesService.getHeaderForSeller(invoiceId, buffetId);
+        final SellerInvoicesService.InvoiceHeader beforeHeader;
+        try {
+            beforeHeader = sellerInvoicesService.getHeaderForSeller(invoiceId, buffetId);
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("msg", e.getMessage());
+            return "redirect:/seller/invoices";
+        }
 
         try {
             sellerInvoicesService.checkInvoice(invoiceId, buffetId, sellerUserId, form.getItems());
         } catch (IllegalStateException e) {
-            var header = sellerInvoicesService.getHeaderForSeller(invoiceId, buffetId);
-            var items  = sellerInvoicesService.getItems(invoiceId);
-            model.addAttribute("header", header);
-            model.addAttribute("items", items);
-            model.addAttribute("msg", e.getMessage());
-            return "seller/invoices/view";
+            try {
+                var header = sellerInvoicesService.getHeaderForSeller(invoiceId, buffetId);
+                var items = sellerInvoicesService.getItems(invoiceId);
+                model.addAttribute("header", header);
+                model.addAttribute("items", items);
+                model.addAttribute("msg", e.getMessage());
+                return "seller/invoices/view";
+            } catch (IllegalStateException ex) {
+                ra.addFlashAttribute("msg", ex.getMessage());
+                return "redirect:/seller/invoices";
+            }
         }
 
-        var afterHeader = sellerInvoicesService.getHeaderForSeller(invoiceId, buffetId);
+        final SellerInvoicesService.InvoiceHeader afterHeader;
+        try {
+            afterHeader = sellerInvoicesService.getHeaderForSeller(invoiceId, buffetId);
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("msg", "Накладная была проверена, но после смены буфета текущая запись недоступна.");
+            return "redirect:/seller/invoices";
+        }
 
         audit.log("SELLER_INVOICE_CHECK", "invoice", invoiceId, Map.of(
                 "before", snapshotAny(beforeHeader),

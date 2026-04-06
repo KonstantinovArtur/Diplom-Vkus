@@ -1,5 +1,6 @@
 package com.example.Vkus.web.buyer;
 
+import com.example.Vkus.entity.ComboSlot;
 import com.example.Vkus.repository.ComboTemplateRepository;
 import com.example.Vkus.security.CurrentUserFacade;
 import com.example.Vkus.service.AuditLogService;
@@ -7,7 +8,7 @@ import com.example.Vkus.service.CartComboService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import com.example.Vkus.entity.ComboSlot;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -40,8 +41,18 @@ public class BuyerComboController {
     }
 
     @GetMapping("/{id}")
-    public String details(@PathVariable Long id, Model model) {
-        var tpl = comboTemplateRepository.findByIdFull(id).orElseThrow();
+    public String details(@PathVariable Long id,
+                          Model model,
+                          RedirectAttributes ra) {
+
+        Long buffetId = currentUser.requireBuffetId();
+
+        var tpl = comboTemplateRepository.findByIdFullAndBuffet(id, buffetId).orElse(null);
+        if (tpl == null) {
+            ra.addFlashAttribute("msg", "Это комбо недоступно для текущего буфета.");
+            return "redirect:/combos";
+        }
+
         model.addAttribute("tpl", tpl);
 
         var slotsSorted = tpl.getSlots().stream()
@@ -57,10 +68,17 @@ public class BuyerComboController {
     @PostMapping("/{id}/add-to-cart")
     public String addToCart(@PathVariable Long id,
                             @RequestParam(defaultValue = "1") int qty,
-                            @RequestParam Map<String, String> params) {
+                            @RequestParam Map<String, String> params,
+                            RedirectAttributes ra) {
 
         Long userId = currentUser.requireUserId();
         Long buffetId = currentUser.requireBuffetId();
+
+        var tpl = comboTemplateRepository.findByIdFullAndBuffet(id, buffetId).orElse(null);
+        if (tpl == null) {
+            ra.addFlashAttribute("msg", "Это комбо недоступно для текущего буфета.");
+            return "redirect:/combos";
+        }
 
         Map<Long, Long> selected = new HashMap<>();
         for (var e : params.entrySet()) {

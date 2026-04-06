@@ -17,6 +17,8 @@
         </p>
 
         <form th:action="@{/orders/checkout}" method="post" style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input type="hidden" name="checkoutBuffetId" th:value="${checkoutBuffetId}"/>
+
             <button type="submit"
                     style="border:0;background:#1d3b8b;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
                 Подтвердить заказ

@@ -3,10 +3,12 @@ package com.example.Vkus.web.buyer;
 import com.example.Vkus.repository.OrderItemRepository;
 import com.example.Vkus.repository.OrderRepository;
 import com.example.Vkus.repository.PaymentRepository;
+import com.example.Vkus.security.CurrentUserService;
 import com.example.Vkus.security.NotEnoughStockException;
 import com.example.Vkus.service.AuditLogService;
+import com.example.Vkus.service.CartComboService;
+import com.example.Vkus.service.CartService;
 import com.example.Vkus.service.CheckoutService;
-import com.example.Vkus.security.CurrentUserService;
 import com.example.Vkus.service.StubPaymentService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
@@ -29,6 +31,8 @@ public class BuyerOrdersController {
     private final PaymentRepository paymentRepository;
     private final JdbcTemplate jdbc;
     private final AuditLogService audit;
+    private final CartService cartService;
+    private final CartComboService cartComboService;
 
     public BuyerOrdersController(CheckoutService checkoutService,
                                  CurrentUserService currentUserService,
@@ -37,7 +41,9 @@ public class BuyerOrdersController {
                                  PaymentRepository paymentRepository,
                                  StubPaymentService stubPaymentService,
                                  JdbcTemplate jdbc,
-                                 AuditLogService audit) {
+                                 AuditLogService audit,
+                                 CartService cartService,
+                                 CartComboService cartComboService) {
         this.checkoutService = checkoutService;
         this.currentUserService = currentUserService;
         this.orderRepository = orderRepository;
@@ -46,6 +52,8 @@ public class BuyerOrdersController {
         this.stubPaymentService = stubPaymentService;
         this.jdbc = jdbc;
         this.audit = audit;
+        this.cartService = cartService;
+        this.cartComboService = cartComboService;
     }
 
     @PostMapping("/{id}/pay")
@@ -73,33 +81,68 @@ public class BuyerOrdersController {
     }
 
     @GetMapping("/checkout")
-    public String checkoutPage(Model model) {
+    public String checkoutPage(Model model, RedirectAttributes ra) {
+        var user = currentUserService.getCurrentUser();
+        Long buffetId = currentUserService.getCurrentBuffetIdOrThrow();
+
+        boolean hasItems = hasCheckoutCart(user.getId(), buffetId);
+        if (!hasItems) {
+            ra.addFlashAttribute("msg", "Корзина пуста или недоступна для текущего буфета.");
+            return "redirect:/cart";
+        }
+
+        model.addAttribute("checkoutBuffetId", buffetId);
         return "buyer/checkout";
     }
 
     @PostMapping("/checkout")
-    public String doCheckout(RedirectAttributes ra) {
+    public String doCheckout(@RequestParam("checkoutBuffetId") Long checkoutBuffetId,
+                             RedirectAttributes ra) {
         var user = currentUserService.getCurrentUser();
-        Long buffetId = currentUserService.getCurrentBuffetIdOrThrow();
+        Long currentBuffetId = currentUserService.getCurrentBuffetIdOrThrow();
+
+        if (!Objects.equals(checkoutBuffetId, currentBuffetId)) {
+            audit.log("CHECKOUT_ABORTED_BUFFET_CHANGED", "buffet", currentBuffetId, Map.of(
+                    "actorUserId", user.getId(),
+                    "checkoutBuffetId", checkoutBuffetId,
+                    "currentBuffetId", currentBuffetId
+            ));
+
+            ra.addFlashAttribute("msg", "Активный буфет был изменён. Проверьте корзину перед оформлением заказа.");
+            return "redirect:/cart";
+        }
+
+        if (!hasCheckoutCart(user.getId(), currentBuffetId)) {
+            ra.addFlashAttribute("msg", "Корзина пуста или недоступна для текущего буфета.");
+            return "redirect:/cart";
+        }
 
         try {
             var created = checkoutService.checkout();
 
             audit.log("CHECKOUT_SUCCESS", "order", created.getId(), Map.of(
                     "actorUserId", user.getId(),
-                    "buffetId", buffetId
+                    "buffetId", currentBuffetId
             ));
 
             return "redirect:/orders/" + created.getId();
         } catch (NotEnoughStockException ex) {
-
-            audit.log("CHECKOUT_FAIL_NOT_ENOUGH_STOCK", "buffet", buffetId, Map.of(
+            audit.log("CHECKOUT_FAIL_NOT_ENOUGH_STOCK", "buffet", currentBuffetId, Map.of(
                     "actorUserId", user.getId(),
-                    "buffetId", buffetId,
+                    "buffetId", currentBuffetId,
                     "error", ex.getMessage()
             ));
 
             ra.addFlashAttribute("err", ex.getMessage());
+            return "redirect:/cart";
+        } catch (IllegalStateException ex) {
+            audit.log("CHECKOUT_FAIL_INVALID_STATE", "buffet", currentBuffetId, Map.of(
+                    "actorUserId", user.getId(),
+                    "buffetId", currentBuffetId,
+                    "error", ex.getMessage()
+            ));
+
+            ra.addFlashAttribute("msg", "Оформление заказа недоступно. Проверьте корзину и активный буфет.");
             return "redirect:/cart";
         }
     }
@@ -117,8 +160,6 @@ public class BuyerOrdersController {
         model.addAttribute("order", order);
         model.addAttribute("items", orderItemRepository.findByOrderId(order.getId()));
         model.addAttribute("payment", paymentRepository.findTopByOrderIdOrderByIdDesc(order.getId()).orElse(null));
-
-        // ✅ комбо в заказе уже добавлено
         model.addAttribute("combos", loadOrderCombos(order.getId()));
 
         return "buyer/order-success";
@@ -134,8 +175,6 @@ public class BuyerOrdersController {
         return "buyer/my-orders";
     }
 
-    // ===== combos (как у тебя) =====
-
     public record BuyerOrderComboVm(
             Long orderComboId,
             String comboName,
@@ -150,6 +189,11 @@ public class BuyerOrdersController {
             Integer qty,
             BigDecimal extraPriceSnapshot
     ) {}
+
+    private boolean hasCheckoutCart(Long userId, Long buffetId) {
+        return !cartService.getItems(userId, buffetId).isEmpty()
+                || !cartComboService.getCombos(userId, buffetId).isEmpty();
+    }
 
     private List<BuyerOrderComboVm> loadOrderCombos(Long orderId) {
         var heads = jdbc.query("""

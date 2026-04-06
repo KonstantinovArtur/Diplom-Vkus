@@ -31,7 +31,8 @@ public class BuffetAdminDiscountController {
     public String page(@RequestParam(value = "edit", required = false) Long editId,
                        @RequestParam(value = "ok", required = false) String ok,
                        Authentication auth,
-                       Model model) {
+                       Model model,
+                       RedirectAttributes ra) {
 
         var ctx = svc.requireCtx(auth);
 
@@ -40,12 +41,18 @@ public class BuffetAdminDiscountController {
         model.addAttribute("products", svc.productsInBuffet(ctx.buffetId()));
 
         if (editId != null) {
-            var d = svc.requireOwned(editId, ctx.buffetId());
-            model.addAttribute("form", svc.toForm(d));
-            model.addAttribute("editId", editId);
+            try {
+                var d = svc.requireOwned(editId, ctx.buffetId());
+                model.addAttribute("form", svc.toForm(d));
+                model.addAttribute("editId", editId);
+            } catch (IllegalArgumentException | SecurityException e) {
+                ra.addFlashAttribute("err", "Акция не найдена или недоступна для текущего буфета.");
+                return "redirect:/admin-buffet/discounts";
+            }
         } else {
             ProductDiscountForm f = new ProductDiscountForm();
-            f.setStartAt(LocalDateTime.now().plusMinutes(5).withSecond(0).withNano(0));            f.setIsActive(true);
+            f.setStartAt(LocalDateTime.now().plusMinutes(5).withSecond(0).withNano(0));
+            f.setIsActive(true);
             model.addAttribute("form", f);
             model.addAttribute("editId", null);
         }
@@ -61,10 +68,14 @@ public class BuffetAdminDiscountController {
                        RedirectAttributes ra) {
 
         var ctx = svc.requireCtx(auth);
-
         boolean isCreate = (form.getId() == null);
 
-        svc.save(form, br, ctx.buffetId(), ctx.userId());
+        try {
+            svc.save(form, br, ctx.buffetId(), ctx.userId());
+        } catch (IllegalArgumentException | SecurityException e) {
+            ra.addFlashAttribute("err", "Акция не найдена или недоступна для текущего буфета.");
+            return "redirect:/admin-buffet/discounts";
+        }
 
         if (br.hasErrors()) {
             model.addAttribute("discounts", svc.list(ctx.buffetId()));
@@ -81,7 +92,6 @@ public class BuffetAdminDiscountController {
         meta.put("endAt", form.getEndAt());
         meta.put("isActive", form.getIsActive());
 
-        // Если сервис не возвращает id при создании — entityId может остаться null (это ок)
         audit.log(isCreate ? "DISCOUNT_CREATE" : "DISCOUNT_UPDATE",
                 "product_discount",
                 form.getId(),
@@ -97,7 +107,13 @@ public class BuffetAdminDiscountController {
                              RedirectAttributes ra) {
 
         var ctx = svc.requireCtx(auth);
-        svc.deactivate(id, ctx.buffetId());
+
+        try {
+            svc.deactivate(id, ctx.buffetId());
+        } catch (IllegalArgumentException | SecurityException e) {
+            ra.addFlashAttribute("err", "Акция не найдена или недоступна для текущего буфета.");
+            return "redirect:/admin-buffet/discounts";
+        }
 
         audit.log("DISCOUNT_DEACTIVATE", "product_discount", id, Map.of(
                 "buffetId", ctx.buffetId(),
@@ -114,7 +130,13 @@ public class BuffetAdminDiscountController {
                          RedirectAttributes ra) {
 
         var ctx = svc.requireCtx(auth);
-        svc.deleteHard(id, ctx.buffetId());
+
+        try {
+            svc.deleteHard(id, ctx.buffetId());
+        } catch (IllegalArgumentException | SecurityException e) {
+            ra.addFlashAttribute("err", "Акция не найдена или недоступна для текущего буфета.");
+            return "redirect:/admin-buffet/discounts";
+        }
 
         audit.log("DISCOUNT_DELETE", "product_discount", id, Map.of(
                 "buffetId", ctx.buffetId(),
