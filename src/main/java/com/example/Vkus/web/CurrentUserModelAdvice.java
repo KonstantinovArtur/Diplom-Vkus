@@ -1,9 +1,10 @@
 package com.example.Vkus.web;
 
+import com.example.Vkus.entity.BuyerNotification;
 import com.example.Vkus.entity.User;
 import com.example.Vkus.repository.UserRepository;
+import com.example.Vkus.service.BuyerNotificationService;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -16,62 +17,78 @@ import java.util.List;
 public class CurrentUserModelAdvice {
 
     private final UserRepository userRepository;
+    private final BuyerNotificationService buyerNotificationService;
 
-    public CurrentUserModelAdvice(UserRepository userRepository) {
+    public CurrentUserModelAdvice(UserRepository userRepository,
+                                  BuyerNotificationService buyerNotificationService) {
         this.userRepository = userRepository;
+        this.buyerNotificationService = buyerNotificationService;
     }
 
     /**
-     * ВСЕГДА пытаемся получить email из OAuth/OIDC атрибутов.
-     * НИКОГДА не используем authentication.getName() как email (там sub).
+     * Всегда пытаемся получить email из OAuth/OIDC атрибутов.
+     * authentication.getName() не используем, потому что там может быть sub.
      */
     private String resolveEmail(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) return null;
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
 
         Object principalObj = authentication.getPrincipal();
 
-        // OIDC (Google) — самый надёжный вариант
         if (principalObj instanceof OidcUser oidc) {
             String email = oidc.getEmail();
-            if (email != null && !email.isBlank()) return email;
+            if (email != null && !email.isBlank()) {
+                return email;
+            }
         }
 
-        // OAuth2User (на всякий случай)
         if (principalObj instanceof OAuth2User oauth2) {
             Object email = oauth2.getAttributes().get("email");
             if (email != null) {
                 String s = email.toString();
-                if (!s.isBlank()) return s;
+                if (!s.isBlank()) {
+                    return s;
+                }
             }
         }
 
-        // fallback — лучше вернуть null, чем sub
         return null;
     }
 
-    /**
-     * Достаём коды ролей ОДИН РАЗ на рендер страницы.
-     * Потом используем их в hasXRole(...) без повторных запросов.
-     */
-    @ModelAttribute("currentUserRoleCodes")
-    public List<String> currentUserRoleCodes(Authentication authentication) {
+    private User loadCurrentUser(Authentication authentication) {
         String email = resolveEmail(authentication);
-        if (email == null) return Collections.emptyList();
+        if (email == null) {
+            return null;
+        }
+        return userRepository.findByEmailIgnoreCase(email).orElse(null);
+    }
 
-        List<String> codes = userRepository.findRoleCodesByEmail(email);
-        return codes != null ? codes : Collections.emptyList();
+    @ModelAttribute("currentUserId")
+    public Long currentUserId(Authentication authentication) {
+        User currentUser = loadCurrentUser(authentication);
+        return currentUser != null ? currentUser.getId() : null;
     }
 
     @ModelAttribute("currentUserFullName")
     public String currentUserFullName(Authentication authentication) {
-        String email = resolveEmail(authentication);
-        if (email == null) return null;
-
-        User u = userRepository.findByEmailIgnoreCase(email).orElse(null);
-        return u != null ? u.getFullName() : null;
+        User currentUser = loadCurrentUser(authentication);
+        return currentUser != null ? currentUser.getFullName() : null;
     }
 
-    // ---- роли ----
+    /**
+     * Коды ролей получаем один раз на рендер страницы.
+     */
+    @ModelAttribute("currentUserRoleCodes")
+    public List<String> currentUserRoleCodes(Authentication authentication) {
+        String email = resolveEmail(authentication);
+        if (email == null) {
+            return Collections.emptyList();
+        }
+
+        List<String> codes = userRepository.findRoleCodesByEmail(email);
+        return codes != null ? codes : Collections.emptyList();
+    }
 
     @ModelAttribute("hasBuyerRole")
     public boolean hasBuyerRole(@ModelAttribute("currentUserRoleCodes") List<String> codes) {
@@ -96,5 +113,29 @@ public class CurrentUserModelAdvice {
     @ModelAttribute("hasDbAdminRole")
     public boolean hasDbAdminRole(@ModelAttribute("currentUserRoleCodes") List<String> codes) {
         return codes.contains("db_admin");
+    }
+
+    @ModelAttribute("buyerNotifications")
+    public List<BuyerNotification> buyerNotifications(
+            @ModelAttribute("hasBuyerRole") boolean hasBuyerRole,
+            @ModelAttribute("currentUserId") Long currentUserId) {
+
+        if (!hasBuyerRole || currentUserId == null) {
+            return Collections.emptyList();
+        }
+
+        return buyerNotificationService.getLatestForUser(currentUserId);
+    }
+
+    @ModelAttribute("buyerUnreadNotificationsCount")
+    public long buyerUnreadNotificationsCount(
+            @ModelAttribute("hasBuyerRole") boolean hasBuyerRole,
+            @ModelAttribute("currentUserId") Long currentUserId) {
+
+        if (!hasBuyerRole || currentUserId == null) {
+            return 0;
+        }
+
+        return buyerNotificationService.countUnread(currentUserId);
     }
 }

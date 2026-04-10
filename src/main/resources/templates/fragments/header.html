@@ -15,18 +15,21 @@
             gap: 16px;
             box-shadow: 0 8px 24px rgba(10, 20, 60, 0.06);
         }
+
         .brand {
             font-weight: 900;
             font-size: 22px;
             color: #0b1b4d;
             white-space: nowrap;
         }
+
         .nav {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             align-items: center;
         }
+
         .nav a {
             display: inline-block;
             padding: 10px 14px;
@@ -37,7 +40,10 @@
             font-weight: 700;
             background: #fff;
         }
-        .nav a:hover { border-color: #0b1b4d; }
+
+        .nav a:hover {
+            border-color: #0b1b4d;
+        }
 
         .right {
             display: flex;
@@ -45,12 +51,14 @@
             gap: 12px;
             white-space: nowrap;
         }
+
         .userbox {
             text-align: right;
             color: #0b1b4d;
             font-weight: 800;
             line-height: 1.1;
         }
+
         .userbox .role {
             display: inline-block;
             margin-top: 4px;
@@ -62,6 +70,7 @@
             padding: 4px 10px;
             border-radius: 999px;
         }
+
         .btn-logout {
             border: 0;
             background: #1d3b8b;
@@ -71,12 +80,17 @@
             font-weight: 800;
             cursor: pointer;
         }
-        .btn-logout:hover { opacity: .92; }
+
+        .btn-logout:hover {
+            opacity: .92;
+        }
+
         .buffet-select {
             margin-top: 6px;
             display: flex;
             justify-content: flex-end;
         }
+
         .buffet-select select {
             padding: 8px 10px;
             border: 1px solid #d8deea;
@@ -87,13 +101,173 @@
             max-width: 260px;
         }
 
+        .notif-wrap {
+            position: relative;
+        }
+
+        .notif-btn {
+            position: relative;
+            border: 1px solid #d8deea;
+            background: #fff;
+            color: #0b1b4d;
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .notif-btn:hover {
+            border-color: #0b1b4d;
+        }
+
+        .notif-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: #dc2626;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 900;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .notif-dropdown {
+            position: absolute;
+            top: 56px;
+            right: 0;
+            width: 380px;
+            max-width: calc(100vw - 24px);
+            background: #fff;
+            border: 1px solid #d8deea;
+            border-radius: 16px;
+            box-shadow: 0 18px 38px rgba(10, 20, 60, 0.16);
+            padding: 10px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .notif-dropdown.open {
+            display: block;
+        }
+
+        .notif-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 6px 10px 6px;
+            border-bottom: 1px solid #eef2f7;
+            margin-bottom: 8px;
+            font-weight: 900;
+            color: #0b1b4d;
+        }
+
+        .notif-head-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notif-head-count {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 800;
+        }
+
+        .notif-clear-btn {
+            border: 1px solid #d8deea;
+            background: #fff;
+            color: #0b1b4d;
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .notif-clear-btn:hover {
+            border-color: #0b1b4d;
+            background: #f8fbff;
+        }
+
+        .notif-empty {
+            padding: 18px 10px;
+            color: #6b7280;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .notif-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 360px;
+            overflow: auto;
+        }
+
+        .notif-item {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid #e6e9ef;
+            border-radius: 14px;
+            padding: 10px;
+            background: #fff;
+        }
+
+        .notif-item:hover {
+            border-color: #c7d2fe;
+            background: #f8fbff;
+        }
+
+        .notif-item.unread {
+            background: #eef4ff;
+            border-color: #c7d2fe;
+        }
+
+        .notif-title-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .notif-title {
+            font-weight: 900;
+            color: #0b1b4d;
+        }
+
+        .notif-time {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .notif-message {
+            margin-top: 6px;
+            color: #374151;
+            font-weight: 700;
+            line-height: 1.35;
+            white-space: normal;
+        }
     </style>
 
     <div class="app-header">
         <div class="brand">Буфет МПТ</div>
 
         <nav class="nav">
-            <!-- Покупатель -->
             <th:block th:if="${hasBuyerRole}">
                 <a th:href="@{/menu}">Меню</a>
                 <a th:href="@{/combos}">Комбо</a>
@@ -102,15 +276,12 @@
                 <a th:href="@{/orders/my}">Мои заказы</a>
             </th:block>
 
-            <!-- Продавец -->
             <th:block th:if="${hasSellerRole}">
                 <a th:href="@{/seller/stocks}">Список товаров</a>
                 <a th:href="@{/seller/invoices}">Накладные</a>
-
                 <a th:href="@{/seller/orders}">Заказы</a>
             </th:block>
 
-            <!-- Сотрудник склада -->
             <th:block th:if="${hasWarehouseRole}">
                 <a th:href="@{/warehouse/batches}">Партии</a>
                 <a th:href="@{/warehouse/invoices}">Заказ товаров</a>
@@ -119,7 +290,6 @@
                 <a th:href="@{/warehouse/writeoffs/new}">Списания</a>
             </th:block>
 
-            <!-- Админ буфета -->
             <th:block th:if="${hasBuffetAdminRole}">
                 <a th:href="@{/admin-buffet/products}">Товары</a>
                 <a th:href="@{/admin-buffet/discounts}">Акции</a>
@@ -130,7 +300,6 @@
                 <a th:href="@{/admin-buffet/stats}">Статистика</a>
             </th:block>
 
-            <!-- Админ БД -->
             <th:block th:if="${hasDbAdminRole}">
                 <a th:href="@{/admin-db/products}">Товары</a>
                 <a th:href="@{/admin-db/categories}">Категории</a>
@@ -145,12 +314,69 @@
         </nav>
 
         <div class="right">
+            <th:block th:if="${hasBuyerRole}">
+                <div class="notif-wrap" id="notifWrap">
+                    <button type="button"
+                            class="notif-btn"
+                            id="notifBtn"
+                            aria-label="Уведомления">
+                        <span style="font-size:18px;">🔔</span>
+                        <span th:if="${buyerUnreadNotificationsCount > 0}"
+                              class="notif-badge"
+                              id="notifBadge"
+                              th:text="${buyerUnreadNotificationsCount}">0</span>
+                    </button>
+
+                    <div class="notif-dropdown" id="notifDropdown">
+                        <div class="notif-head">
+                            <span>Уведомления</span>
+
+                            <div class="notif-head-right">
+                                <button type="button"
+                                        class="notif-clear-btn"
+                                        id="notifClearBtn">
+                                    Очистить прочитанные
+                                </button>
+
+                                <span class="notif-head-count"
+                                      id="notifHeadCount"
+                                      th:text="${buyerUnreadNotificationsCount > 0 ? 'Новых: ' + buyerUnreadNotificationsCount : 'Нет новых'}">
+                                    Нет новых
+                                </span>
+                            </div>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(buyerNotifications)}"
+                             class="notif-empty"
+                             id="notifEmpty">
+                            Пока уведомлений нет.
+                        </div>
+
+                        <div th:if="${!#lists.isEmpty(buyerNotifications)}"
+                             class="notif-list"
+                             id="notifList">
+                            <a th:each="n : ${buyerNotifications}"
+                               th:href="${n.order != null} ? @{/orders/{id}(id=${n.order.id})} : @{/orders/my}"
+                               class="notif-item"
+                               th:classappend="${!n.read} ? ' unread' : ''">
+                                <div class="notif-title-row">
+                                    <div class="notif-title" th:text="${n.title}">Заказ готов</div>
+                                    <div class="notif-time"
+                                         th:text="${#temporals.format(n.createdAt, 'dd.MM HH:mm')}">00.00 00:00</div>
+                                </div>
+
+                                <div class="notif-message" th:text="${n.message}">
+                                    Заказ готов к выдаче.
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+
             <div class="userbox">
                 <div th:text="${currentUserFullName} ?: 'Пользователь'">ФИО</div>
 
-
-
-                <!-- ВЫБОР БУФЕТА (рядом с ФИО) -->
                 <th:block th:if="${hasBuyerRole or hasSellerRole or hasWarehouseRole or hasBuffetAdminRole or hasDbAdminRole}">
                     <form class="buffet-select" th:action="@{/buffet/select}" method="post">
                         <input th:if="${_csrf != null}"
@@ -172,8 +398,6 @@
                         </select>
                     </form>
                 </th:block>
-
-
 
                 <span class="role">
                     <th:block th:if="${hasBuyerRole}">Покупатель</th:block>
@@ -197,10 +421,237 @@
             </div>
 
             <form th:action="@{/logout}" method="post">
+                <input th:if="${_csrf != null}"
+                       type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}" />
                 <button class="btn-logout" type="submit">Выйти</button>
             </form>
         </div>
     </div>
+
+    <script th:if="${hasBuyerRole}">
+        (function () {
+            const btn = document.getElementById('notifBtn');
+            const dropdown = document.getElementById('notifDropdown');
+            const wrap = document.getElementById('notifWrap');
+            const headCount = document.getElementById('notifHeadCount');
+            const clearBtn = document.getElementById('notifClearBtn');
+
+            if (!btn || !dropdown || !wrap) {
+                return;
+            }
+
+            let readSent = false;
+            let pollTimer = null;
+
+            function escapeHtml(value) {
+                return String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function formatTime(iso) {
+                if (!iso) {
+                    return '';
+                }
+
+                const d = new Date(iso);
+                if (isNaN(d.getTime())) {
+                    return '';
+                }
+
+                const dd = String(d.getDate()).padStart(2, '0');
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const hh = String(d.getHours()).padStart(2, '0');
+                const mi = String(d.getMinutes()).padStart(2, '0');
+
+                return `${dd}.${mm} ${hh}:${mi}`;
+            }
+
+            function ensureBadge(unreadCount) {
+                let badge = document.getElementById('notifBadge');
+
+                if (unreadCount > 0) {
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.id = 'notifBadge';
+                        badge.className = 'notif-badge';
+                        btn.appendChild(badge);
+                    }
+                    badge.textContent = unreadCount;
+                } else if (badge) {
+                    badge.remove();
+                }
+            }
+
+            function renderNotifications(items, unreadCount) {
+                let list = document.getElementById('notifList');
+                let empty = document.getElementById('notifEmpty');
+
+                ensureBadge(unreadCount);
+
+                if (headCount) {
+                    headCount.textContent = unreadCount > 0 ? `Новых: ${unreadCount}` : 'Нет новых';
+                }
+
+                if (!items || items.length === 0) {
+                    if (list) {
+                        list.innerHTML = '';
+                        list.style.display = 'none';
+                    }
+
+                    if (!empty) {
+                        empty = document.createElement('div');
+                        empty.id = 'notifEmpty';
+                        empty.className = 'notif-empty';
+                        empty.textContent = 'Пока уведомлений нет.';
+                        dropdown.appendChild(empty);
+                    } else {
+                        empty.textContent = 'Пока уведомлений нет.';
+                        empty.style.display = 'block';
+                    }
+                    return;
+                }
+
+                if (!list) {
+                    list = document.createElement('div');
+                    list.id = 'notifList';
+                    list.className = 'notif-list';
+                    dropdown.appendChild(list);
+                }
+
+                if (empty) {
+                    empty.style.display = 'none';
+                }
+
+                list.style.display = 'flex';
+                list.innerHTML = items.map(function (n) {
+                    const href = n.orderId ? `/orders/${n.orderId}` : '/orders/my';
+                    const unreadClass = n.isRead ? '' : ' unread';
+
+                    return `
+                        <a href="${href}" class="notif-item${unreadClass}">
+                            <div class="notif-title-row">
+                                <div class="notif-title">${escapeHtml(n.title)}</div>
+                                <div class="notif-time">${escapeHtml(formatTime(n.createdAt))}</div>
+                            </div>
+                            <div class="notif-message">${escapeHtml(n.message)}</div>
+                        </a>
+                    `;
+                }).join('');
+            }
+
+            async function fetchNotifications() {
+                try {
+                    const response = await fetch('/buyer/notifications/live', {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const data = await response.json();
+                    renderNotifications(data.items || [], data.unreadCount || 0);
+                } catch (e) {
+                    console.error('Не удалось обновить уведомления', e);
+                }
+            }
+
+            async function markAllRead() {
+                if (readSent) {
+                    return;
+                }
+                readSent = true;
+
+                const csrfInput = document.querySelector('input[name="_csrf"]');
+                const csrfToken = csrfInput ? csrfInput.value : null;
+                const headers = {};
+
+                if (csrfToken) {
+                    headers['X-CSRF-TOKEN'] = csrfToken;
+                }
+
+                try {
+                    await fetch('/buyer/notifications/read-all', {
+                        method: 'POST',
+                        headers: headers
+                    });
+
+                    await fetchNotifications();
+                } catch (e) {
+                    console.error('Не удалось отметить уведомления как прочитанные', e);
+                }
+            }
+
+            async function clearReadNotifications() {
+                const csrfInput = document.querySelector('input[name="_csrf"]');
+                const csrfToken = csrfInput ? csrfInput.value : null;
+                const headers = {};
+
+                if (csrfToken) {
+                    headers['X-CSRF-TOKEN'] = csrfToken;
+                }
+
+                try {
+                    const response = await fetch('/buyer/notifications/clear-read', {
+                        method: 'POST',
+                        headers: headers
+                    });
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    await fetchNotifications();
+                } catch (e) {
+                    console.error('Не удалось очистить прочитанные уведомления', e);
+                }
+            }
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    clearReadNotifications();
+                });
+            }
+
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const willOpen = !dropdown.classList.contains('open');
+                dropdown.classList.toggle('open');
+
+                if (willOpen) {
+                    markAllRead();
+                } else {
+                    readSent = false;
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!wrap.contains(e.target)) {
+                    dropdown.classList.remove('open');
+                    readSent = false;
+                }
+            });
+
+            fetchNotifications();
+            pollTimer = setInterval(fetchNotifications, 20000);
+
+            window.addEventListener('beforeunload', function () {
+                if (pollTimer) {
+                    clearInterval(pollTimer);
+                }
+            });
+        })();
+    </script>
 </header>
 
 </body>

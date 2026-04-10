@@ -20,17 +20,20 @@ public class SellerOrderService {
     private final InventoryItemRepository inventoryItemRepository; // оставил, хотя в cancel не нужен
     private final CurrentUserService currentUserService;
     private final JdbcTemplate jdbc;
+    private final BuyerNotificationService buyerNotificationService;
 
     public SellerOrderService(OrderRepository orderRepository,
                               PaymentRepository paymentRepository,
                               InventoryItemRepository inventoryItemRepository,
                               CurrentUserService currentUserService,
-                              JdbcTemplate jdbc) {
+                              JdbcTemplate jdbc,
+                              BuyerNotificationService buyerNotificationService) {
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
         this.inventoryItemRepository = inventoryItemRepository;
         this.currentUserService = currentUserService;
         this.jdbc = jdbc;
+        this.buyerNotificationService = buyerNotificationService;
     }
 
     @Transactional
@@ -50,8 +53,14 @@ public class SellerOrderService {
         if (isCancelled(o) || isIssued(o)) return;
 
         if (isAssembling(o) || isAccepted(o) || isCreated(o)) {
+            boolean wasReady = isReady(o);
+
             o.setStatus("ready");
             orderRepository.save(o);
+
+            if (!wasReady) {
+                buyerNotificationService.createOrderReadyNotification(o);
+            }
         }
     }
 
