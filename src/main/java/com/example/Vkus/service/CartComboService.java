@@ -15,13 +15,16 @@ public class CartComboService {
     private final CartRepository cartRepository;
     private final CartComboRepository cartComboRepository;
     private final ComboTemplateRepository comboTemplateRepository;
+    private final CartStockValidationService cartStockValidationService;
 
     public CartComboService(CartRepository cartRepository,
                             CartComboRepository cartComboRepository,
-                            ComboTemplateRepository comboTemplateRepository) {
+                            ComboTemplateRepository comboTemplateRepository,
+                            CartStockValidationService cartStockValidationService) {
         this.cartRepository = cartRepository;
         this.cartComboRepository = cartComboRepository;
         this.comboTemplateRepository = comboTemplateRepository;
+        this.cartStockValidationService = cartStockValidationService;
     }
 
     @Transactional(readOnly = true)
@@ -50,21 +53,26 @@ public class CartComboService {
         ComboTemplate tpl = comboTemplateRepository.findByIdFull(comboTemplateId)
                 .orElseThrow(() -> new IllegalArgumentException("Combo template not found: " + comboTemplateId));
 
-        // валидация: все слоты должны быть заполнены (по одному товару)
         for (ComboSlot slot : tpl.getSlots()) {
             Long pid = selectedProducts.get(slot.getId());
             if (pid == null) {
                 throw new IllegalStateException("Не выбран товар для слота: " + slot.getName());
             }
-            // проверим, что товар реально разрешён в слоте
+
             boolean allowed = slot.getProducts().stream().anyMatch(sp -> sp.getProduct().getId().equals(pid));
             if (!allowed) {
                 throw new IllegalStateException("Товар не разрешён в слоте: " + slot.getName());
             }
         }
 
-        // считаем цену комбо:
-        // final = tpl.basePrice + сумма extraPrice (если есть)
+        Map<Long, Integer> comboNeedByProduct = new HashMap<>();
+        for (ComboSlot slot : tpl.getSlots()) {
+            Long productId = selectedProducts.get(slot.getId());
+            comboNeedByProduct.merge(productId, qty, Integer::sum);
+        }
+
+        cartStockValidationService.validateCanAddCombo(userId, buffetId, comboNeedByProduct);
+
         BigDecimal extrasSum = BigDecimal.ZERO;
 
         CartCombo cartCombo = new CartCombo();
@@ -82,7 +90,7 @@ public class CartComboService {
                     .findFirst()
                     .orElseThrow();
 
-            BigDecimal extra = slotProduct.getExtraPrice(); // может быть null
+            BigDecimal extra = slotProduct.getExtraPrice();
             if (extra != null) extrasSum = extrasSum.add(extra);
 
             CartComboItem it = new CartComboItem();

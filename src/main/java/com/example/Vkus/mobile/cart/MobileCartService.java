@@ -9,7 +9,6 @@ import com.example.Vkus.service.AuditLogService;
 import com.example.Vkus.service.BuyerPricingService;
 import com.example.Vkus.service.CartComboService;
 import com.example.Vkus.service.CartService;
-import com.example.Vkus.service.InventoryBatchConsumptionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,6 @@ public class MobileCartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final BuyerPricingService pricingService;
-    private final InventoryBatchConsumptionService batchService;
     private final AuditLogService audit;
 
     public MobileCartService(CartService cartService,
@@ -36,14 +34,12 @@ public class MobileCartService {
                              CartRepository cartRepository,
                              CartItemRepository cartItemRepository,
                              BuyerPricingService pricingService,
-                             InventoryBatchConsumptionService batchService,
                              AuditLogService audit) {
         this.cartService = cartService;
         this.cartComboService = cartComboService;
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.pricingService = pricingService;
-        this.batchService = batchService;
         this.audit = audit;
     }
 
@@ -159,12 +155,10 @@ public class MobileCartService {
         int safeQty = (qty == null || qty <= 0) ? 1 : qty;
 
         try {
-            batchService.planConsumeFromBatches(buffetId, productId, safeQty);
-        } catch (IllegalStateException ex) {
+            cartService.add(userId, buffetId, productId, safeQty);
+        } catch (IllegalStateException | IllegalArgumentException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
         }
-
-        cartService.add(userId, buffetId, productId, safeQty);
 
         audit.log("MOBILE_CART_ADD_PRODUCT", "product", productId, Map.of(
                 "actorUserId", userId,
@@ -197,13 +191,10 @@ public class MobileCartService {
         }
 
         try {
-            batchService.planConsumeFromBatches(buffetId, item.getProduct().getId(), safeQty);
-        } catch (IllegalStateException ex) {
+            cartService.setQty(userId, buffetId, item.getProduct().getId(), safeQty);
+        } catch (IllegalStateException | IllegalArgumentException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
         }
-
-        item.setQty(safeQty);
-        cartItemRepository.save(item);
 
         return new MobileCartActionResponse(true, "Количество обновлено");
     }

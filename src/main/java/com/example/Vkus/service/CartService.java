@@ -17,18 +17,23 @@ public class CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final CartStockValidationService cartStockValidationService;
 
     public CartService(CartRepository cartRepository,
                        CartItemRepository cartItemRepository,
-                       ProductRepository productRepository) {
+                       ProductRepository productRepository,
+                       CartStockValidationService cartStockValidationService) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
+        this.cartStockValidationService = cartStockValidationService;
     }
 
     @Transactional
     public void add(Long userId, Long buffetId, Long productId, int qty) {
         if (qty <= 0) qty = 1;
+
+        cartStockValidationService.validateCanAddProduct(userId, buffetId, productId, qty);
 
         Cart cart = cartRepository.findByUserIdAndBuffetId(userId, buffetId)
                 .orElseGet(() -> {
@@ -57,11 +62,10 @@ public class CartService {
 
     @Transactional(readOnly = true)
     public List<CartItem> getItems(Long userId, Long buffetId) {
-        Cart cart = cart(userId, buffetId);   // <-- ВОТ ЭТО
+        Cart cart = cart(userId, buffetId);
         if (cart == null) return List.of();
         return cartItemRepository.findAllByCartIdWithProduct(cart.getId());
     }
-
 
     @Transactional
     public void setQty(Long userId, Long buffetId, Long productId, int qty) {
@@ -70,6 +74,9 @@ public class CartService {
             cartItemRepository.deleteByCart_IdAndProduct_Id(cart.getId(), productId);
             return;
         }
+
+        cartStockValidationService.validateCanSetProductQty(userId, buffetId, productId, qty);
+
         CartItem item = cartItemRepository.findByCart_IdAndProduct_Id(cart.getId(), productId)
                 .orElseThrow(() -> new IllegalArgumentException("Cart item not found"));
         item.setQty(qty);
