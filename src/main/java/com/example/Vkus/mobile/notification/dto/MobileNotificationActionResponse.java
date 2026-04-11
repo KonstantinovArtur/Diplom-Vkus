@@ -5,4 +5,5 @@ public record MobileNotificationActionResponse(
         String message,
         int affectedCount
 ) {
+
 }

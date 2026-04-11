@@ -30,4 +30,5 @@ public class MobileNotificationController {
     public MobileNotificationActionResponse clearRead(@AuthenticationPrincipal Jwt jwt) {
         return mobileNotificationService.clearRead(jwt);
     }
+
 }

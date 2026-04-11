@@ -77,4 +77,5 @@ public class MobileNotificationService {
 
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Некорректный uid в токене");
     }
+
 }
