@@ -6,7 +6,6 @@ public record MobileSellerOrderSummaryDto(
         String status,
         String createdAt,
         Double finalAmount,
-        String pickupCode,
         String paymentStatus,
         boolean canToAssembling,
         boolean canToReady,

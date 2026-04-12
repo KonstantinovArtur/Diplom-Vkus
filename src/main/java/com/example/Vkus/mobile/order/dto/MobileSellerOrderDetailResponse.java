@@ -14,7 +14,6 @@ public record MobileSellerOrderDetailResponse(
         Double totalAmount,
         Double discountAmount,
         Double finalAmount,
-        String pickupCode,
         String pickupCodeExpiresAt,
         String paymentStatus,
         String paymentProvider,

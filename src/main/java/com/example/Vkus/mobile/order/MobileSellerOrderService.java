@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -30,6 +31,8 @@ import java.util.*;
 public class MobileSellerOrderService {
 
     private static final DateTimeFormatter DT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final ZoneId STORAGE_ZONE = ZoneId.of("UTC");
+    private static final ZoneId MOSCOW_ZONE = ZoneId.of("Europe/Moscow");
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -66,9 +69,8 @@ public class MobileSellerOrderService {
                             order.getId(),
                             order.getUser().getFullName(),
                             order.getStatus(),
-                            format(order.getCreatedAt()),
+                            formatMoscow(order.getCreatedAt()),
                             toDouble(order.getFinalAmount()),
-                            order.getPickupCode(),
                             payment == null ? null : payment.getStatus(),
                             canToAssembling(order),
                             canToReady(order),
@@ -106,12 +108,11 @@ public class MobileSellerOrderService {
                 order.getUser().getFullName(),
                 order.getUser().getEmail(),
                 order.getStatus(),
-                format(order.getCreatedAt()),
+                formatMoscow(order.getCreatedAt()),
                 toDouble(order.getTotalAmount()),
                 toDouble(order.getDiscountAmount()),
                 toDouble(order.getFinalAmount()),
-                order.getPickupCode(),
-                format(order.getPickupCodeExpiresAt()),
+                formatMoscow(order.getPickupCodeExpiresAt()),
                 payment == null ? null : payment.getStatus(),
                 payment == null ? null : payment.getProvider(),
                 items,
@@ -380,8 +381,11 @@ public class MobileSellerOrderService {
         return value == null ? null : value.doubleValue();
     }
 
-    private String format(LocalDateTime value) {
-        return value == null ? null : value.format(DT);
+    private String formatMoscow(LocalDateTime value) {
+        if (value == null) return null;
+        return value.atZone(STORAGE_ZONE)
+                .withZoneSameInstant(MOSCOW_ZONE)
+                .format(DT);
     }
 
     private Long extractLong(Object value) {
