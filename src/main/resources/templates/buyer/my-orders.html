@@ -28,7 +28,7 @@
                     </div>
 
                     <div style="color:#6b7280;font-weight:800;"
-                         th:text="${#temporals.format(o.createdAt, 'dd.MM.yyyy HH:mm')}">—</div>
+                         th:text="${o.createdAtMsk}">—</div>
 
                     <div style="font-weight:900;color:#0b1b4d;" th:switch="${o.status}">
                         <span th:case="'created'">Создан</span>

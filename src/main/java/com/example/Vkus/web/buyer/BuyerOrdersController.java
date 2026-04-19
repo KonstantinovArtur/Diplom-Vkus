@@ -17,11 +17,18 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Controller
 @RequestMapping("/orders")
 public class BuyerOrdersController {
+
+    private static final ZoneId MOSCOW_ZONE = ZoneId.of("Europe/Moscow");
+    private static final DateTimeFormatter VIEW_DT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     private final CheckoutService checkoutService;
     private final CurrentUserService currentUserService;
@@ -133,10 +140,16 @@ public class BuyerOrdersController {
             return "redirect:/orders/my";
         }
 
+        var payment = paymentRepository.findTopByOrderIdOrderByIdDesc(order.getId()).orElse(null);
+
         model.addAttribute("order", order);
         model.addAttribute("items", orderItemRepository.findByOrderId(order.getId()));
-        model.addAttribute("payment", paymentRepository.findTopByOrderIdOrderByIdDesc(order.getId()).orElse(null));
+        model.addAttribute("payment", payment);
         model.addAttribute("combos", loadOrderCombos(order.getId()));
+
+        model.addAttribute("orderCreatedAtMsk", formatMsk(order.getCreatedAt()));
+        model.addAttribute("pickupCodeExpiresAtMsk", formatMsk(order.getPickupCodeExpiresAt()));
+        model.addAttribute("paymentPaidAtMsk", payment != null ? formatMskOrNull(payment.getPaidAt()) : null);
 
         return "buyer/order-success";
     }
@@ -147,7 +160,10 @@ public class BuyerOrdersController {
         Long buffetId = currentUserService.getCurrentBuffetIdOrThrow();
 
         try {
-            model.addAttribute("receipt", orderReceiptService.getBuyerReceipt(id, user.getId(), buffetId));
+            var receipt = orderReceiptService.getBuyerReceipt(id, user.getId(), buffetId);
+            model.addAttribute("receipt", receipt);
+            model.addAttribute("receiptCreatedAtMsk", formatMsk(receipt.createdAt()));
+            model.addAttribute("receiptPaidAtMsk", formatMskOrNull(receipt.paidAt()));
             return "buyer/order-receipt";
         } catch (Exception ex) {
             ra.addFlashAttribute("err", "Не удалось открыть чек по этому заказу.");
@@ -160,10 +176,26 @@ public class BuyerOrdersController {
         var user = currentUserService.getCurrentUser();
         Long buffetId = currentUserService.getCurrentBuffetIdOrThrow();
 
-        model.addAttribute("orders",
-                orderRepository.findByUserIdAndBuffetIdOrderByCreatedAtDesc(user.getId(), buffetId));
+        var orderRows = orderRepository.findByUserIdAndBuffetIdOrderByCreatedAtDesc(user.getId(), buffetId)
+                .stream()
+                .map(o -> new BuyerOrderListVm(
+                        o.getId(),
+                        o.getStatus(),
+                        o.getFinalAmount(),
+                        o.getCreatedAt() == null ? "—" : o.getCreatedAt().format(VIEW_DT)
+                ))
+                .toList();
+
+        model.addAttribute("orders", orderRows);
         return "buyer/my-orders";
     }
+
+    public record BuyerOrderListVm(
+            Long id,
+            String status,
+            BigDecimal finalAmount,
+            String createdAtMsk
+    ) {}
 
     public record BuyerOrderComboVm(
             Long orderComboId,
@@ -253,5 +285,22 @@ public class BuyerOrdersController {
         );
 
         return new ArrayList<>(map.values());
+    }
+
+    private String formatMsk(LocalDateTime value) {
+        if (value == null) {
+            return "—";
+        }
+
+        return value.atOffset(ZoneOffset.UTC)
+                .atZoneSameInstant(MOSCOW_ZONE)
+                .format(VIEW_DT);
+    }
+
+    private String formatMskOrNull(LocalDateTime value) {
+        if (value == null) {
+            return null;
+        }
+        return formatMsk(value);
     }
 }
