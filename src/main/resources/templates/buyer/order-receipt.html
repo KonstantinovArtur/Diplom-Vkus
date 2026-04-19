@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Электронный чек</title>
+    <style>
+        body {
+            margin: 0;
+            background: #f6f8fb;
+            color: #122033;
+            font-family: Arial, sans-serif;
+        }
+        .page {
+            max-width: 980px;
+            margin: 18px auto;
+            padding: 0 12px 32px;
+        }
+        .receipt-card {
+            background: #fff;
+            border: 1px solid #e6e9ef;
+            border-radius: 18px;
+            box-shadow: 0 8px 24px rgba(10, 20, 60, 0.06);
+            overflow: hidden;
+        }
+        .receipt-head {
+            padding: 18px;
+            border-bottom: 1px solid #e6e9ef;
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+        .title {
+            margin: 0;
+            font-size: 26px;
+            color: #0b1b4d;
+        }
+        .muted {
+            color: #6b7280;
+            font-weight: 700;
+        }
+        .success-badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            font-weight: 900;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            padding: 18px;
+            border-bottom: 1px solid #e6e9ef;
+        }
+        .box {
+            border: 1px solid #e6e9ef;
+            border-radius: 14px;
+            padding: 12px;
+            background: #fcfdff;
+        }
+        .box .label {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-bottom: 6px;
+        }
+        .box .value {
+            font-size: 16px;
+            font-weight: 900;
+            color: #0b1b4d;
+        }
+        .section {
+            padding: 18px;
+            border-bottom: 1px solid #e6e9ef;
+        }
+        .section:last-child {
+            border-bottom: 0;
+        }
+        .section h3 {
+            margin: 0 0 12px;
+            color: #0b1b4d;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 12px 0;
+            border-bottom: 1px dashed #e5e7eb;
+            flex-wrap: wrap;
+        }
+        .row:last-child {
+            border-bottom: 0;
+        }
+        .name {
+            font-weight: 900;
+            color: #0b1b4d;
+        }
+        .meta {
+            margin-top: 6px;
+            color: #6b7280;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .price {
+            font-weight: 900;
+            color: #0b1b4d;
+            white-space: nowrap;
+        }
+        .combo-items {
+            margin: 8px 0 0 18px;
+            color: #334155;
+            font-weight: 700;
+        }
+        .totals {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .totals .line {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-weight: 800;
+        }
+        .totals .final {
+            font-size: 20px;
+            font-weight: 900;
+            color: #0b1b4d;
+            padding-top: 10px;
+            border-top: 1px solid #e6e9ef;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .btn {
+            display: inline-block;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-weight: 900;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid #d8deea;
+            background: #fff;
+            color: #0b1b4d;
+        }
+        .btn-primary {
+            background: #16a34a;
+            color: #fff;
+            border-color: #16a34a;
+        }
+        @media print {
+            body {
+                background: #fff;
+            }
+            .no-print,
+            header,
+            footer {
+                display: none !important;
+            }
+            .page {
+                max-width: none;
+                margin: 0;
+                padding: 0;
+            }
+            .receipt-card {
+                border: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print" th:replace="fragments/header :: header"></div>
+
+<main class="page">
+    <div class="actions no-print">
+        <a class="btn" th:href="@{/orders/{id}(id=${receipt.orderId})}">Назад к заказу</a>
+        <button class="btn btn-primary" type="button" onclick="window.print()">Печать / сохранить в PDF</button>
+        <a class="btn" th:href="@{/orders/my}">Мои заказы</a>
+    </div>
+
+    <section class="receipt-card">
+        <div class="receipt-head">
+            <div>
+                <h1 class="title">Электронный чек</h1>
+                <div class="muted">Номер чека: <span th:text="${receipt.receiptNumber}">RCPT-000</span></div>
+                <div class="success-badge"
+                     th:text="${receipt.paymentStatus == 'succeeded' ? 'Оплата подтверждена' : 'Статус оплаты: ' + receipt.paymentStatus}">
+                    Оплата подтверждена
+                </div>
+            </div>
+
+            <div style="text-align:right;">
+                <div class="muted">Заказ #<span th:text="${receipt.orderId}">0</span></div>
+                <div class="muted" th:if="${receipt.createdAt != null}">
+                    Оформлен: <span th:text="${#temporals.format(receipt.createdAt, 'dd.MM.yyyy HH:mm')}">—</span>
+                </div>
+                <div class="muted" th:if="${receipt.paidAt != null}">
+                    Оплачен: <span th:text="${#temporals.format(receipt.paidAt, 'dd.MM.yyyy HH:mm')}">—</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="box">
+                <div class="label">Покупатель</div>
+                <div class="value" th:text="${receipt.buyerName}">Покупатель</div>
+                <div class="meta" th:text="${receipt.buyerEmail}">mail@example.com</div>
+            </div>
+
+            <div class="box">
+                <div class="label">Буфет</div>
+                <div class="value" th:text="${receipt.buffetName}">Буфет</div>
+            </div>
+
+            <div class="box">
+                <div class="label">Код выдачи</div>
+                <div class="value" th:text="${receipt.pickupCode}">0000</div>
+            </div>
+
+            <div class="box">
+                <div class="label">Способ оплаты</div>
+                <div class="value" th:text="${receipt.paymentProvider}">stub</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Позиции заказа</h3>
+
+            <div th:if="${#lists.isEmpty(receipt.items)}" class="muted">
+                Обычных товаров нет.
+            </div>
+
+            <div th:each="it : ${receipt.items}" class="row">
+                <div>
+                    <div class="name" th:text="${it.name}">Товар</div>
+                    <div class="meta">
+                        Кол-во: <span th:text="${it.qty}">1</span>
+                        · Цена за 1 шт.: <span th:text="${#numbers.formatDecimal(it.unitPrice, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                        <span th:if="${it.discountAmount != null and it.discountAmount > 0}">
+                            · Скидка: <span th:text="${#numbers.formatDecimal(it.discountAmount, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="price"
+                     th:text="${#numbers.formatDecimal(it.finalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</div>
+            </div>
+        </div>
+
+        <div class="section" th:if="${receipt.combos != null and !#lists.isEmpty(receipt.combos)}">
+            <h3>Комбо</h3>
+
+            <div th:each="combo : ${receipt.combos}" class="row">
+                <div>
+                    <div class="name">
+                        <span th:text="${combo.comboName}">Комбо</span>
+                        <span class="meta" th:text="${' x' + combo.qty}">x1</span>
+                    </div>
+                    <ul class="combo-items">
+                        <li th:each="item : ${combo.items}">
+                            <span th:text="${item.slotName}">Слот</span>:
+                            <span th:text="${item.productName}">Товар</span>
+                            <span th:text="${' x' + item.qty}">x1</span>
+                            <span th:if="${item.extraPriceSnapshot != null}">
+                                (<span th:text="${'+' + #numbers.formatDecimal(item.extraPriceSnapshot, 1, 'COMMA', 2, 'POINT')}">+0.00</span>)
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="price"
+                     th:text="${#numbers.formatDecimal(combo.comboPriceSnapshot * combo.qty, 1, 'COMMA', 2, 'POINT')}">0.00</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="totals">
+                <div class="line">
+                    <span>Сумма без скидок</span>
+                    <span th:text="${#numbers.formatDecimal(receipt.totalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                </div>
+                <div class="line">
+                    <span>Скидка</span>
+                    <span th:text="${#numbers.formatDecimal(receipt.discountAmount, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                </div>
+                <div class="line final">
+                    <span>Итого к оплате</span>
+                    <span th:text="${#numbers.formatDecimal(receipt.finalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div class="no-print" th:replace="fragments/footer :: footer"></div>
+</body>
+</html>
