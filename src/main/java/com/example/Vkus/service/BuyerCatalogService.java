@@ -33,7 +33,7 @@ public class BuyerCatalogService {
             list = productRepository.findByIsActiveTrueOrderByNameAsc();
         }
 
-        // страховка: если какой-то репо-метод не фильтрует активность
+
         return list.stream().filter(p -> Boolean.TRUE.equals(p.getIsActive())).toList();
     }
 }

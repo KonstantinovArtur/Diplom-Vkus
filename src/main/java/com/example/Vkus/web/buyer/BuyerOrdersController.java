@@ -9,7 +9,7 @@ import com.example.Vkus.service.AuditLogService;
 import com.example.Vkus.service.CartComboService;
 import com.example.Vkus.service.CartService;
 import com.example.Vkus.service.CheckoutService;
-import com.example.Vkus.service.StubPaymentService;
+import com.example.Vkus.service.OrderReceiptService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,7 +25,6 @@ public class BuyerOrdersController {
 
     private final CheckoutService checkoutService;
     private final CurrentUserService currentUserService;
-    private final StubPaymentService stubPaymentService;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final PaymentRepository paymentRepository;
@@ -33,51 +32,28 @@ public class BuyerOrdersController {
     private final AuditLogService audit;
     private final CartService cartService;
     private final CartComboService cartComboService;
+    private final OrderReceiptService orderReceiptService;
 
     public BuyerOrdersController(CheckoutService checkoutService,
                                  CurrentUserService currentUserService,
                                  OrderRepository orderRepository,
                                  OrderItemRepository orderItemRepository,
                                  PaymentRepository paymentRepository,
-                                 StubPaymentService stubPaymentService,
                                  JdbcTemplate jdbc,
                                  AuditLogService audit,
                                  CartService cartService,
-                                 CartComboService cartComboService) {
+                                 CartComboService cartComboService,
+                                 OrderReceiptService orderReceiptService) {
         this.checkoutService = checkoutService;
         this.currentUserService = currentUserService;
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.paymentRepository = paymentRepository;
-        this.stubPaymentService = stubPaymentService;
         this.jdbc = jdbc;
         this.audit = audit;
         this.cartService = cartService;
         this.cartComboService = cartComboService;
-    }
-
-    @PostMapping("/{id}/pay")
-    public String pay(@PathVariable Long id) {
-        var user = currentUserService.getCurrentUser();
-        Long buffetId = currentUserService.getCurrentBuffetIdOrThrow();
-
-        var order = orderRepository.findById(id).orElseThrow();
-        if (!order.getUser().getId().equals(user.getId()) || !order.getBuffet().getId().equals(buffetId)) {
-            audit.log("ORDER_PAY_FORBIDDEN", "order", id, Map.of(
-                    "actorUserId", user.getId(),
-                    "buffetId", buffetId
-            ));
-            return "redirect:/orders/my";
-        }
-
-        stubPaymentService.payOrderStub(id);
-
-        audit.log("ORDER_PAY_STUB", "order", id, Map.of(
-                "actorUserId", user.getId(),
-                "buffetId", buffetId
-        ));
-
-        return "redirect:/orders/" + id;
+        this.orderReceiptService = orderReceiptService;
     }
 
     @GetMapping("/checkout")
@@ -165,6 +141,20 @@ public class BuyerOrdersController {
         return "buyer/order-success";
     }
 
+    @GetMapping("/{id}/receipt")
+    public String receipt(@PathVariable Long id, Model model, RedirectAttributes ra) {
+        var user = currentUserService.getCurrentUser();
+        Long buffetId = currentUserService.getCurrentBuffetIdOrThrow();
+
+        try {
+            model.addAttribute("receipt", orderReceiptService.getBuyerReceipt(id, user.getId(), buffetId));
+            return "buyer/order-receipt";
+        } catch (Exception ex) {
+            ra.addFlashAttribute("err", "Не удалось открыть чек по этому заказу.");
+            return "redirect:/orders/my";
+        }
+    }
+
     @GetMapping("/my")
     public String myOrders(Model model) {
         var user = currentUserService.getCurrentUser();
@@ -198,11 +188,11 @@ public class BuyerOrdersController {
     private List<BuyerOrderComboVm> loadOrderCombos(Long orderId) {
         var heads = jdbc.query("""
                 SELECT oc.id AS order_combo_id,
-                       ct.name AS combo_name,
+                       COALESCE(oc.combo_name_snapshot, ct.name) AS combo_name,
                        oc.qty AS qty,
                        oc.combo_price_snapshot AS price_snapshot
                 FROM order_combos oc
-                JOIN combo_templates ct ON ct.id = oc.combo_template_id
+                LEFT JOIN combo_templates ct ON ct.id = oc.combo_template_id
                 WHERE oc.order_id = ?
                 ORDER BY oc.id
                 """,
@@ -235,13 +225,13 @@ public class BuyerOrdersController {
 
         String sql = """
                 SELECT oci.order_combo_id AS order_combo_id,
-                       cs.name AS slot_name,
-                       p.name AS product_name,
+                       COALESCE(oci.slot_name_snapshot, cs.name) AS slot_name,
+                       COALESCE(oci.product_name_snapshot, p.name) AS product_name,
                        oci.qty AS qty,
                        oci.extra_price_snapshot AS extra_price
                 FROM order_combo_items oci
-                JOIN combo_slots cs ON cs.id = oci.combo_slot_id
-                JOIN products p ON p.id = oci.product_id
+                LEFT JOIN combo_slots cs ON cs.id = oci.combo_slot_id
+                LEFT JOIN products p ON p.id = oci.product_id
                 WHERE oci.order_combo_id IN (%s)
                 ORDER BY oci.order_combo_id, cs.sort_order, cs.id, oci.id
                 """.formatted(inSql);

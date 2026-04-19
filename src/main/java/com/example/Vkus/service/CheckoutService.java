@@ -69,7 +69,6 @@ public class CheckoutService {
             throw new IllegalStateException("Cart is empty");
         }
 
-        // 1) проверка общего остатка по inventory_items (с учётом комбо)
         Map<Long, Integer> needByProduct = new HashMap<>();
         for (CartItem ci : cartItems) needByProduct.merge(ci.getProduct().getId(), ci.getQty(), Integer::sum);
 
@@ -100,16 +99,17 @@ public class CheckoutService {
 
         Buffet buffetRef = em.getReference(Buffet.class, buffetId);
 
-        // 2) создаём заказ
         Order order = new Order();
         order.setUser(user);
         order.setBuffet(buffetRef);
         order.setStatus("created");
         order.setPickupCode(generatePickupCode());
         order.setPickupCodeExpiresAt(LocalDateTime.now().plusMinutes(30));
+        order.setBuyerNameSnapshot(user.getFullName());
+        order.setBuyerEmailSnapshot(user.getEmail());
+        order.setBuffetNameSnapshot(buffetRef.getName());
         orderRepository.save(order);
 
-        // 3) скидки promo/monthly (batch на checkout считаем по фактическим партиям)
         List<Product> products = cartItems.stream().map(CartItem::getProduct).toList();
         Map<Long, BuyerPricingService.Discounts> discountsMap =
                 buyerPricingService.resolveDiscounts(user.getId(), buffetId, products);
@@ -117,10 +117,8 @@ public class CheckoutService {
         BigDecimal totalBase = BigDecimal.ZERO;
         BigDecimal totalDiscount = BigDecimal.ZERO;
 
-        // batch_id, которые трогали в заказе (потом выключим скидки для закрытых партий)
         Set<Long> touchedBatchIds = new HashSet<>();
 
-        // 4) обычные товары
         for (CartItem ci : cartItems) {
             Product product = ci.getProduct();
             int qty = ci.getQty();
@@ -142,6 +140,7 @@ public class CheckoutService {
             OrderItem oi = new OrderItem();
             oi.setOrder(order);
             oi.setProduct(product);
+            oi.setProductNameSnapshot(product.getName());
             oi.setQty(qty);
             oi.setUnitPriceSnapshot(scale2(unitBase));
             oi.setDiscountAmount(scale2(lineDiscount.max(BigDecimal.ZERO)));
@@ -184,46 +183,45 @@ public class CheckoutService {
             }
         }
 
-        // 5) комбо
         for (var cc : cartCombos) {
             int comboQty = cc.getQty() == null ? 1 : cc.getQty();
             BigDecimal comboPrice = nz(cc.getComboPriceSnapshot());
 
             Long orderComboId = jdbc.queryForObject("""
-                    INSERT INTO order_combos(order_id, combo_template_id, qty, combo_price_snapshot)
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO order_combos(order_id, combo_template_id, qty, combo_price_snapshot, combo_name_snapshot)
+                    VALUES (?, ?, ?, ?, ?)
                     RETURNING id
                     """, Long.class,
                     order.getId(),
                     cc.getComboTemplate().getId(),
                     comboQty,
-                    comboPrice
+                    comboPrice,
+                    cc.getComboTemplate().getName()
             );
 
             for (var it : cc.getItems()) {
                 int oneComboItemQty = it.getQty() == null ? 1 : it.getQty();
                 int totalItemQty = oneComboItemQty * comboQty;
 
-                // ✅ ВАЖНО: получаем id комбо-позиции, чтобы привязать партии
                 Long orderComboItemId = jdbc.queryForObject("""
                     INSERT INTO order_combo_items
-                      (order_combo_id, combo_slot_id, product_id, qty, extra_price_snapshot)
+                      (order_combo_id, combo_slot_id, product_id, qty, extra_price_snapshot, slot_name_snapshot, product_name_snapshot)
                     VALUES
-                      (?, ?, ?, ?, ?)
+                      (?, ?, ?, ?, ?, ?, ?)
                     RETURNING id
                     """, Long.class,
                         orderComboId,
                         it.getComboSlot().getId(),
                         it.getProduct().getId(),
                         totalItemQty,
-                        it.getExtraPriceSnapshot()
+                        it.getExtraPriceSnapshot(),
+                        it.getComboSlot().getName(),
+                        it.getProduct().getName()
                 );
 
-                // списание FEFO по партиям
                 List<BatchTake> takes = takeFromBatchesFefo(buffetId, it.getProduct().getId(), totalItemQty);
                 for (var t : takes) touchedBatchIds.add(t.batchId());
 
-                // ✅ НОВОЕ: сохранить, из каких партий списали эту комбо-позицию
                 for (BatchTake t : takes) {
                     jdbc.update("""
                         INSERT INTO order_combo_item_batches(order_combo_item_id, batch_id, qty)
@@ -261,32 +259,28 @@ public class CheckoutService {
             totalBase = totalBase.add(lineBase);
         }
 
-        // ✅ batch-скидки выключаем после сохранения скидок в заказ
         disableBatchDiscountsIfClosed(touchedBatchIds);
 
-        // 6) итоги
         order.setTotalAmount(scale2(totalBase));
         order.setDiscountAmount(scale2(totalDiscount.max(BigDecimal.ZERO)));
         order.setFinalAmount(scale2(totalBase.subtract(totalDiscount).max(BigDecimal.ZERO)));
         orderRepository.save(order);
 
-        // 7) payment pending
         Payment p = new Payment();
         p.setOrder(order);
         p.setProvider("stub");
-        p.setStatus("pending");
+        p.setStatus("succeeded");
         p.setAmount(order.getFinalAmount());
         p.setCurrency("RUB");
+        p.setPaidAt(LocalDateTime.now());
+        p.setProviderPaymentId("stub-order-" + order.getId());
         paymentRepository.save(p);
 
-        // 8) чистим корзину
         cartService.clear(user.getId(), buffetId);
         cartComboService.clearCombos(user.getId(), buffetId);
 
         return order;
     }
-
-    // ================== pricing helpers ==================
 
     private record BatchRow(long id, int qtyAvailable, String status) {}
     public record BatchTake(long batchId, int qtyTaken) {}
@@ -397,8 +391,6 @@ public class CheckoutService {
         }
     }
 
-    // ================== FEFO списание ==================
-
     private List<BatchTake> takeFromBatchesFefo(Long buffetId, Long productId, int needQty) {
         List<BatchRow> rows = jdbc.query("""
                 SELECT id, qty_available, status
@@ -464,8 +456,6 @@ public class CheckoutService {
                     """, batchId, batchId);
         }
     }
-
-    // ================== utils ==================
 
     private static BigDecimal nz(BigDecimal v) {
         return v == null ? BigDecimal.ZERO : v;

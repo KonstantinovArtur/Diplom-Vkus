@@ -9,6 +9,7 @@ import com.example.Vkus.repository.PaymentRepository;
 import com.example.Vkus.security.NotEnoughStockException;
 import com.example.Vkus.service.AuditLogService;
 import com.example.Vkus.service.CheckoutService;
+import com.example.Vkus.service.OrderReceiptService;
 import com.example.Vkus.service.StubPaymentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,6 +32,7 @@ public class MobileOrderService {
     private final OrderItemRepository orderItemRepository;
     private final PaymentRepository paymentRepository;
     private final StubPaymentService stubPaymentService;
+    private final OrderReceiptService orderReceiptService;
     private final JdbcTemplate jdbc;
     private final AuditLogService audit;
 
@@ -40,6 +42,7 @@ public class MobileOrderService {
             OrderItemRepository orderItemRepository,
             PaymentRepository paymentRepository,
             StubPaymentService stubPaymentService,
+            OrderReceiptService orderReceiptService,
             JdbcTemplate jdbc,
             AuditLogService audit
     ) {
@@ -48,6 +51,7 @@ public class MobileOrderService {
         this.orderItemRepository = orderItemRepository;
         this.paymentRepository = paymentRepository;
         this.stubPaymentService = stubPaymentService;
+        this.orderReceiptService = orderReceiptService;
         this.jdbc = jdbc;
         this.audit = audit;
     }
@@ -71,7 +75,7 @@ public class MobileOrderService {
 
             return new MobileCheckoutResponse(
                     true,
-                    "Заказ успешно оформлен",
+                    "Заказ успешно оформлен и оплачен",
                     created.getId()
             );
         } catch (NotEnoughStockException ex) {
@@ -136,7 +140,9 @@ public class MobileOrderService {
                 .map(oi -> new MobileOrderItemDto(
                         oi.getId(),
                         oi.getProduct().getId(),
-                        oi.getProduct().getName(),
+                        oi.getProductNameSnapshot() != null && !oi.getProductNameSnapshot().isBlank()
+                                ? oi.getProductNameSnapshot()
+                                : oi.getProduct().getName(),
                         oi.getQty(),
                         toDouble(oi.getUnitPriceSnapshot()),
                         toDouble(oi.getDiscountAmount()),
@@ -159,6 +165,58 @@ public class MobileOrderService {
                 payment == null ? null : payment.getProvider(),
                 items,
                 loadOrderCombos(orderId)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public MobileOrderReceiptResponse getReceipt(Jwt jwt, Long orderId) {
+        Long userId = extractLong(jwt.getClaims().get("uid"));
+        Long buffetId = extractOptionalLong(jwt.getClaims().get("defaultBuffetId"));
+
+        if (buffetId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "У пользователя не выбран буфет");
+        }
+
+        var receipt = safeLoadReceipt(orderId, userId, buffetId);
+
+        return new MobileOrderReceiptResponse(
+                receipt.orderId(),
+                receipt.receiptNumber(),
+                receipt.createdAt() == null ? null : receipt.createdAt().format(DT),
+                receipt.paidAt() == null ? null : receipt.paidAt().format(DT),
+                receipt.buyerName(),
+                receipt.buyerEmail(),
+                receipt.buffetName(),
+                receipt.pickupCode(),
+                toDouble(receipt.totalAmount()),
+                toDouble(receipt.discountAmount()),
+                toDouble(receipt.finalAmount()),
+                receipt.paymentStatus(),
+                receipt.paymentProvider(),
+                receipt.items().stream()
+                        .map(it -> new MobileOrderReceiptItemDto(
+                                it.name(),
+                                it.qty(),
+                                toDouble(it.unitPrice()),
+                                toDouble(it.discountAmount()),
+                                toDouble(it.finalAmount())
+                        ))
+                        .toList(),
+                receipt.combos().stream()
+                        .map(combo -> new MobileOrderReceiptComboDto(
+                                combo.comboName(),
+                                combo.qty(),
+                                toDouble(combo.comboPriceSnapshot()),
+                                combo.items().stream()
+                                        .map(item -> new MobileOrderReceiptComboItemDto(
+                                                item.slotName(),
+                                                item.productName(),
+                                                item.qty(),
+                                                toDouble(item.extraPriceSnapshot())
+                                        ))
+                                        .toList()
+                        ))
+                        .toList()
         );
     }
 
@@ -199,11 +257,11 @@ public class MobileOrderService {
     private List<MobileOrderComboDto> loadOrderCombos(Long orderId) {
         var heads = jdbc.query("""
                 SELECT oc.id AS order_combo_id,
-                       ct.name AS combo_name,
+                       COALESCE(oc.combo_name_snapshot, ct.name) AS combo_name,
                        oc.qty AS qty,
                        oc.combo_price_snapshot AS price_snapshot
                 FROM order_combos oc
-                JOIN combo_templates ct ON ct.id = oc.combo_template_id
+                LEFT JOIN combo_templates ct ON ct.id = oc.combo_template_id
                 WHERE oc.order_id = ?
                 ORDER BY oc.id
                 """,
@@ -242,13 +300,13 @@ public class MobileOrderService {
 
         String sql = """
                 SELECT oci.order_combo_id AS order_combo_id,
-                       cs.name AS slot_name,
-                       p.name AS product_name,
+                       COALESCE(oci.slot_name_snapshot, cs.name) AS slot_name,
+                       COALESCE(oci.product_name_snapshot, p.name) AS product_name,
                        oci.qty AS qty,
                        oci.extra_price_snapshot AS extra_price
                 FROM order_combo_items oci
-                JOIN combo_slots cs ON cs.id = oci.combo_slot_id
-                JOIN products p ON p.id = oci.product_id
+                LEFT JOIN combo_slots cs ON cs.id = oci.combo_slot_id
+                LEFT JOIN products p ON p.id = oci.product_id
                 WHERE oci.order_combo_id IN (%s)
                 ORDER BY oci.order_combo_id, cs.sort_order, cs.id, oci.id
                 """.formatted(inSql);
@@ -270,6 +328,16 @@ public class MobileOrderService {
         }, args);
 
         return new ArrayList<>(map.values());
+    }
+
+    private OrderReceiptService.ReceiptDto safeLoadReceipt(Long orderId, Long userId, Long buffetId) {
+        try {
+            return orderReceiptService.getBuyerReceipt(orderId, userId, buffetId);
+        } catch (IllegalStateException ex) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ex.getMessage());
+        } catch (NoSuchElementException ex) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Заказ или чек не найден");
+        }
     }
 
     private Double toDouble(BigDecimal value) {

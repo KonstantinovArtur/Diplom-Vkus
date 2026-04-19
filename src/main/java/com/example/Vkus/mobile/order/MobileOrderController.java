@@ -33,6 +33,12 @@ public class MobileOrderController {
         return mobileOrderService.getOrderDetail(jwt, orderId);
     }
 
+    @GetMapping("/{orderId}/receipt")
+    public MobileOrderReceiptResponse receipt(@AuthenticationPrincipal Jwt jwt,
+                                              @PathVariable Long orderId) {
+        return mobileOrderService.getReceipt(jwt, orderId);
+    }
+
     @PostMapping("/{orderId}/pay")
     public MobilePayOrderResponse pay(@AuthenticationPrincipal Jwt jwt,
                                       @PathVariable Long orderId) {

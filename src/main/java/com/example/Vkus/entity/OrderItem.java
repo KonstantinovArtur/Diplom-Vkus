@@ -13,15 +13,16 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // order_id BIGINT NOT NULL REFERENCES orders(id)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    // product_id BIGINT NOT NULL REFERENCES products(id)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
+
+    @Column(name = "product_name_snapshot")
+    private String productNameSnapshot;
 
     @Column(name = "qty", nullable = false)
     private Integer qty;
@@ -35,7 +36,6 @@ public class OrderItem {
     @Column(name = "final_line_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal finalLineAmount;
 
-    // getters/setters
     public Long getId() { return id; }
 
     public Order getOrder() { return order; }
@@ -43,6 +43,9 @@ public class OrderItem {
 
     public Product getProduct() { return product; }
     public void setProduct(Product product) { this.product = product; }
+
+    public String getProductNameSnapshot() { return productNameSnapshot; }
+    public void setProductNameSnapshot(String productNameSnapshot) { this.productNameSnapshot = productNameSnapshot; }
 
     public Integer getQty() { return qty; }
     public void setQty(Integer qty) { this.qty = qty; }

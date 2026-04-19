@@ -17,12 +17,10 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // user_id BIGINT NOT NULL REFERENCES users(id)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // buffet_id BIGINT NOT NULL REFERENCES buffets(id)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "buffet_id", nullable = false)
     private Buffet buffet;
@@ -55,7 +53,15 @@ public class Order {
     @JoinColumn(name = "seller_id")
     private User seller;
 
-    // generated column в БД, но в entity можно маппить read-only
+    @Column(name = "buyer_name_snapshot")
+    private String buyerNameSnapshot;
+
+    @Column(name = "buyer_email_snapshot")
+    private String buyerEmailSnapshot;
+
+    @Column(name = "buffet_name_snapshot")
+    private String buffetNameSnapshot;
+
     @Column(name = "order_date", insertable = false, updatable = false)
     private LocalDate orderDate;
 
@@ -68,7 +74,6 @@ public class Order {
         if (finalAmount == null) finalAmount = BigDecimal.ZERO;
     }
 
-    // getters/setters
     public Long getId() { return id; }
 
     public User getUser() { return user; }
@@ -103,6 +108,15 @@ public class Order {
 
     public User getSeller() { return seller; }
     public void setSeller(User seller) { this.seller = seller; }
+
+    public String getBuyerNameSnapshot() { return buyerNameSnapshot; }
+    public void setBuyerNameSnapshot(String buyerNameSnapshot) { this.buyerNameSnapshot = buyerNameSnapshot; }
+
+    public String getBuyerEmailSnapshot() { return buyerEmailSnapshot; }
+    public void setBuyerEmailSnapshot(String buyerEmailSnapshot) { this.buyerEmailSnapshot = buyerEmailSnapshot; }
+
+    public String getBuffetNameSnapshot() { return buffetNameSnapshot; }
+    public void setBuffetNameSnapshot(String buffetNameSnapshot) { this.buffetNameSnapshot = buffetNameSnapshot; }
 
     public LocalDate getOrderDate() { return orderDate; }
 }

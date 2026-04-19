@@ -17,7 +17,7 @@ public class SellerOrderService {
 
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
-    private final InventoryItemRepository inventoryItemRepository; // оставил, хотя в cancel не нужен
+    private final InventoryItemRepository inventoryItemRepository;
     private final CurrentUserService currentUserService;
     private final JdbcTemplate jdbc;
     private final BuyerNotificationService buyerNotificationService;
@@ -83,15 +83,6 @@ public class SellerOrderService {
         o.setIssuedAt(LocalDateTime.now());
         o.setSeller(currentUserService.getCurrentUser());
         orderRepository.save(o);
-
-        // заглушка оплаты
-        paymentRepository.findTopByOrderIdOrderByIdDesc(o.getId()).ifPresent(p -> {
-            if ("pending".equalsIgnoreCase(p.getStatus())) {
-                p.setStatus("succeeded");
-                p.setPaidAt(LocalDateTime.now());
-                paymentRepository.save(p);
-            }
-        });
     }
 
     @Transactional
@@ -103,19 +94,14 @@ public class SellerOrderService {
         Long buffetId = o.getBuffet().getId();
         Long actorUserId = currentUserService.getCurrentUser().getId();
 
-        // 1) статус
         o.setStatus("cancelled");
         orderRepository.save(o);
 
-        // 2) "возврат денег" заглушка
         paymentRepository.findTopByOrderIdOrderByIdDesc(o.getId()).ifPresent(p -> {
             p.setStatus("cancelled");
             paymentRepository.save(p);
         });
 
-        // ======================
-        // 3) Возврат ОБЫЧНЫХ товаров: по order_item_batches
-        // ======================
         List<BatchBackRow> backs = jdbc.query("""
                 SELECT
                     oi.product_id      AS product_id,
@@ -135,7 +121,6 @@ public class SellerOrderService {
         );
 
         for (BatchBackRow b : backs) {
-            // вернуть в batch и открыть, если был closed
             jdbc.update("""
                     UPDATE inventory_batches
                     SET qty_available = qty_available + ?,
@@ -143,10 +128,8 @@ public class SellerOrderService {
                     WHERE id = ?
                     """, b.qty(), b.batchId());
 
-            // вернуть общий остаток inventory_items (upsert)
             upsertInventoryPlus(buffetId, b.productId(), b.qty());
 
-            // movement на возврат
             jdbc.update("""
                     INSERT INTO inventory_movements
                       (buffet_id, product_id, batch_id, type, qty, created_at, created_by, ref_type, ref_id)
@@ -160,9 +143,6 @@ public class SellerOrderService {
             );
         }
 
-        // ======================
-        // 4) Возврат КОМБО: по order_combo_item_batches (ИДЕАЛЬНО)
-        // ======================
         List<BatchBackRow> comboBacks = jdbc.query("""
                 SELECT
                     oci.product_id AS product_id,

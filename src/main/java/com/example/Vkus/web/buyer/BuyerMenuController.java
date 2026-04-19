@@ -27,7 +27,7 @@ public class BuyerMenuController {
     private final CurrentUserFacade currentUser;
     private final JdbcTemplate jdbc;
 
-    // product_id -> (qty, percent)
+
     private record ExpiryDiscountInfo(int qty, BigDecimal percent) {}
 
     public BuyerMenuController(BuyerCatalogService catalogService,
@@ -53,11 +53,11 @@ public class BuyerMenuController {
         List<Category> categories = categoryRepository.findByIsActiveTrueOrderByNameAsc();
         List<Product> products = catalogService.findProducts(categoryId, q);
         Map<Long, Long> stockQtyByProductId = loadStockQtyByProduct(buffetId, products);
-        // скидки как у тебя сейчас (ничего не ломаем)
+
         Map<Long, BuyerPricingService.Discounts> discounts =
                 pricingService.resolveDiscounts(userId, buffetId, products);
 
-        // ✅ НОВОЕ: по уценке (batch_discounts) берём сразу qty + percent
+
         Map<Long, ExpiryDiscountInfo> expiryInfoByProductId =
                 loadExpiryDiscountInfoByProduct(buffetId, products);
 
@@ -67,14 +67,12 @@ public class BuyerMenuController {
             BigDecimal promo = (d != null) ? d.promoPercent() : null;
             BigDecimal monthly = (d != null) ? d.monthlyPercent() : null;
 
-            // ❗ batchPercent для цены оставляем как было (из pricingService),
-            // чтобы не ломать текущий расчёт
+
             BigDecimal batchForPrice = (d != null) ? d.batchPercent() : null;
 
             BigDecimal base = p.getBasePrice();
             BigDecimal finalPrice = pricingService.applyThreeDiscounts(base, batchForPrice, promo, monthly);
 
-            // ✅ для бейджа в меню используем проценты/остаток из БД, а не из pricingService
             ExpiryDiscountInfo info = expiryInfoByProductId.get(p.getId());
 
 
@@ -83,7 +81,6 @@ public class BuyerMenuController {
             if (info != null && info.qty() > 0 && info.percent() != null) {
                 batchPercentForBadge = info.percent();
 
-                // красивый текст без хвостов .00
                 String percentStr = stripZeros(info.percent());
                 batchText = "Бонус " + percentStr + "% · " + info.qty() + " шт";
             }
@@ -99,7 +96,6 @@ public class BuyerMenuController {
                     base,
                     finalPrice,
 
-                    // ✅ в карточку отдаём batchPercent + batchText для отображения
                     batchPercentForBadge,
                     batchText,
 
@@ -122,10 +118,7 @@ public class BuyerMenuController {
         return "buyer/menu";
     }
 
-    /**
-     * product_id -> сколько штук осталось в активных партиях, на которые есть активная уценка,
-     * и какой процент уценки показывать (берём MAX(percent)).
-     */
+
     private Map<Long, ExpiryDiscountInfo> loadExpiryDiscountInfoByProduct(Long buffetId, List<Product> products) {
         if (products == null || products.isEmpty()) return Map.of();
 

@@ -50,6 +50,11 @@
                         Открыть
                     </a>
 
+                    <a th:href="@{/orders/{id}/receipt(id=${o.id})}"
+                       style="text-decoration:none;border:1px solid #d8deea;border-radius:12px;padding:8px 10px;font-weight:900;color:#0b1b4d;background:#f0fdf4;">
+                        Чек
+                    </a>
+
                     <form th:action="@{/buyer/orders/{id}/repeat(id=${o.id})}" method="post" style="margin:0;">
                         <button type="submit"
                                 style="border:1px solid #d8deea;border-radius:12px;padding:8px 10px;font-weight:900;color:#0b1b4d;background:#fff7ed;cursor:pointer;">
