@@ -63,6 +63,7 @@ public class BuffetAdminComboController {
                 var t = svc.requireOwnedTemplate(editId, ctx.buffetId());
                 model.addAttribute("form", svc.toForm(t));
                 model.addAttribute("editId", editId);
+                model.addAttribute("editCombo", t);
             } catch (IllegalStateException e) {
                 ra.addFlashAttribute("err", "Комбо не найдено или недоступно для текущего буфета.");
                 return "redirect:/admin-buffet/combos";
@@ -72,6 +73,7 @@ public class BuffetAdminComboController {
             f.setIsActive(true);
             model.addAttribute("form", f);
             model.addAttribute("editId", null);
+            model.addAttribute("editCombo", null);
         }
 
         return "admin-buffet/combos/list";
@@ -97,6 +99,17 @@ public class BuffetAdminComboController {
         if (br.hasErrors()) {
             model.addAttribute("combos", svc.listTemplates(ctx.buffetId()));
             model.addAttribute("editId", form.getId());
+
+            if (form.getId() != null) {
+                try {
+                    model.addAttribute("editCombo", svc.requireOwnedTemplate(form.getId(), ctx.buffetId()));
+                } catch (IllegalStateException ignored) {
+                    model.addAttribute("editCombo", null);
+                }
+            } else {
+                model.addAttribute("editCombo", null);
+            }
+
             return "admin-buffet/combos/list";
         }
 

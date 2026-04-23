@@ -21,7 +21,10 @@ import com.example.Vkus.web.dto.ComboTemplateForm;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -30,6 +33,8 @@ public class BuffetAdminComboService {
 
     public record Ctx(Long userId, Long buffetId) {}
 
+    private static final long MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+    private static final List<String> ALLOWED_MIME = List.of("image/png", "image/jpeg", "image/webp");
     private final CurrentUserService currentUserService;
     private final ComboTemplateRepository templateRepo;
     private final ComboSlotRepository slotRepo;
@@ -103,6 +108,21 @@ public class BuffetAdminComboService {
             form.setBasePrice(BigDecimal.ZERO);
         }
 
+        MultipartFile image = form.getImage();
+        if (image != null && !image.isEmpty()) {
+            if (image.getSize() > MAX_IMAGE_BYTES) {
+                br.reject("image.tooLarge", "Картинка слишком большая (макс 2MB)");
+            }
+            String mime = image.getContentType();
+            if (mime == null || !ALLOWED_MIME.contains(mime)) {
+                br.reject("image.badType", "Разрешены только PNG/JPEG/WebP");
+            }
+        }
+
+        if (br.hasErrors()) {
+            return;
+        }
+
         ComboTemplate t;
         if (form.getId() == null) {
             t = new ComboTemplate();
@@ -122,6 +142,17 @@ public class BuffetAdminComboService {
         t.setName(form.getName().trim());
         t.setBasePrice(form.getBasePrice());
         t.setIsActive(Boolean.TRUE.equals(form.getIsActive()));
+
+        if (image != null && !image.isEmpty()) {
+            try {
+                t.setImageData(image.getBytes());
+                t.setImageMime(image.getContentType());
+                t.setImageUpdatedAt(LocalDateTime.now());
+            } catch (IOException e) {
+                br.reject("image.io", "Не удалось прочитать файл картинки");
+                return;
+            }
+        }
 
         templateRepo.save(t);
         form.setId(t.getId());

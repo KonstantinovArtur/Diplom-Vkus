@@ -51,27 +51,42 @@
         <table>
             <thead>
             <tr>
+            <tr>
                 <th>ID</th>
+                <th>Фото</th>
                 <th>Комбо</th>
                 <th>Цена</th>
                 <th>Статус</th>
                 <th></th>
             </tr>
+            </tr>
             </thead>
             <tbody>
             <tr th:each="c : ${combos}">
                 <td th:text="${c.id}">1</td>
+
+                <td>
+                    <img th:if="${c.imageData != null}"
+                         th:src="@{/combos/{id}/image(id=${c.id})}"
+                         alt="combo"
+                         style="width:72px;height:72px;object-fit:cover;border-radius:12px;border:1px solid #e6e9ef;">
+                    <span class="muted" th:unless="${c.imageData != null}">нет</span>
+                </td>
+
                 <td>
                     <div style="font-weight:900;color:#0b1b4d" th:text="${c.name}">Комбо</div>
                     <div class="muted">
                         Слотов: <span th:text="${c.slots != null ? c.slots.size() : 0}">0</span>
                     </div>
                 </td>
+
                 <td th:text="${c.basePrice}">199.00</td>
+
                 <td>
-                    <span class="chip" th:classappend="${c.isActive} ? '' : ' off'"
-                          th:text="${c.isActive} ? 'активно' : 'выключено'">активно</span>
+        <span class="chip" th:classappend="${c.isActive} ? '' : ' off'"
+              th:text="${c.isActive} ? 'активно' : 'выключено'">активно</span>
                 </td>
+
                 <td>
                     <div class="row-actions">
                         <a class="btn" th:href="@{/admin-buffet/combos(edit=${c.id})}">Изменить</a>
@@ -107,7 +122,7 @@
                 </div>
             </div>
 
-            <form th:action="@{/admin-buffet/combos/save}" method="post" th:object="${form}">
+            <form th:action="@{/admin-buffet/combos/save}" method="post" enctype="multipart/form-data" th:object="${form}">
                 <input type="hidden" th:field="*{id}"/>
 
                 <div th:if="${#fields.hasGlobalErrors()}" class="err">
@@ -137,7 +152,18 @@
                         <div class="field-err" th:if="${#fields.hasErrors('isActive')}" th:errors="*{isActive}">Ошибка</div>
                     </div>
 
-                    <div></div>
+                    <div>
+                        <label>Картинка</label>
+
+                        <div class="muted" th:if="${editCombo != null && editCombo.imageData != null}" style="margin-bottom:8px;">
+                            Сейчас загружена картинка.
+                            <a th:href="@{/combos/{id}/image(id=${editCombo.id})}" target="_blank">Посмотреть</a>
+                            <div class="hint">Чтобы заменить — выбери новый файл ниже.</div>
+                        </div>
+
+                        <input type="file" th:field="*{image}" accept="image/*">
+                        <div class="field-err" th:if="${#fields.hasErrors('image')}" th:errors="*{image}">Ошибка</div>
+                    </div>
                 </div>
 
                 <div class="actions">

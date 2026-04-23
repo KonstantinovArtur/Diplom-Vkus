@@ -12,6 +12,14 @@
         th{font-weight:900;color:#0b1b4d}
         .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid #d8deea;background:#eef2ff;font-weight:900;color:#0b1b4d;font-size:12px}
         .muted{color:#6b7280;font-size:13px}
+        .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+        .filters{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+        .field{display:flex;flex-direction:column;gap:6px}
+        .field label{font-size:13px;font-weight:800;color:#0b1b4d}
+        .field select{min-width:240px;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;outline:none;background:#fff}
+        .field select:focus{border-color:#0b1b4d}
+        .btn{display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;background:#fff;font-weight:800;cursor:pointer;text-decoration:none;color:#0b1b4d}
+        .btn:hover{border-color:#0b1b4d}
     </style>
 </head>
 <body>
@@ -20,13 +28,57 @@
 
 <div class="wrap">
     <div class="card">
-        <div class="title">Партии</div>
+        <div class="top">
+            <div class="top">
+                <div class="title">Партии</div>
+
+                <form class="filters" method="get" th:action="@{/warehouse/batches}">
+                    <div class="field">
+                        <label for="supplierId">Поставщик</label>
+                        <select id="supplierId" name="supplierId">
+                            <option value="">Все поставщики</option>
+                            <option th:each="s : ${suppliers}"
+                                    th:value="${s.id}"
+                                    th:text="${s.name}"
+                                    th:selected="${selectedSupplierId != null and selectedSupplierId.toString() == s.id.toString()}">
+                                Поставщик
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="productId">Товар</label>
+                        <select id="productId" name="productId">
+                            <option value="">Все товары</option>
+                            <option th:each="p : ${products}"
+                                    th:value="${p.id}"
+                                    th:text="${p.name}"
+                                    th:selected="${selectedProductId != null and selectedProductId.toString() == p.id.toString()}">
+                                Товар
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="status">Статус</label>
+                        <select id="status" name="status">
+                            <option value="">Все статусы</option>
+                            <option value="active" th:selected="${selectedStatus == 'active'}">active</option>
+                            <option value="closed" th:selected="${selectedStatus == 'closed'}">closed</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn">Применить</button>
+                    <a class="btn" th:href="@{/warehouse/batches}">Сбросить</a>
+                </form>
+            </div>
 
         <table>
             <thead>
             <tr>
                 <th style="width:80px">ID</th>
                 <th>Товар</th>
+                <th style="width:220px">Поставщик</th>
                 <th style="width:170px">Поступила</th>
                 <th style="width:140px">Годна до</th>
                 <th style="width:120px">Пришло</th>
@@ -38,6 +90,7 @@
             <tr th:each="r : ${rows}">
                 <td th:text="${r.id}">1</td>
                 <td th:text="${r.product_name}">—</td>
+                <td th:text="${r.supplier_name} ?: '—'">—</td>
                 <td th:text="${r.received_at}">—</td>
                 <td th:text="${r.expires_at} ?: '—'">—</td>
                 <td th:text="${r.qty_received}">0</td>
@@ -45,7 +98,7 @@
                 <td><span class="pill" th:text="${r.status}">active</span></td>
             </tr>
             <tr th:if="${#lists.isEmpty(rows)}">
-                <td colspan="7" class="muted">Пока нет партий.</td>
+                <td colspan="8" class="muted">Пока нет партий.</td>
             </tr>
             </tbody>
         </table>

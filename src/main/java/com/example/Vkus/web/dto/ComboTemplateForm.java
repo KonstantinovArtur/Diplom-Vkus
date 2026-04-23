@@ -3,6 +3,7 @@ package com.example.Vkus.web.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
@@ -19,7 +20,10 @@ public class ComboTemplateForm {
 
     @NotNull(message = "Статус обязателен")
     private Boolean isActive = true;
+    private MultipartFile image;
 
+    public MultipartFile getImage() { return image; }
+    public void setImage(MultipartFile image) { this.image = image; }
     // getters/setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

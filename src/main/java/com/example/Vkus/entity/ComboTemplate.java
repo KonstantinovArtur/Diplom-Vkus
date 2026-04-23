@@ -39,9 +39,19 @@ public class ComboTemplate {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "image_data", columnDefinition = "bytea")
+    private byte[] imageData;
+
+    @Column(name = "image_mime")
+    private String imageMime;
+
+    @Column(name = "image_updated_at")
+    private LocalDateTime imageUpdatedAt;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
+
 
     @OneToMany(mappedBy = "comboTemplate", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ComboSlot> slots = new HashSet<>();
@@ -74,6 +84,15 @@ public class ComboTemplate {
 
     public User getCreatedBy() { return createdBy; }
     public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
+
+    public byte[] getImageData() { return imageData; }
+    public void setImageData(byte[] imageData) { this.imageData = imageData; }
+
+    public String getImageMime() { return imageMime; }
+    public void setImageMime(String imageMime) { this.imageMime = imageMime; }
+
+    public LocalDateTime getImageUpdatedAt() { return imageUpdatedAt; }
+    public void setImageUpdatedAt(LocalDateTime imageUpdatedAt) { this.imageUpdatedAt = imageUpdatedAt; }
 
     public Set<ComboSlot> getSlots() { return slots; }
     public void setSlots(Set<ComboSlot> slots) { this.slots = slots; }

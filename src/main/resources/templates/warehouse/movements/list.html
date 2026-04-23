@@ -13,6 +13,14 @@
         .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid #d8deea;background:#eef2ff;font-weight:900;color:#0b1b4d;font-size:12px}
         .muted{color:#6b7280;font-size:13px}
         .num{font-variant-numeric:tabular-nums}
+        .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+        .filters{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+        .field{display:flex;flex-direction:column;gap:6px}
+        .field label{font-size:13px;font-weight:800;color:#0b1b4d}
+        .field select{min-width:220px;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;outline:none;background:#fff}
+        .field select:focus{border-color:#0b1b4d}
+        .btn{display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;background:#fff;font-weight:800;cursor:pointer;text-decoration:none;color:#0b1b4d}
+        .btn:hover{border-color:#0b1b4d}
     </style>
 </head>
 <body>
@@ -21,16 +29,61 @@
 
 <div class="wrap">
     <div class="card">
-        <div class="title">Движения склада</div>
+        <div class="top">
+            <div class="title">Движения склада</div>
+
+            <form class="filters" method="get" th:action="@{/warehouse/movements}">
+                <div class="field">
+                    <label for="supplierId">Поставщик</label>
+                    <select id="supplierId" name="supplierId">
+                        <option value="">Все поставщики</option>
+                        <option th:each="s : ${suppliers}"
+                                th:value="${s.id}"
+                                th:text="${s.name}"
+                                th:selected="${selectedSupplierId != null and selectedSupplierId.toString() == s.id.toString()}">
+                            Поставщик
+                        </option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="productId">Товар</label>
+                    <select id="productId" name="productId">
+                        <option value="">Все товары</option>
+                        <option th:each="p : ${products}"
+                                th:value="${p.id}"
+                                th:text="${p.name}"
+                                th:selected="${selectedProductId != null and selectedProductId.toString() == p.id.toString()}">
+                            Товар
+                        </option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="type">Тип движения</label>
+                    <select id="type" name="type">
+                        <option value="">Все типы</option>
+                        <option value="receipt" th:selected="${selectedType == 'receipt'}">Поступление</option>
+                        <option value="sale" th:selected="${selectedType == 'sale'}">Продажа</option>
+                        <option value="writeoff" th:selected="${selectedType == 'writeoff'}">Списание</option>
+                        <option value="adjustment" th:selected="${selectedType == 'adjustment'}">Корректировка</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn">Применить</button>
+                <a class="btn" th:href="@{/warehouse/movements}">Сбросить</a>
+            </form>
+        </div>
 
         <table>
             <thead>
             <tr>
                 <th style="width:70px">ID</th>
                 <th>Товар</th>
+                <th style="width:220px">Поставщик</th>
                 <th style="width:120px">Тип</th>
                 <th style="width:90px">Кол-во</th>
-                <th style="width:90px">Batch</th>
+                <th style="width:90px">Партия</th>
                 <th style="width:140px">Ссылка</th>
                 <th style="width:190px">Когда</th>
                 <th style="width:160px">Кто</th>
@@ -40,15 +93,16 @@
             <tr th:each="r : ${rows}">
                 <td class="num" th:text="${r.id}">1</td>
                 <td th:text="${r.product_name}">—</td>
+                <td th:text="${r.supplier_name} ?: '—'">—</td>
                 <td>
-                      <span class="pill" th:switch="${r.type}">
-                          <span th:case="'receipt'">Поступление</span>
-                          <span th:case="'sale'">Продажа</span>
-                          <span th:case="'writeoff'">Списание</span>
-                          <span th:case="'adjustment'">Корректировка</span>
-                          <span th:case="*"
-                                th:text="${r.type}">—</span>
-                      </span>
+          <span class="pill" th:switch="${r.type}">
+              <span th:case="'receipt'">Поступление</span>
+              <span th:case="'sale'">Продажа</span>
+              <span th:case="'writeoff'">Списание</span>
+              <span th:case="'adjustment'">Корректировка</span>
+              <span th:case="*"
+                    th:text="${r.type}">—</span>
+          </span>
                 </td>
 
                 <td class="num" th:text="${r.qty}">0</td>
@@ -58,7 +112,7 @@
                 <td th:text="${r.created_by_name}">—</td>
             </tr>
             <tr th:if="${#lists.isEmpty(rows)}">
-                <td colspan="8" class="muted">Пока нет движений.</td>
+                <td colspan="9" class="muted">Пока нет движений.</td>
             </tr>
             </tbody>
         </table>

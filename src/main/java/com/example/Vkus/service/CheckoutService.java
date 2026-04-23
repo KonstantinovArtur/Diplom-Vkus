@@ -104,7 +104,7 @@ public class CheckoutService {
         order.setBuffet(buffetRef);
         order.setStatus("created");
         order.setPickupCode(generatePickupCode());
-        order.setPickupCodeExpiresAt(LocalDateTime.now().plusMinutes(30));
+        order.setPickupCodeExpiresAt(LocalDateTime.now().plusHours(1));
         order.setBuyerNameSnapshot(user.getFullName());
         order.setBuyerEmailSnapshot(user.getEmail());
         order.setBuffetNameSnapshot(buffetRef.getName());

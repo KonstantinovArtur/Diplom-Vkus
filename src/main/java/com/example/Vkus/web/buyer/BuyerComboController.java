@@ -89,15 +89,50 @@ public class BuyerComboController {
             selected.put(slotId, productId);
         }
 
-        cartComboService.addCombo(userId, buffetId, id, qty, selected);
+        try {
+            cartComboService.addCombo(userId, buffetId, id, qty, selected);
 
-        audit.log("CART_ADD_COMBO", "combo_template", id, Map.of(
-                "actorUserId", userId,
-                "buffetId", buffetId,
-                "qty", qty,
-                "selected", selected
-        ));
+            audit.log("CART_ADD_COMBO", "combo_template", id, Map.of(
+                    "actorUserId", userId,
+                    "buffetId", buffetId,
+                    "qty", qty,
+                    "selected", selected
+            ));
 
-        return "redirect:/cart";
+            ra.addFlashAttribute("msg", "Комбо добавлено в корзину.");
+            return "redirect:/cart";
+        } catch (IllegalStateException | IllegalArgumentException ex) {
+            audit.log("CART_ADD_COMBO_FAIL", "combo_template", id, Map.of(
+                    "actorUserId", userId,
+                    "buffetId", buffetId,
+                    "qty", qty,
+                    "selected", selected,
+                    "error", ex.getMessage()
+            ));
+
+            ra.addFlashAttribute("err", humanizeComboAddError(ex));
+            return "redirect:/combos/" + id;
+        }
+    }
+
+    private String humanizeComboAddError(Exception ex) {
+        String msg = ex.getMessage();
+        if (msg == null || msg.isBlank()) {
+            return "Не удалось добавить комбо в корзину.";
+        }
+
+        if (msg.startsWith("Недостаточно товара")) {
+            return "Не удалось добавить комбо в корзину: некоторые товары из выбранного набора сейчас отсутствуют или закончились.";
+        }
+
+        if (msg.startsWith("Не выбран товар для слота")) {
+            return "Выберите товары для всех слотов комбо.";
+        }
+
+        if (msg.startsWith("Товар не разрешён в слоте")) {
+            return "Для одного из слотов выбран недопустимый товар.";
+        }
+
+        return msg;
     }
 }

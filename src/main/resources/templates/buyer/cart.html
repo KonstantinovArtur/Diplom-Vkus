@@ -124,8 +124,14 @@
                     <article th:each="cc : ${combos}"
                              style="border:1px solid #e6e9ef;border-radius:16px;overflow:hidden;display:flex;gap:12px;align-items:stretch;">
 
-                        <div style="width:140px;background:#f4f6fb;display:flex;align-items:center;justify-content:center;">
-                            <div style="color:#0b1b4d;font-weight:900;text-align:center;">
+                        <div style="width:140px;background:#f4f6fb;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                            <img th:if="${cc.comboTemplate.imageUpdatedAt != null}"
+                                 th:src="@{/combos/{id}/image(id=${cc.comboTemplate.id})}"
+                                 alt="combo"
+                                 style="width:140px;height:120px;object-fit:cover;" />
+
+                            <div th:unless="${cc.comboTemplate.imageUpdatedAt != null}"
+                                 style="color:#0b1b4d;font-weight:900;text-align:center;">
                                 COMBO
                             </div>
                         </div>
