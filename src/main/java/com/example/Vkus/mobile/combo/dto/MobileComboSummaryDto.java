@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public record MobileComboSummaryDto(
         Long id,
         String name,
-        BigDecimal basePrice
+        BigDecimal basePrice,
+        String imageUrl
 ) {
 }

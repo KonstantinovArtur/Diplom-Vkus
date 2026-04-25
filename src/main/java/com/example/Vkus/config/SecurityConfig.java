@@ -78,7 +78,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/error", "/403", "/css/**", "/js/**", "/images/**", "/products/**").permitAll()
+                        .requestMatchers("/login", "/error", "/403", "/css/**", "/js/**", "/images/**", "/products/**", "/combos/*/image").permitAll()
                         .requestMatchers("/admin-db/**").hasRole("DB_ADMIN")
                         .requestMatchers("/admin-buffet/**").hasRole("BUFFET_ADMIN")
                         .requestMatchers("/warehouse/**").hasRole("WAREHOUSE")

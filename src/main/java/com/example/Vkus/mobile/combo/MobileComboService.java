@@ -44,7 +44,8 @@ public class MobileComboService {
                 .map(c -> new MobileComboSummaryDto(
                         c.getId(),
                         c.getName(),
-                        c.getBasePrice()
+                        c.getBasePrice(),
+                        comboImageUrl(c)
                 ))
                 .toList();
 
@@ -92,6 +93,7 @@ public class MobileComboService {
                 tpl.getId(),
                 tpl.getName(),
                 tpl.getBasePrice(),
+                comboImageUrl(tpl),
                 slots
         );
     }
@@ -128,6 +130,14 @@ public class MobileComboService {
         ));
 
         return new MobileCartActionResponse(true, "Комбо добавлено в корзину");
+    }
+
+    private String comboImageUrl(ComboTemplate combo) {
+        if (combo.getImageData() == null || combo.getImageData().length == 0) {
+            return null;
+        }
+
+        return "/combos/" + combo.getId() + "/image";
     }
 
     private Long extractLong(Object value) {

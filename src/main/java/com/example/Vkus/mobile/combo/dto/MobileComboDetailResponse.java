@@ -7,6 +7,7 @@ public record MobileComboDetailResponse(
         Long comboId,
         String name,
         BigDecimal basePrice,
+        String imageUrl,
         List<MobileComboSlotDto> slots
 ) {
 }
