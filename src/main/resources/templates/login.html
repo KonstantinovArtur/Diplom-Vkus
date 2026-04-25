@@ -150,7 +150,7 @@
 
         <h2 class="title">Вход в систему</h2>
         <p class="subtitle">
-            Доступ только для аккаунтов с почтой <b>@mpt.ru</b>
+            Для продолжения войдите через Google-аккаунт
         </p>
 
         <a class="login-btn" href="/oauth2/authorization/google">
@@ -158,16 +158,12 @@
         </a>
 
         <div class="error" th:if="${param.error}">
-    <span th:if="${param.error[0] == 'domain'}">
-        Доступ запрещён: требуется аккаунт @mpt.ru
-    </span>
-
-            <span th:if="${param.error[0] == 'blocked'}">
+    <span th:if="${param.error[0] == 'blocked'}">
         Ваш аккаунт заблокирован
     </span>
 
-            <span th:unless="${param.error[0] == 'domain' or param.error[0] == 'blocked'}">
-        Ошибка входа. Попробуйте ещё раз.
+            <span th:unless="${param.error[0] == 'blocked'}">
+        Ошибка входа. Проверьте Google-аккаунт и попробуйте ещё раз.
     </span>
         </div>
 

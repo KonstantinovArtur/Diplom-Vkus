@@ -69,9 +69,6 @@ public class GoogleIdTokenVerifierService {
 
         email = email.toLowerCase(Locale.ROOT);
 
-        if (!email.endsWith("@mpt.ru")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Разрешены только email домена mpt.ru");
-        }
 
         if (!emailVerified) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Google email не подтверждён");

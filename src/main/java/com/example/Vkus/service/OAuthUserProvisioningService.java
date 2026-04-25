@@ -4,12 +4,14 @@ import com.example.Vkus.entity.AuthAccount;
 import com.example.Vkus.entity.User;
 import com.example.Vkus.entity.UserRole;
 import com.example.Vkus.repository.AuthAccountRepository;
+import com.example.Vkus.repository.BuffetRepository;
 import com.example.Vkus.repository.UserRepository;
 import com.example.Vkus.repository.UserRoleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+
 @Service
 public class OAuthUserProvisioningService {
 
@@ -18,15 +20,18 @@ public class OAuthUserProvisioningService {
     private final UserRepository userRepository;
     private final AuthAccountRepository authAccountRepository;
     private final UserRoleRepository userRoleRepository;
+    private final BuffetRepository buffetRepository;
 
     public OAuthUserProvisioningService(
             UserRepository userRepository,
             AuthAccountRepository authAccountRepository,
-            UserRoleRepository userRoleRepository
+            UserRoleRepository userRoleRepository,
+            BuffetRepository buffetRepository
     ) {
         this.userRepository = userRepository;
         this.authAccountRepository = authAccountRepository;
         this.userRoleRepository = userRoleRepository;
+        this.buffetRepository = buffetRepository;
     }
 
     @Transactional
@@ -43,12 +48,20 @@ public class OAuthUserProvisioningService {
             user.setEmail(email.toLowerCase());
             user.setFullName(fullName != null ? fullName : email);
             user.setStatus("active");
+            user.setDefaultBuffetId(resolveDefaultBuffetId());
 
             user = userRepository.save(user);
         }
 
         if ("blocked".equalsIgnoreCase(user.getStatus())) {
             throw new RuntimeException("USER_BLOCKED");
+        }
+
+        // Если пользователь уже был создан раньше, но default_buffet_id у него пустой,
+        // автоматически назначаем первый активный буфет.
+        if (user.getDefaultBuffetId() == null) {
+            user.setDefaultBuffetId(resolveDefaultBuffetId());
+            user = userRepository.save(user);
         }
 
         AuthAccount authAccount =
@@ -64,17 +77,20 @@ public class OAuthUserProvisioningService {
             authAccountRepository.save(aa);
         }
 
-
-        // ⭐ назначаем роль при первом входе
-        if (isNewUser && !userRoleRepository.existsByUserIdAndRoleId(user.getId(), 1L)) {
+        // назначаем роль покупателя при первом входе
+        if (isNewUser && !userRoleRepository.existsByUserIdAndRoleId(user.getId(), DEFAULT_ROLE_ID)) {
             UserRole ur = new UserRole();
             ur.setUserId(user.getId());
-            ur.setRoleId(1L);
+            ur.setRoleId(DEFAULT_ROLE_ID);
             userRoleRepository.save(ur);
         }
 
         return user;
     }
 
+    private Long resolveDefaultBuffetId() {
+        return buffetRepository.findFirstByIsActiveTrueOrderByIdAsc()
+                .orElseThrow(() -> new IllegalStateException("Нет активного буфета для назначения пользователю"))
+                .getId();
+    }
 }
-

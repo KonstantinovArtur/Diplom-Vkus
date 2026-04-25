@@ -41,17 +41,17 @@ public class DbRolesOidcUserService extends OidcUserService {
         String sub = oidcUser.getSubject();
 
         boolean ok = email != null
-                && email.toLowerCase().endsWith("@mpt.ru")
                 && Boolean.TRUE.equals(verified)
                 && sub != null;
 
-        if (!email.endsWith("@mpt.ru")) {
+        if (!ok) {
             throw new OAuth2AuthenticationException(
-                    new OAuth2Error("domain"),
-                    "Only mpt.ru emails allowed"
+                    new OAuth2Error("invalid_google_account"),
+                    "Google account email must be verified"
             );
         }
 
+        email = email.toLowerCase(Locale.ROOT);
 
         provisioningService.provisionGoogleUser(email, name, sub);
 

@@ -41,14 +41,15 @@ public class DbRolesOAuth2UserService extends DefaultOAuth2UserService {
 
         // доменная проверка
         boolean ok = email != null
-                && email.toLowerCase().endsWith("@mpt.ru")
                 && Boolean.TRUE.equals(verified)
                 && sub != null;
 
         if (!ok) {
             // кинем исключение — Spring сам вернёт на /login?error
-            throw new RuntimeException("DOMAIN_NOT_ALLOWED");
+            throw new RuntimeException("GOOGLE_EMAIL_NOT_VERIFIED");
         }
+
+        email = email.toLowerCase(Locale.ROOT);
 
         // создаём пользователя/аккаунт/роль при первом входе
         provisioningService.provisionGoogleUser(email, name, sub);

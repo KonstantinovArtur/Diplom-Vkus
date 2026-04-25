@@ -17,7 +17,7 @@ public class AuthController {
     public void denied(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         // корректный logout (поддерживает и null authentication тоже)
         new SecurityContextLogoutHandler().logout(request, response, authentication);
-        response.sendRedirect("/login?error=domain");
+        response.sendRedirect("/login?error");
     }
 
     @GetMapping("/oauth2/blocked")
