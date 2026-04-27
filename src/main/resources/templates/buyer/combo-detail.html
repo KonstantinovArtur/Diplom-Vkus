@@ -3,78 +3,69 @@
 <head>
     <meta charset="utf-8">
     <title th:text="${tpl.name}">Комбо</title>
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
 </head>
 <body>
 
 <div th:replace="~{fragments/header :: header}"></div>
 
-<main style="max-width:1100px;margin:18px auto;padding:0 12px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+<main class="vk-page">
+    <div class="vk-page-head">
         <div>
-            <h2 style="margin:0;color:#0b1b4d;" th:text="${tpl.name}">Комбо</h2>
-            <div style="margin-top:6px;color:#64748b;font-weight:800;">
-                Соберите нужный состав и добавьте набор в корзину
-            </div>
+            <h1 class="vk-page-title" th:text="${tpl.name}">Комбо</h1>
+            <p class="vk-page-subtitle">Соберите нужный состав и добавьте набор в корзину.</p>
         </div>
 
-        <a th:href="@{/combos}"
-           style="display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;text-decoration:none;font-weight:900;color:#0b1b4d;background:#fff;">
+        <a class="vk-btn vk-btn-secondary" th:href="@{/combos}">
             ← Назад к комбо
         </a>
     </div>
 
-    <div th:if="${msg}"
-         style="margin:0 0 14px 0;padding:10px 12px;border:1px solid #bbf7d0;border-radius:12px;background:#f0fdf4;color:#166534;font-weight:800;"
-         th:text="${msg}">
+    <div th:if="${msg}" class="vk-alert vk-alert-success" th:text="${msg}">
         Сообщение
     </div>
 
-    <div th:if="${err}"
-         style="margin:0 0 14px 0;padding:10px 12px;border:1px solid #fecaca;border-radius:12px;background:#fef2f2;color:#991b1b;font-weight:800;"
-         th:text="${err}">
+    <div th:if="${err}" class="vk-alert vk-alert-danger" th:text="${err}">
         Ошибка
     </div>
 
-    <section style="display:grid;grid-template-columns:minmax(0, 1.15fr) minmax(320px, .85fr);gap:14px;align-items:start;">
-        <div style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
-            <div style="height:220px;border-bottom:1px solid #e6e9ef;overflow:hidden;">
-                <img th:if="${tpl.imageData != null}"
-                     th:src="@{/combos/{id}/image(id=${tpl.id})}"
-                     alt="combo"
-                     style="width:100%;height:100%;object-fit:cover;display:block;">
+    <section class="combo-detail-grid">
+        <div class="vk-card combo-info-card">
+            <img th:if="${tpl.imageData != null}"
+                 class="combo-image combo-image-lg"
+                 th:src="@{/combos/{id}/image(id=${tpl.id})}"
+                 alt="combo">
 
-                <div th:unless="${tpl.imageData != null}"
-                     style="height:100%;background:linear-gradient(135deg,#eef2ff 0%,#f8fafc 100%);display:flex;align-items:center;justify-content:center;">
-                    <div style="text-align:center;padding:20px;">
-                        <div style="font-size:30px;font-weight:900;color:#0b1b4d;" th:text="${tpl.name}">Комбо</div>
-                        <div style="margin-top:8px;color:#64748b;font-weight:800;">Готовый набор с настраиваемым составом</div>
-                    </div>
+            <div th:unless="${tpl.imageData != null}" class="image-placeholder image-placeholder-lg">
+                <div>
+                    <div class="placeholder-title" th:text="${tpl.name}">Комбо</div>
+                    <div class="placeholder-subtitle">Готовый набор с настраиваемым составом</div>
                 </div>
             </div>
 
-            <div style="padding:16px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div class="combo-info-body">
+                <div class="combo-price-row">
                     <div>
-                        <div style="color:#6b7280;font-weight:800;font-size:13px;">Базовая цена комбо</div>
-                        <div style="font-weight:900;color:#0b1b4d;font-size:24px;"
+                        <div class="vk-muted" style="font-size:13px;">Базовая цена комбо</div>
+                        <div class="price"
                              th:text="${#numbers.formatDecimal(tpl.basePrice, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
                             0,00 ₽
                         </div>
                     </div>
 
-                    <span style="white-space:nowrap;display:inline-block;font-weight:900;color:#0b1b4d;background:#eef2ff;border:1px solid #d8deea;padding:8px 12px;border-radius:999px;"
+                    <span class="vk-badge vk-badge-primary"
                           th:text="'Слотов: ' + ${#lists.size(slotsSorted)}">
                         Слотов: 0
                     </span>
                 </div>
 
-                <div style="margin-top:14px;color:#334155;font-weight:700;line-height:1.5;">
+                <p class="vk-muted">
                     Выберите товары для каждого слота. Если для отдельной позиции есть доплата, она будет показана прямо в списке выбора.
-                </div>
+                </p>
 
-                <div style="margin-top:14px;padding:12px 14px;border-radius:14px;background:#f8fafc;border:1px solid #e6e9ef;">
-                    <div style="font-weight:900;color:#0b1b4d;margin-bottom:6px;">Как оформить комбо</div>
-                    <ul style="margin:0 0 0 18px;padding:0;color:#475569;font-weight:700;line-height:1.5;">
+                <div class="combo-help">
+                    <div class="combo-help-title">Как оформить комбо</div>
+                    <ul>
                         <li>выберите товар для каждого слота;</li>
                         <li>укажите количество наборов;</li>
                         <li>нажмите «Добавить комбо в корзину».</li>
@@ -83,34 +74,37 @@
             </div>
         </div>
 
-        <form th:action="@{/combos/{id}/add-to-cart(id=${tpl.id})}" method="post"
-              style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
-                <div style="font-weight:900;color:#0b1b4d;font-size:18px;">Настройка набора</div>
+        <form class="vk-card combo-form"
+              th:action="@{/combos/{id}/add-to-cart(id=${tpl.id})}"
+              method="post">
+            <div class="combo-form-head">
+                <div class="combo-form-title">Настройка набора</div>
 
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <label for="qty" style="color:#6b7280;font-weight:800;">Кол-во</label>
-                    <input id="qty" type="number" name="qty" value="1" min="1"
-                           style="width:88px;padding:10px 12px;border:1px solid #d8deea;border-radius:12px;background:#fff;font-weight:900;color:#0b1b4d;">
+                <div class="vk-actions">
+                    <label for="qty" class="vk-muted">Кол-во</label>
+                    <input id="qty"
+                           class="vk-input"
+                           type="number"
+                           name="qty"
+                           value="1"
+                           min="1"
+                           style="width:92px;">
                 </div>
             </div>
 
-            <div style="display:flex;flex-direction:column;gap:12px;">
-                <div th:each="s : ${slotsSorted}"
-                     style="border:1px solid #e6e9ef;border-radius:14px;padding:12px;background:#fff;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-                        <div style="font-weight:900;color:#0b1b4d;font-size:16px;"
-                             th:text="${s.name}">
+            <div class="slot-list">
+                <div th:each="s : ${slotsSorted}" class="slot-card">
+                    <div class="slot-head">
+                        <div class="slot-title" th:text="${s.name}">
                             Слот
                         </div>
 
-                        <span style="white-space:nowrap;display:inline-block;font-weight:900;color:#0b1b4d;background:#f8fafc;border:1px solid #d8deea;padding:6px 10px;border-radius:999px;">
+                        <span class="vk-badge">
                             Выбор обязателен
                         </span>
                     </div>
 
-                    <select th:name="${'slot_' + s.id}"
-                            style="width:100%;padding:10px 12px;border:1px solid #d8deea;border-radius:12px;background:#fff;font-weight:800;color:#0b1b4d;">
+                    <select th:name="${'slot_' + s.id}">
                         <option value="" selected>-- выберите --</option>
 
                         <option th:each="sp : ${s.products}"
@@ -122,14 +116,12 @@
                 </div>
             </div>
 
-            <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-                <button type="submit"
-                        style="border:0;background:#1d3b8b;color:#fff;padding:12px 14px;border-radius:12px;font-weight:900;cursor:pointer;">
+            <div class="vk-actions" style="margin-top:16px;">
+                <button class="vk-btn" type="submit">
                     Добавить комбо в корзину
                 </button>
 
-                <a th:href="@{/cart}"
-                   style="display:inline-block;padding:12px 14px;border-radius:12px;border:1px solid #d8deea;text-decoration:none;font-weight:900;color:#0b1b4d;background:#fff;">
+                <a class="vk-btn vk-btn-secondary" th:href="@{/cart}">
                     Перейти в корзину
                 </a>
             </div>

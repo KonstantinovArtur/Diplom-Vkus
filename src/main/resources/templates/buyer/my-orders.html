@@ -3,34 +3,35 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Мои заказы</title>
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
-<main style="max-width:1000px;margin:18px auto;padding:0 12px;">
-    <h2 style="margin:0 0 12px 0;">Мои заказы</h2>
+<main class="vk-page">
+    <section class="vk-hero">
+        <h1>Мои заказы</h1>
+        <p>Следите за статусом заказа, открывайте чек и повторяйте удачные покупки.</p>
+    </section>
 
-    <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
-
-        <div th:if="${#lists.isEmpty(orders)}" style="color:#6b7280;font-weight:800;">
+    <section class="vk-card vk-card-pad" style="margin-top:18px;">
+        <div th:if="${#lists.isEmpty(orders)}" class="vk-empty">
             Заказов пока нет.
         </div>
 
-        <div th:if="${!#lists.isEmpty(orders)}" style="display:flex;flex-direction:column;gap:10px;">
-
-            <div th:each="o : ${orders}"
-                 style="text-decoration:none;border:1px solid #e6e9ef;border-radius:14px;padding:10px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
-
-                <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-                    <div style="font-weight:900;color:#0b1b4d;">
+        <div th:if="${!#lists.isEmpty(orders)}" class="order-list">
+            <div th:each="o : ${orders}" class="order-card">
+                <div class="order-info">
+                    <div class="order-number">
                         Заказ #<span th:text="${o.id}">0</span>
                     </div>
 
-                    <div style="color:#6b7280;font-weight:800;"
-                         th:text="${o.createdAtMsk}">—</div>
+                    <div class="order-date" th:text="${o.createdAtMsk}">—</div>
 
-                    <div style="font-weight:900;color:#0b1b4d;" th:switch="${o.status}">
+                    <span class="vk-badge"
+                          th:classappend="' status-' + ${o.status}"
+                          th:switch="${o.status}">
                         <span th:case="'created'">Создан</span>
                         <span th:case="'accepted'">Принят</span>
                         <span th:case="'assembling'">В сборке</span>
@@ -38,34 +39,33 @@
                         <span th:case="'issued'">Выдан</span>
                         <span th:case="'cancelled'">Отменён</span>
                         <span th:case="*">—</span>
-                    </div>
+                    </span>
 
-                    <div style="font-weight:900;color:#0b1b4d;"
-                         th:text="${#numbers.formatDecimal(o.finalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</div>
+                    <div class="price price-small"
+                         th:text="${#numbers.formatDecimal(o.finalAmount, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                        0.00 ₽
+                    </div>
                 </div>
 
-                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                    <a th:href="@{/orders/{id}(id=${o.id})}"
-                       style="text-decoration:none;border:1px solid #d8deea;border-radius:12px;padding:8px 10px;font-weight:900;color:#0b1b4d;background:#fff;">
+                <div class="vk-actions">
+                    <a class="vk-btn vk-btn-secondary"
+                       th:href="@{/orders/{id}(id=${o.id})}">
                         Открыть
                     </a>
 
-                    <a th:href="@{/orders/{id}/receipt(id=${o.id})}"
-                       style="text-decoration:none;border:1px solid #d8deea;border-radius:12px;padding:8px 10px;font-weight:900;color:#0b1b4d;background:#f0fdf4;">
+                    <a class="vk-btn vk-btn-success"
+                       th:href="@{/orders/{id}/receipt(id=${o.id})}">
                         Чек
                     </a>
 
-                    <form th:action="@{/buyer/orders/{id}/repeat(id=${o.id})}" method="post" style="margin:0;">
-                        <button type="submit"
-                                style="border:1px solid #d8deea;border-radius:12px;padding:8px 10px;font-weight:900;color:#0b1b4d;background:#fff7ed;cursor:pointer;">
+                    <form th:action="@{/buyer/orders/{id}/repeat(id=${o.id})}" method="post">
+                        <button class="vk-btn vk-btn-accent" type="submit">
                             Повторить
                         </button>
                     </form>
                 </div>
-
             </div>
         </div>
-
     </section>
 </main>
 

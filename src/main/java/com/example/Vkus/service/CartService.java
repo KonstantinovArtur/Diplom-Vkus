@@ -102,4 +102,16 @@ public class CartService {
     private Cart cart(Long userId, Long buffetId) {
         return cartRepository.findByUserIdAndBuffetId(userId, buffetId).orElse(null);
     }
+    @Transactional(readOnly = true)
+    public int getProductQty(Long userId, Long buffetId, Long productId) {
+        Cart cart = cart(userId, buffetId);
+
+        if (cart == null) {
+            return 0;
+        }
+
+        return cartItemRepository.findByCart_IdAndProduct_Id(cart.getId(), productId)
+                .map(CartItem::getQty)
+                .orElse(0);
+    }
 }

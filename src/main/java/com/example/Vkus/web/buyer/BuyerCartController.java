@@ -312,7 +312,9 @@ public class BuyerCartController {
         Long userId = currentUser.requireUserId();
         Long buffetId = currentUser.requireBuffetId();
 
-        if (qty <= 0) qty = 1;
+        if (qty <= 0) {
+            qty = 1;
+        }
 
         try {
             batchService.planConsumeFromBatches(buffetId, productId, qty);
@@ -325,6 +327,8 @@ public class BuyerCartController {
 
         cartService.add(userId, buffetId, productId, qty);
 
+        int cartQty = cartService.getProductQty(userId, buffetId, productId);
+
         audit.log("CART_ADD_PRODUCT", "product", productId, Map.of(
                 "actorUserId", userId,
                 "buffetId", buffetId,
@@ -335,7 +339,51 @@ public class BuyerCartController {
         return Map.of(
                 "ok", true,
                 "productId", productId,
-                "qty", qty
+                "addedQty", qty,
+                "cartQty", cartQty
         );
+    }
+    @PostMapping("/setQty-ajax")
+    @ResponseBody
+    public Map<String, Object> setQtyAjax(@RequestParam Long productId,
+                                          @RequestParam int qty) {
+
+        Long userId = currentUser.requireUserId();
+        Long buffetId = currentUser.requireBuffetId();
+
+        if (qty < 0) {
+            qty = 0;
+        }
+
+        try {
+            if (qty > 0) {
+                batchService.planConsumeFromBatches(buffetId, productId, qty);
+            }
+
+            cartService.setQty(userId, buffetId, productId, qty);
+
+            int cartQty = qty > 0
+                    ? cartService.getProductQty(userId, buffetId, productId)
+                    : 0;
+
+            audit.log("CART_SET_QTY", "product", productId, Map.of(
+                    "actorUserId", userId,
+                    "buffetId", buffetId,
+                    "qty", qty,
+                    "mode", "ajax"
+            ));
+
+            return Map.of(
+                    "ok", true,
+                    "productId", productId,
+                    "cartQty", cartQty
+            );
+
+        } catch (IllegalStateException | IllegalArgumentException ex) {
+            return Map.of(
+                    "ok", false,
+                    "message", ex.getMessage()
+            );
+        }
     }
 }

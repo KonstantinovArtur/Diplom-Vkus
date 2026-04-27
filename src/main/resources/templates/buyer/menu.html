@@ -3,24 +3,55 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Меню</title>
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
-<main style="max-width:1100px;margin:18px auto;padding:0 12px;">
-    <h2 style="margin:0 0 12px 0;">Меню</h2>
+<main class="vk-page">
 
-    <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
+    <section class="vk-hero vk-combo-promo-hero">
+        <div class="vk-combo-promo-content">
+            <div class="vk-eyebrow">Комбо-наборы</div>
 
-        <!-- фильтры -->
-        <form method="get" th:action="@{/menu}"
-              style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px;">
+            <h1>Соберите выгодный набор за пару кликов</h1>
 
-            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-                <select name="categoryId"
-                        style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;background:#fff;font-weight:800;color:#0b1b4d;">
-                    <option value="" th:selected="${categoryId == null}">Все категории</option>
+            <p>
+                Выберите готовый комбо-набор, настройте состав под себя и добавьте его в корзину одной кнопкой.
+            </p>
+
+            <div class="vk-combo-promo-points">
+                <span>Быстро</span>
+                <span>Удобно</span>
+                <span>Выгодно</span>
+            </div>
+        </div>
+
+        <div class="vk-combo-promo-card">
+            <div class="vk-combo-promo-icon">🍱</div>
+
+            <div class="vk-combo-promo-title">
+                Готовые наборы
+            </div>
+
+            <div class="vk-combo-promo-text">
+                Багет, напиток, перекус и другие позиции можно заказать комплектом.
+            </div>
+
+            <a class="vk-hero-action vk-combo-promo-btn" th:href="@{/combos}">
+                Смотреть комбо
+            </a>
+        </div>
+    </section>
+
+    <section class="vk-menu-panel">
+        <form method="get" th:action="@{/menu}" class="vk-menu-filters">
+            <div class="vk-menu-filter-fields">
+                <select name="categoryId" class="vk-select">
+                    <option value="" th:selected="${categoryId == null}">
+                        Все категории
+                    </option>
 
                     <option th:each="c : ${categories}"
                             th:value="${c.id}"
@@ -30,186 +61,171 @@
                     </option>
                 </select>
 
-                <input name="q" th:value="${q}"
-                       placeholder="Поиск по названию..."
-                       style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;min-width:260px;"/>
+                <input name="q"
+                       th:value="${q}"
+                       class="vk-input vk-search-input"
+                       placeholder="Поиск по названию..."/>
 
-                <button type="submit"
-                        style="border:0;background:#1d3b8b;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
+                <button type="submit" class="vk-btn">
                     Найти
                 </button>
 
-                <a th:href="@{/menu}"
-                   style="display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;text-decoration:none;font-weight:900;color:#0b1b4d;">
+                <a th:href="@{/menu}" class="vk-btn vk-btn-light">
                     Сброс
                 </a>
             </div>
 
-            <div style="color:#6b7280;font-weight:800;">
+            <div class="vk-found-count">
                 Найдено: <span th:text="${#lists.size(items)}">0</span>
             </div>
         </form>
+    </section>
 
-        <!-- карточки -->
-        <div th:if="${#lists.isEmpty(items)}" style="padding:10px 0;color:#6b7280;">
+    <section class="vk-products-section">
+        <div th:if="${#lists.isEmpty(items)}" class="vk-empty">
             Ничего не найдено.
         </div>
 
-        <div th:if="${!#lists.isEmpty(items)}"
-             style="display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:12px;">
+        <div th:if="${!#lists.isEmpty(items)}" class="vk-products-grid">
 
-            <article th:each="it : ${items}"
-                     style="border:1px solid #e6e9ef;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(10, 20, 60, 0.04);background:#fff;">
+            <article th:each="it : ${items}" class="vk-product-card">
 
-                <!-- картинка -->
-                <div style="height:150px;background:#f4f6fb;display:flex;align-items:center;justify-content:center;">
+                <div class="vk-product-image-box">
                     <img th:if="${it.hasImage()}"
                          th:src="@{/products/{id}/image(id=${it.productId()})}"
                          alt="img"
-                         style="width:100%;height:150px;object-fit:cover;" />
+                         class="vk-product-image"/>
 
-                    <div th:if="${!it.hasImage()}"
-                         style="color:#9aa3b2;font-weight:900;">
+                    <div th:if="${!it.hasImage()}" class="vk-product-no-image">
                         Нет изображения
                     </div>
                 </div>
 
-                <div style="padding:12px;">
+                <div class="vk-product-body">
 
-                    <!-- Заголовок + бейджи -->
-                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
-                        <div style="font-weight:900;color:#0b1b4d;font-size:16px;line-height:1.2;flex:1;min-width:0;"
-                             th:text="${it.name()}">Название</div>
+                    <div class="vk-product-top">
+                        <div>
+                            <h2 class="vk-product-title" th:text="${it.name()}">
+                                Название
+                            </h2>
 
-                        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:60%;flex:0 0 auto;">
-
-                            <!-- Уценка: процент + остаток -->
-                            <span th:with="info=${expiryInfoByProductId[it.productId()]}"
-                                  th:if="${info != null and info.qty() > 0}"
-                                  style="
-                      display:inline-flex;
-                      align-items:center;
-                      max-width:100%;
-                      font-weight:900;
-                      color:#0b1b4d;
-                      background:#fff7ed;
-                      border:1px solid #d8deea;
-                      padding:6px 10px;
-                      border-radius:999px;
-                      white-space:normal;
-                      line-height:1.15;
-                      word-break:break-word;
-                      overflow-wrap:anywhere;
-                    "
-                                  th:text="'Бонус ' + ${#numbers.formatDecimal(info.percent(), 1, 'COMMA', 0, 'POINT')} + '% · ' + ${info.qty()} + ' шт'">
-                Бонус 0% · 0 шт
-              </span>
-
-                            <!-- Акция -->
-                            <span th:if="${it.promoPercent() != null}"
-                                  style="white-space:nowrap;display:inline-block;font-weight:900;color:#0b1b4d;background:#eef2ff;border:1px solid #d8deea;padding:6px 10px;border-radius:999px;">
-                <span th:text="${it.promoText()}">Акция</span>
-              </span>
-
-                            <!-- Уценка партии -->
-                            <span th:if="${it.batchPercent() != null}"
-                                  style="white-space:nowrap;display:inline-block;font-weight:900;color:#0b1b4d;background:#fff7ed;border:1px solid #d8deea;padding:6px 10px;border-radius:999px;">
-                <span th:text="${it.batchText()}">Бонус 10%</span>
-              </span>
-
-                            <!-- Скидка месяца -->
-                            <span th:if="${it.monthlyPercent() != null}"
-                                  style="white-space:nowrap;display:inline-block;font-weight:900;color:#0b1b4d;background:#ecfeff;border:1px solid #d8deea;padding:6px 10px;border-radius:999px;">
-                <span th:text="${it.monthlyText()}">Скидка месяца</span>
-              </span>
-
-                            <!-- Остаток на складе (бейджи) -->
-                            <span th:if="${stockQtyByProductId[it.productId()] != null and stockQtyByProductId[it.productId()] == 0}"
-                                  style="white-space:nowrap;display:inline-block;font-weight:900;color:#b91c1c;background:#fff;border:1px solid #f1c0c0;padding:6px 10px;border-radius:999px;">
-                Нет в наличии
-              </span>
-
-                            <span th:if="${stockQtyByProductId[it.productId()] != null and stockQtyByProductId[it.productId()] > 0}"
-                                  style="white-space:nowrap;display:inline-block;font-weight:900;color:#0b1b4d;background:#f8fafc;border:1px solid #d8deea;padding:6px 10px;border-radius:999px;"
-                                  th:text="'В наличии: ' + ${stockQtyByProductId[it.productId()]} + ' шт'">
-                В наличии: 0 шт
-              </span>
-
+                            <div class="vk-product-category" th:text="${it.categoryName()}">
+                                Категория
+                            </div>
                         </div>
                     </div>
 
-                    <!-- категория -->
-                    <div style="margin-top:6px;color:#6b7280;font-weight:800;font-size:13px;"
-                         th:text="${it.categoryName()}">Категория</div>
+                    <div class="vk-badges">
+                        <span th:with="info=${expiryInfoByProductId[it.productId()]}"
+                              th:if="${info != null and info.qty() > 0}"
+                              class="vk-badge vk-badge-accent"
+                              th:text="'Бонус ' + ${#numbers.formatDecimal(info.percent(), 1, 'COMMA', 0, 'POINT')} + '% · ' + ${info.qty()} + ' шт'">
+                            Бонус
+                        </span>
 
-                    <!-- описание -->
+                        <span th:if="${it.promoPercent() != null}"
+                              class="vk-badge vk-badge-primary">
+                            <span th:text="${it.promoText()}">Акция</span>
+                        </span>
+
+                        <span th:if="${it.batchPercent() != null}"
+                              class="vk-badge vk-badge-accent">
+                            <span th:text="${it.batchText()}">Бонус 10%</span>
+                        </span>
+
+                        <span th:if="${it.monthlyPercent() != null}"
+                              class="vk-badge vk-badge-info">
+                            <span th:text="${it.monthlyText()}">Скидка месяца</span>
+                        </span>
+
+                        <span th:if="${stockQtyByProductId[it.productId()] != null and stockQtyByProductId[it.productId()] == 0}"
+                              class="vk-badge vk-badge-danger">
+                            Нет в наличии
+                        </span>
+
+                        <span th:if="${stockQtyByProductId[it.productId()] != null and stockQtyByProductId[it.productId()] > 0}"
+                              class="vk-badge vk-badge-neutral"
+                              th:text="'В наличии: ' + ${stockQtyByProductId[it.productId()]} + ' шт'">
+                            В наличии: 0 шт
+                        </span>
+                    </div>
+
                     <div th:if="${it.description() != null and !#strings.isEmpty(it.description())}"
-                         style="margin-top:8px;color:#334155;font-weight:700;font-size:13px;min-height:34px;"
+                         class="vk-product-description"
                          th:text="${it.description()}">
                         Описание
                     </div>
+
                     <div th:if="${it.description() == null or #strings.isEmpty(it.description())}"
-                         style="margin-top:8px;color:#94a3b8;font-weight:700;font-size:13px;min-height:34px;">
-                        &nbsp;
+                         class="vk-product-description muted">
+                        Описание отсутствует
                     </div>
 
-                    <!-- цена + кнопка -->
-                    <div style="margin-top:10px;display:flex;align-items:flex-end;justify-content:space-between;">
-                        <div>
-                            <!-- ✅ если НЕТ ни одной скидки (promo/monthly/batch) -->
+                    <div class="vk-product-bottom">
+                        <div class="vk-price-box">
                             <div th:if="${it.promoPercent() == null and it.monthlyPercent() == null and it.batchPercent() == null}"
-                                 style="font-weight:900;color:#0b1b4d;font-size:18px;"
-                                 th:text="${#numbers.formatDecimal(it.basePrice(), 1, 'COMMA', 2, 'POINT')}">
-                                0.00
+                                 class="vk-price"
+                                 th:text="${#numbers.formatDecimal(it.basePrice(), 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                                0.00 ₽
                             </div>
 
-                            <!-- ✅ если ЕСТЬ хотя бы одна скидка -->
                             <div th:if="${it.promoPercent() != null or it.monthlyPercent() != null or it.batchPercent() != null}">
-                                <div style="text-decoration:line-through;color:#6b7280;font-weight:800;font-size:13px;"
-                                     th:text="${#numbers.formatDecimal(it.basePrice(), 1, 'COMMA', 2, 'POINT')}">
-                                    0.00
+                                <div class="vk-old-price"
+                                     th:text="${#numbers.formatDecimal(it.basePrice(), 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                                    0.00 ₽
                                 </div>
-                                <div style="font-weight:900;color:#0b1b4d;font-size:18px;margin-top:2px;"
-                                     th:text="${#numbers.formatDecimal(it.finalPrice(), 1, 'COMMA', 2, 'POINT')}">
-                                    0.00
+
+                                <div class="vk-price"
+                                     th:text="${#numbers.formatDecimal(it.finalPrice(), 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                                    0.00 ₽
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- ✅ кнопка: отключаем если нет в наличии -->
-                            <!-- остаток -->
-                            <div style="margin-top:10px;font-weight:800;font-size:13px;color:#64748b;">
-  <span th:with="qtyOnStock=${stockQtyByProductId[it.productId()] ?: 0}">
-    <span th:if="${qtyOnStock == 0}"
-          style="color:#b91c1c;font-weight:900;">
-      Нет в наличии
-    </span>
+                        <div class="vk-cart-widget"
+                             th:with="qtyOnStock=${stockQtyByProductId[it.productId()] ?: 0},
+                                      qtyInCart=${cartQtyByProductId != null ? (cartQtyByProductId[it.productId()] ?: 0) : 0}"
+                             th:attr="data-product-id=${it.productId()}, data-stock=${qtyOnStock}">
 
-    <span th:if="${qtyOnStock > 0}"
-          th:text="'В наличии: ' + ${qtyOnStock} + ' шт'">
-      На складе: 0 шт
-    </span>
-  </span>
-                            </div>
+                            <button type="button"
+                                    class="vk-btn vk-product-btn js-add-btn"
+                                    th:classappend="${qtyInCart > 0} ? ' hidden' : (${qtyOnStock == 0} ? ' disabled' : '')"
+                                    th:disabled="${qtyOnStock == 0}"
+                                    onclick="addToCartAndShowRecommendationsFromButton(this)"
+                                    th:text="${qtyOnStock == 0 ? 'Нет в наличии' : 'В корзину'}">
+                                В корзину
+                            </button>
 
-                            <form th:action="@{/cart/add}" method="post" style="margin-top:10px;"
-                                  th:with="qtyOnStock=${stockQtyByProductId[it.productId()] ?: 0}">
-                                <input type="hidden" name="productId" th:value="${it.productId()}"/>
-                                <input type="hidden" name="qty" value="1"/>
+                            <div class="vk-card-qty js-card-qty"
+                                 th:classappend="${qtyInCart > 0} ? '' : ' hidden'">
 
-                                <div style="margin-top:10px;"
-                                     th:with="qtyOnStock=${stockQtyByProductId[it.productId()] ?: 0}">
+                                <div class="vk-card-qty-label">
+                                    В корзине
+                                </div>
+
+                                <div class="vk-card-qty-control">
+                                    <button type="button"
+                                            class="vk-card-qty-btn"
+                                            onclick="changeCartQty(this, -1)"
+                                            aria-label="Уменьшить количество">
+                                        −
+                                    </button>
+
+                                    <input type="number"
+                                           class="vk-card-qty-input js-card-qty-input"
+                                           min="0"
+                                           th:max="${qtyOnStock}"
+                                           th:value="${qtyInCart}"
+                                           onchange="setCartQtyFromInput(this)">
 
                                     <button type="button"
-                                            th:disabled="${qtyOnStock == 0}"
-                                            th:attr="onclick=|addToCartAndShowRecommendations(${it.productId()})|"
-                                            th:style="${qtyOnStock == 0}
-             ? 'border:0;background:#cbd5e1;color:#64748b;padding:10px 12px;border-radius:12px;font-weight:900;cursor:not-allowed;'
-             : 'border:0;background:#1d3b8b;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;'">
-                                        В корзину
+                                            class="vk-card-qty-btn"
+                                            onclick="changeCartQty(this, 1)"
+                                            aria-label="Увеличить количество">
+                                        +
                                     </button>
                                 </div>
-                            </form>
-
+                            </div>
                         </div>
                     </div>
 
@@ -217,42 +233,112 @@
             </article>
 
         </div>
-
     </section>
+
 </main>
 
 <div th:replace="fragments/footer :: footer"></div>
-<div id="recModal" style="display:none;position:fixed;inset:0;z-index:3000;">
-    <div onclick="closeRecModal()"
-         style="position:absolute;inset:0;background:rgba(15,23,42,.45);"></div>
 
-    <div style="position:relative;max-width:820px;margin:70px auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.22);">
+<div id="recModal" class="vk-rec-modal">
+    <div onclick="closeRecModal()" class="vk-rec-backdrop"></div>
+
+    <div class="vk-rec-window">
         <button type="button"
                 onclick="closeRecModal()"
-                style="position:absolute;right:14px;top:10px;border:none;background:none;font-size:28px;cursor:pointer;color:#334155;">
+                class="vk-rec-close">
             ×
         </button>
 
-        <div style="font-size:24px;font-weight:900;color:#0b1b4d;margin-bottom:4px;">
+        <div class="vk-rec-title">
             К этому товару обычно берут
         </div>
 
-        <div style="color:#64748b;margin-bottom:16px;">
+        <div class="vk-rec-subtitle">
             Вы можете сразу добавить рекомендованные товары в корзину
         </div>
 
-        <div id="recList"
-             style="display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:12px;">
-        </div>
+        <div id="recList" class="vk-rec-list"></div>
     </div>
 </div>
+
 <script>
+    function getCsrfHeaders() {
+        const csrfInput = document.querySelector('input[name="_csrf"]');
+
+        if (!csrfInput) {
+            return {};
+        }
+
+        return {
+            'X-CSRF-TOKEN': csrfInput.value
+        };
+    }
+
+    function getWidgetFromButton(button) {
+        return button.closest('.vk-cart-widget');
+    }
+
+    function getProductIdFromWidget(widget) {
+        return Number(widget.dataset.productId);
+    }
+
+    function getStockFromWidget(widget) {
+        return Number(widget.dataset.stock || 0);
+    }
+
+    function setProductCardQty(productId, qty) {
+        const widget = document.querySelector(`.vk-cart-widget[data-product-id="${productId}"]`);
+
+        if (!widget) {
+            return;
+        }
+
+        const addBtn = widget.querySelector('.js-add-btn');
+        const qtyBox = widget.querySelector('.js-card-qty');
+        const qtyInput = widget.querySelector('.js-card-qty-input');
+
+        if (qtyInput) {
+            qtyInput.value = qty;
+        }
+
+        if (qty > 0) {
+            if (addBtn) {
+                addBtn.classList.add('hidden');
+            }
+
+            if (qtyBox) {
+                qtyBox.classList.remove('hidden');
+            }
+        } else {
+            if (qtyBox) {
+                qtyBox.classList.add('hidden');
+            }
+
+            if (addBtn) {
+                addBtn.classList.remove('hidden');
+            }
+        }
+    }
+
+    async function addToCartAndShowRecommendationsFromButton(button) {
+        const widget = getWidgetFromButton(button);
+
+        if (!widget) {
+            return;
+        }
+
+        const productId = getProductIdFromWidget(widget);
+        await addToCartAndShowRecommendations(productId);
+    }
+
     async function addToCartAndShowRecommendations(productId) {
         try {
             const resp = await fetch('/cart/add-ajax', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...getCsrfHeaders()
                 },
                 body: new URLSearchParams({
                     productId: productId,
@@ -260,12 +346,19 @@
                 })
             });
 
+            if (!resp.ok) {
+                alert('Не удалось добавить товар в корзину');
+                return;
+            }
+
             const data = await resp.json();
 
             if (!data.ok) {
                 alert(data.message || 'Не удалось добавить товар в корзину');
                 return;
             }
+
+            setProductCardQty(productId, Number(data.cartQty || 1));
 
             await loadRecommendations(productId);
 
@@ -275,76 +368,185 @@
         }
     }
 
+    async function changeCartQty(button, delta) {
+        const widget = getWidgetFromButton(button);
+
+        if (!widget) {
+            return;
+        }
+
+        const productId = getProductIdFromWidget(widget);
+        const stock = getStockFromWidget(widget);
+        const input = widget.querySelector('.js-card-qty-input');
+
+        if (!input) {
+            return;
+        }
+
+        let currentQty = Number(input.value || 0);
+        let nextQty = currentQty + delta;
+
+        if (nextQty < 0) {
+            nextQty = 0;
+        }
+
+        if (stock > 0 && nextQty > stock) {
+            nextQty = stock;
+        }
+
+        await setCartQty(productId, nextQty);
+    }
+
+    async function setCartQtyFromInput(input) {
+        const widget = input.closest('.vk-cart-widget');
+
+        if (!widget) {
+            return;
+        }
+
+        const productId = getProductIdFromWidget(widget);
+        const stock = getStockFromWidget(widget);
+
+        let qty = Number(input.value || 0);
+
+        if (qty < 0) {
+            qty = 0;
+        }
+
+        if (stock > 0 && qty > stock) {
+            qty = stock;
+        }
+
+        await setCartQty(productId, qty);
+    }
+
+    async function setCartQty(productId, qty) {
+        try {
+            const resp = await fetch('/cart/setQty-ajax', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...getCsrfHeaders()
+                },
+                body: new URLSearchParams({
+                    productId: productId,
+                    qty: qty
+                })
+            });
+
+            if (!resp.ok) {
+                alert('Не удалось изменить количество товара');
+                return;
+            }
+
+            const data = await resp.json();
+
+            if (!data.ok) {
+                alert(data.message || 'Не удалось изменить количество товара');
+                return;
+            }
+
+            setProductCardQty(productId, Number(data.cartQty || 0));
+
+        } catch (e) {
+            console.error(e);
+            alert('Ошибка при изменении количества товара');
+        }
+    }
+
     async function loadRecommendations(productId) {
         try {
             const resp = await fetch('/buyer/recommendations/' + productId, {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             });
 
-            if (!resp.ok) return;
+            if (!resp.ok) {
+                console.warn('Рекомендации не загружены. Статус:', resp.status);
+                return;
+            }
 
-            const items = await resp.json();
-            if (!items || items.length === 0) return;
+            const responseBody = await resp.json();
+
+            const items = Array.isArray(responseBody)
+                ? responseBody
+                : (responseBody.items || []);
+
+            if (!items || items.length === 0) {
+                return;
+            }
 
             const recList = document.getElementById('recList');
+
+            if (!recList) {
+                console.error('Не найден блок recList');
+                return;
+            }
+
             recList.innerHTML = '';
 
             for (const item of items) {
+                const stockQty = Number(item.stockQty || 0);
+                const inStock = stockQty > 0;
+
                 const html = `
-                <div style="border:1px solid #e6e9ef;border-radius:16px;padding:12px;background:#fff;">
-                    ${
+                    <div class="vk-rec-card">
+                        ${
                     item.hasImage
-                        ? `<img src="/products/${item.productId}/image"
-                                alt=""
-                                style="width:100%;height:140px;object-fit:cover;border-radius:12px;background:#f4f6fb;margin-bottom:10px;">`
-                        : `<div style="height:140px;border-radius:12px;background:#f4f6fb;display:flex;align-items:center;justify-content:center;color:#9aa3b2;font-weight:900;margin-bottom:10px;">Нет изображения</div>`
+                        ? `<img src="/products/${item.productId}/image" alt="" class="vk-rec-img">`
+                        : `<div class="vk-rec-no-img">Нет изображения</div>`
                 }
 
-                    <div style="font-weight:900;color:#0b1b4d;margin-bottom:4px;">
-                        ${escapeHtml(item.name || '')}
-                    </div>
+                        <div class="vk-rec-name">
+                            ${escapeHtml(item.name || '')}
+                        </div>
 
-                    <div style="font-size:13px;color:#6b7280;font-weight:800;margin-bottom:6px;">
-                        ${escapeHtml(item.categoryName || '—')}
-                    </div>
+                        <div class="vk-rec-category">
+                            ${escapeHtml(item.categoryName || '—')}
+                        </div>
 
-                    <div style="font-size:13px;color:#334155;min-height:34px;margin-bottom:8px;">
-                        ${escapeHtml(item.description || '')}
-                    </div>
+                        <div class="vk-rec-desc">
+                            ${escapeHtml(item.description || '')}
+                        </div>
 
-                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-                        ${item.promoText ? badgeHtml('#eef2ff', item.promoText) : ''}
-                        ${item.batchText ? badgeHtml('#fff7ed', item.batchText) : ''}
-                        ${item.monthlyText ? badgeHtml('#ecfeff', item.monthlyText) : ''}
-                    </div>
+                        <div class="vk-rec-badges">
+                            ${item.promoText ? badgeHtml('primary', item.promoText) : ''}
+                            ${item.batchText ? badgeHtml('accent', item.batchText) : ''}
+                            ${item.monthlyText ? badgeHtml('info', item.monthlyText) : ''}
+                            ${
+                    item.stockQty == null
+                        ? ''
+                        : (
+                            inStock
+                                ? `<span class="vk-badge vk-badge-neutral">В наличии: ${stockQty} шт</span>`
+                                : `<span class="vk-badge vk-badge-danger">Нет в наличии</span>`
+                        )
+                }
+                        </div>
 
-                    ${
+                        ${
                     hasAnyDiscount(item)
                         ? `
-                            <div style="text-decoration:line-through;color:#6b7280;font-weight:800;font-size:13px;">
-                                ${formatPrice(item.basePrice)}
-                            </div>
-                            <div style="font-weight:900;color:#0b1b4d;font-size:18px;margin-bottom:10px;">
-                                ${formatPrice(item.finalPrice)}
-                            </div>
-                          `
+                                    <div class="vk-old-price">${formatPrice(item.basePrice)}</div>
+                                    <div class="vk-price">${formatPrice(item.finalPrice)}</div>
+                                  `
                         : `
-                            <div style="font-weight:900;color:#0b1b4d;font-size:18px;margin-bottom:10px;">
-                                ${formatPrice(item.basePrice)}
-                            </div>
-                          `
+                                    <div class="vk-price">${formatPrice(item.basePrice)}</div>
+                                  `
                 }
 
-                    <button type="button"
-                            onclick="addRecommendedToCart(this, ${item.productId})"
-                            style="width:100%;border:0;background:#1d3b8b;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
-                        Добавить
-                    </button>
-                </div>
-            `;
+                        <button type="button"
+                                ${item.stockQty == null || inStock ? `onclick="addRecommendedToCart(this, ${item.productId})"` : ''}
+                                class="vk-btn vk-rec-add ${item.stockQty != null && !inStock ? 'disabled' : ''}"
+                                ${item.stockQty != null && !inStock ? 'disabled' : ''}>
+                            ${item.stockQty != null && !inStock ? 'Нет в наличии' : 'Добавить'}
+                        </button>
+                    </div>
+                `;
 
                 recList.insertAdjacentHTML('beforeend', html);
             }
@@ -352,7 +554,7 @@
             openRecModal();
 
         } catch (e) {
-            console.error(e);
+            console.error('Ошибка загрузки рекомендаций:', e);
         }
     }
 
@@ -363,13 +565,21 @@
             const resp = await fetch('/cart/add-ajax', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...getCsrfHeaders()
                 },
                 body: new URLSearchParams({
                     productId: productId,
                     qty: 1
                 })
             });
+
+            if (!resp.ok) {
+                btn.disabled = false;
+                alert('Не удалось добавить товар');
+                return;
+            }
 
             const data = await resp.json();
 
@@ -379,8 +589,10 @@
                 return;
             }
 
+            setProductCardQty(productId, Number(data.cartQty || 1));
+
             btn.textContent = 'Добавлено';
-            btn.style.background = '#16a34a';
+            btn.classList.add('success');
 
         } catch (e) {
             console.error(e);
@@ -390,16 +602,36 @@
     }
 
     function openRecModal() {
-        document.getElementById('recModal').style.display = 'block';
+        const modal = document.getElementById('recModal');
+
+        if (!modal) {
+            console.error('Не найден блок recModal');
+            return;
+        }
+
+        modal.classList.add('open');
+        modal.style.display = 'block';
     }
 
     function closeRecModal() {
-        document.getElementById('recModal').style.display = 'none';
-        document.getElementById('recList').innerHTML = '';
+        const modal = document.getElementById('recModal');
+        const recList = document.getElementById('recList');
+
+        if (modal) {
+            modal.classList.remove('open');
+            modal.style.display = 'none';
+        }
+
+        if (recList) {
+            recList.innerHTML = '';
+        }
     }
 
     function formatPrice(v) {
-        if (v == null) return '';
+        if (v == null) {
+            return '';
+        }
+
         const n = Number(v);
         return n.toFixed(2).replace('.', ',') + ' ₽';
     }
@@ -408,8 +640,8 @@
         return item.promoPercent != null || item.batchPercent != null || item.monthlyPercent != null;
     }
 
-    function badgeHtml(bg, text) {
-        return `<span style="white-space:nowrap;display:inline-block;font-weight:900;color:#0b1b4d;background:${bg};border:1px solid #d8deea;padding:6px 10px;border-radius:999px;">${escapeHtml(text)}</span>`;
+    function badgeHtml(type, text) {
+        return `<span class="vk-badge vk-badge-${type}">${escapeHtml(text)}</span>`;
     }
 
     function escapeHtml(str) {
@@ -421,5 +653,6 @@
             .replaceAll("'", '&#039;');
     }
 </script>
+
 </body>
 </html>

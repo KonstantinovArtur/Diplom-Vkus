@@ -53,6 +53,7 @@ public class BuyerMenuController {
         List<Category> categories = categoryRepository.findByIsActiveTrueOrderByNameAsc();
         List<Product> products = catalogService.findProducts(categoryId, q);
         Map<Long, Long> stockQtyByProductId = loadStockQtyByProduct(buffetId, products);
+        Map<Long, Integer> cartQtyByProductId = loadCartQtyByProduct(userId, buffetId);
 
         Map<Long, BuyerPricingService.Discounts> discounts =
                 pricingService.resolveDiscounts(userId, buffetId, products);
@@ -114,6 +115,7 @@ public class BuyerMenuController {
         model.addAttribute("q", q);
         model.addAttribute("categoryId", categoryId);
         model.addAttribute("stockQtyByProductId", stockQtyByProductId);
+        model.addAttribute("cartQtyByProductId", cartQtyByProductId);
 
         return "buyer/menu";
     }
@@ -193,6 +195,27 @@ public class BuyerMenuController {
                     rs.getLong("qty")
             );
         });
+
+        return map;
+    }
+
+    private Map<Long, Integer> loadCartQtyByProduct(Long userId, Long buffetId) {
+        String sql = """
+            SELECT ci.product_id, ci.qty
+            FROM carts c
+            JOIN cart_items ci ON ci.cart_id = c.id
+            WHERE c.user_id = ?
+              AND c.buffet_id = ?
+            """;
+
+        Map<Long, Integer> map = new HashMap<>();
+
+        jdbc.query(sql, rs -> {
+            map.put(
+                    rs.getLong("product_id"),
+                    rs.getInt("qty")
+            );
+        }, userId, buffetId);
 
         return map;
     }

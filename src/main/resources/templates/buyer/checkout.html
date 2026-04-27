@@ -3,29 +3,31 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Оформление заказа</title>
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
-<main style="max-width:900px;margin:18px auto;padding:0 12px;">
-    <h2 style="margin:0 0 12px 0;">Оформление заказа</h2>
+<main class="vk-page vk-page-narrow">
+    <section class="vk-hero">
+        <h1>Оформление заказа</h1>
+        <p>Подтвердите заказ. После подтверждения товары сразу спишутся со склада.</p>
+    </section>
 
-    <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
-        <p style="color:#334155;font-weight:800;margin:0 0 10px 0;">
-            Подтвердите оформление. Товары будут <b>сразу списаны со склада</b> (вариант А).
-        </p>
+    <section class="vk-card vk-card-pad" style="margin-top:18px;">
+        <div class="vk-alert vk-alert-warning">
+            Товары будут <b>сразу списаны со склада</b>. Перед подтверждением проверьте корзину.
+        </div>
 
-        <form th:action="@{/orders/checkout}" method="post" style="display:flex;gap:10px;flex-wrap:wrap;">
+        <form th:action="@{/orders/checkout}" method="post" class="vk-actions">
             <input type="hidden" name="checkoutBuffetId" th:value="${checkoutBuffetId}"/>
 
-            <button type="submit"
-                    style="border:0;background:#1d3b8b;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
+            <button class="vk-btn" type="submit">
                 Подтвердить заказ
             </button>
 
-            <a th:href="@{/cart}"
-               style="display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;text-decoration:none;font-weight:900;color:#0b1b4d;">
+            <a class="vk-btn vk-btn-secondary" th:href="@{/cart}">
                 Вернуться в корзину
             </a>
         </form>
