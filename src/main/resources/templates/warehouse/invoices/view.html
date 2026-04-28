@@ -2,46 +2,576 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title th:text="'Накладная #' + ${invoice.id}">Накладная</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
     <style>
-        .wrap { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
-        .card { background:#fff; border:1px solid #e6e9ef; border-radius:16px; padding:16px; box-shadow:0 8px 24px rgba(10,20,60,.06); }
-        .top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
-        .title { font-size:20px; font-weight:900; color:#0b1b4d; }
-        .meta { display:grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap:10px; margin-top:10px; }
-        .meta .box { border:1px solid #eef1f6; background:#fafbff; border-radius:14px; padding:12px; }
-        .muted { color:#6b7280; font-size:13px; }
-        .btn { display:inline-block; padding:8px 12px; border-radius:12px; border:1px solid #d8deea; background:#fff; font-weight:800; cursor:pointer; text-decoration:none; color:#0b1b4d; }
-        .btn-primary { background:#1d3b8b; color:#fff; border-color:#1d3b8b; }
-        .btn-danger { background:#fff; color:#991b1b; border-color:#fecaca; }
-        .msg-ok { margin:0 0 12px; padding:10px 12px; border-radius:12px; background:#ecfdf5; border:1px solid #a7f3d0; font-weight:800; color:#065f46; }
-        .msg-err { margin:0 0 12px; padding:10px 12px; border-radius:12px; background:#fef2f2; border:1px solid #fecaca; font-weight:800; color:#991b1b; }
-        .grid2 { display:grid; grid-template-columns: 2fr 1fr; gap:16px; }
-        table { width:100%; border-collapse:collapse; }
-        th, td { padding:10px 8px; border-bottom:1px solid #eef1f6; text-align:left; vertical-align:top; }
-        th { font-weight:900; color:#0b1b4d; }
-        .num { text-align:right; white-space:nowrap; }
-        .summary-box { margin-top:14px; display:grid; grid-template-columns:repeat(3, minmax(220px, 1fr)); gap:12px; }
-        .summary-card { border:1px solid #eef1f6; background:#fafbff; border-radius:14px; padding:12px; }
-        .summary-card .label { color:#6b7280; font-size:13px; margin-bottom:6px; }
-        .summary-card .value { font-size:22px; font-weight:900; color:#0b1b4d; }
-        .field { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
-        .field label { font-weight:800; color:#0b1b4d; }
-        .field input, .field select { padding:10px 12px; border-radius:12px; border:1px solid #d8deea; outline:none; }
-        .field input:focus, .field select:focus { border-color:#0b1b4d; }
-        .err { color:#b00020; font-weight:700; font-size:13px; }
-        .readonly-note { padding:10px 12px; border-radius:12px; background:#f8fafc; border:1px dashed #cbd5e1; color:#475569; font-size:13px; }
+        .warehouse-invoice-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .warehouse-invoice-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .warehouse-invoice-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 40px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.04em;
+        }
+
+        .warehouse-invoice-hero p {
+            max-width: 720px;
+            margin: 10px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .warehouse-invoice-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .warehouse-invoice-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .invoice-status {
+            display: inline-flex;
+            align-items: center;
+            min-height: 32px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .invoice-status.draft {
+            border: 1px solid #d8e1f0;
+            background: #f8fbff;
+            color: #44557b;
+        }
+
+        .invoice-status.ready {
+            border: 1px solid #f4d294;
+            background: #fff4de;
+            color: #9c6400;
+        }
+
+        .invoice-status.checked {
+            border: 1px solid #b7ceec;
+            background: #eef4ff;
+            color: #163067;
+        }
+
+        .invoice-status.posted {
+            border: 1px solid #bde8c9;
+            background: #e8f8ed;
+            color: #166534;
+        }
+
+        .invoice-status.unknown {
+            border: 1px solid #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+        }
+
+        .warehouse-invoice-summary-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .warehouse-invoice-summary-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .warehouse-summary-label {
+            margin-top: 14px;
+            color: #6a7ba0;
+            font-size: 12px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .warehouse-summary-value {
+            margin-top: 4px;
+            color: #102a5c;
+            font-size: 24px;
+            font-weight: 950;
+            line-height: 1.05;
+        }
+
+        .warehouse-message {
+            padding: 14px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 850;
+            line-height: 1.4;
+        }
+
+        .warehouse-message.ok {
+            border: 1px solid #bde8c9;
+            background: #e8f8ed;
+            color: #166534;
+        }
+
+        .warehouse-message.err {
+            border: 1px solid #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+        }
+
+        .warehouse-invoice-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 360px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .warehouse-invoice-main {
+            display: grid;
+            gap: 18px;
+            min-width: 0;
+        }
+
+        .warehouse-invoice-wide {
+            margin-top: 0;
+        }
+
+        .warehouse-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .warehouse-panel-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .warehouse-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .warehouse-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .warehouse-top-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .warehouse-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            padding: 22px;
+        }
+
+        .warehouse-meta-box {
+            padding: 15px;
+            border: 1px solid #e2e8f3;
+            border-radius: 20px;
+            background: #f8fbff;
+        }
+
+        .warehouse-label {
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .warehouse-value {
+            margin-top: 6px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+            line-height: 1.2;
+        }
+
+        .warehouse-table-wrap {
+            overflow-x: visible;
+        }
+
+        .warehouse-items-table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+
+        .warehouse-items-table th {
+            padding: 11px 8px;
+            border-bottom: 1px solid #e5ebf5;
+            color: #7c8dac;
+            font-size: 10px;
+            font-weight: 950;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            line-height: 1.2;
+            vertical-align: top;
+        }
+
+        .warehouse-items-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #edf1f7;
+            vertical-align: top;
+            font-size: 13px;
+        }
+
+        .warehouse-items-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .warehouse-items-table th:nth-child(1),
+        .warehouse-items-table td:nth-child(1) {
+            width: 46px;
+        }
+
+        .warehouse-items-table th:nth-child(2),
+        .warehouse-items-table td:nth-child(2) {
+            width: 18%;
+        }
+
+        .warehouse-items-table th:nth-child(3),
+        .warehouse-items-table td:nth-child(3),
+        .warehouse-items-table th:nth-child(4),
+        .warehouse-items-table td:nth-child(4) {
+            width: 74px;
+        }
+
+        .warehouse-items-table th:nth-child(5),
+        .warehouse-items-table td:nth-child(5) {
+            width: 90px;
+        }
+
+        .warehouse-items-table th:nth-child(6),
+        .warehouse-items-table td:nth-child(6),
+        .warehouse-items-table th:nth-child(7),
+        .warehouse-items-table td:nth-child(7) {
+            width: 112px;
+        }
+
+        .warehouse-items-table th:nth-child(8),
+        .warehouse-items-table td:nth-child(8) {
+            width: 138px;
+        }
+
+        .warehouse-items-table th:nth-child(9),
+        .warehouse-items-table td:nth-child(9) {
+            width: 95px;
+        }
+
+        .warehouse-items-table th:nth-child(10),
+        .warehouse-items-table td:nth-child(10) {
+            width: 95px;
+        }
+
+        .warehouse-num {
+            color: #102a5c;
+            font-size: 12px;
+            font-weight: 950;
+            white-space: normal;
+            text-align: right;
+            line-height: 1.25;
+        }
+
+        .warehouse-product-name {
+            color: #102a5c;
+            font-size: 13px;
+            font-weight: 950;
+            line-height: 1.25;
+            word-break: break-word;
+        }
 
         .reason-badge {
-            display:inline-block;
-            padding:6px 10px;
-            border-radius:999px;
-            font-size:12px;
-            font-weight:800;
-            border:1px solid #dbe4f0;
-            background:#f8fafc;
-            color:#334155;
-            white-space:nowrap;
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 5px 8px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 11px;
+            font-weight: 900;
+            line-height: 1.15;
+            white-space: normal;
+        }
+
+        .warehouse-empty {
+            padding: 36px 22px;
+            text-align: center;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 850;
+        }
+
+        .warehouse-summary-box {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(180px, 1fr));
+            gap: 12px;
+            padding: 22px;
+            border-top: 1px solid #e5ebf5;
+        }
+
+        .warehouse-summary-card {
+            padding: 16px;
+            border: 1px solid #e2e8f3;
+            border-radius: 20px;
+            background: #f8fbff;
+        }
+
+        .warehouse-summary-card.final {
+            border-color: #f4d294;
+            background: #fff4de;
+        }
+
+        .warehouse-summary-card .label {
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .warehouse-summary-card .value {
+            margin-top: 6px;
+            color: #102a5c;
+            font-size: 22px;
+            font-weight: 950;
+            line-height: 1;
+            letter-spacing: -0.03em;
+        }
+
+        .warehouse-summary-note {
+            padding: 0 22px 22px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .warehouse-side {
+            position: sticky;
+            top: 18px;
+            display: grid;
+            gap: 18px;
+        }
+
+        .warehouse-form-card {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .warehouse-form-head {
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .warehouse-form-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 24px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .warehouse-form-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .warehouse-item-form {
+            display: grid;
+            gap: 14px;
+            padding: 22px;
+        }
+
+        .warehouse-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .warehouse-field label,
+        .warehouse-field span {
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .warehouse-field input,
+        .warehouse-field select {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .warehouse-field input:focus,
+        .warehouse-field select:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .warehouse-error {
+            color: #a2352a;
+            font-size: 12px;
+            font-weight: 850;
+        }
+
+        .readonly-note {
+            padding: 14px;
+            border: 1px dashed #cfd9ea;
+            border-radius: 18px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.4;
+        }
+
+        .warehouse-muted {
+            color: #6a7ba0;
+            font-size: 12px;
+            font-weight: 750;
+            line-height: 1.35;
+            word-break: break-word;
+        }
+
+        .vk-btn-danger {
+            border-color: #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+            box-shadow: none;
+        }
+
+        .vk-btn-danger:hover {
+            background: #ffe7e4;
+            color: #8f2b22;
+        }
+
+        @media (max-width: 1120px) {
+            .warehouse-invoice-hero,
+            .warehouse-invoice-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .warehouse-side {
+                position: static;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .warehouse-table-wrap {
+                overflow-x: auto;
+            }
+
+            .warehouse-items-table {
+                min-width: 980px;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .warehouse-invoice-hero {
+                padding: 22px;
+            }
+
+            .warehouse-invoice-hero h1 {
+                font-size: 32px;
+            }
+
+            .warehouse-panel-head,
+            .warehouse-top-actions {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .warehouse-meta-grid,
+            .warehouse-summary-box {
+                grid-template-columns: 1fr;
+            }
+
+            .warehouse-top-actions .vk-btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -49,219 +579,437 @@
 
 <div th:replace="fragments/header :: header"></div>
 
-<div class="wrap">
-    <div class="card">
+<main class="vk-page">
+    <div class="warehouse-invoice-page">
 
-        <div th:if="${ok}" class="msg-ok" th:text="${ok}">OK</div>
-        <div th:if="${err}" class="msg-err" th:text="${err}">Ошибка</div>
-
-        <div class="top">
+        <section class="warehouse-invoice-hero">
             <div>
-                <div class="title" th:text="'Накладная #' + ${invoice.id}">Накладная</div>
-                <div class="muted" style="margin-top:6px;">
-                    Поставщик: <b th:text="${invoice.supplier.name}">—</b>
-                    &nbsp;•&nbsp; Дата: <b th:text="${invoice.invoiceDate}">—</b>
-                    &nbsp;•&nbsp; Номер: <b th:text="${invoice.invoiceNumber}">—</b>
-                    &nbsp;•&nbsp; Статус:
-                    <b th:if="${invoice.status == 'draft'}">Черновик</b>
-                    <b th:if="${invoice.status == 'ready_for_check'}">Ожидает проверки</b>
-                    <b th:if="${invoice.status == 'checked'}">Проверена продавцом</b>
-                    <b th:if="${invoice.status == 'posted'}">Проведена</b>
-                    <b th:if="${invoice.status != 'draft' and invoice.status != 'ready_for_check' and invoice.status != 'checked' and invoice.status != 'posted'}"
-                       th:text="${invoice.status}">status</b>
+                <div class="vk-eyebrow">Панель кладовщика</div>
+
+                <h1>
+                    Накладная #<span th:text="${invoice.id}">0</span>
+                </h1>
+
+                <p>
+                    Управляйте позициями накладной, отправляйте документ продавцу на проверку
+                    и проводите фактическое поступление товаров на склад.
+                </p>
+
+                <div class="warehouse-invoice-tags">
+                    <span class="warehouse-invoice-tag">Позиции поставки</span>
+                    <span class="warehouse-invoice-tag">Проверка продавцом</span>
+                    <span class="warehouse-invoice-tag">Проведение на склад</span>
                 </div>
             </div>
 
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <a class="btn" th:href="@{/warehouse/invoices}">Назад</a>
+            <div class="warehouse-invoice-summary-card">
+                <div class="warehouse-invoice-summary-icon">📋</div>
 
-                <form th:if="${canSendToCheck}"
-                      th:action="@{/warehouse/invoices/{id}/send-to-check(id=${invoice.id})}"
-                      method="post"
-                      onsubmit="return confirm('Отправить накладную продавцу на проверку? После этого редактирование будет недоступно.');"
-                      style="margin:0;">
-                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button class="btn btn-primary" type="submit">Отправить на проверку</button>
-                </form>
+                <div class="warehouse-summary-label">
+                    Статус
+                </div>
 
-                <form th:if="${canPost}"
-                      th:action="@{/warehouse/invoices/{id}/post(id=${invoice.id})}"
-                      method="post"
-                      onsubmit="return confirm('Провести накладную и оприходовать товары на склад?');"
-                      style="margin:0;">
-                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button class="btn btn-primary" type="submit">Провести</button>
-                </form>
-            </div>
-        </div>
+                <div style="margin-top:8px;">
+                    <span th:switch="${invoice.status}">
+                        <span th:case="'draft'" class="invoice-status draft">
+                            Черновик
+                        </span>
 
-        <div class="meta">
-            <div class="box">
-                <div class="muted">Поставщик</div>
-                <div style="font-weight:900;" th:text="${invoice.supplier.name}">Поставщик</div>
-            </div>
-            <div class="box">
-                <div class="muted">Статус</div>
-                <div style="font-weight:900;">
-                    <span th:if="${invoice.status == 'draft'}">Черновик</span>
-                    <span th:if="${invoice.status == 'ready_for_check'}">Ожидает проверки</span>
-                    <span th:if="${invoice.status == 'checked'}">Проверена продавцом</span>
-                    <span th:if="${invoice.status == 'posted'}">Проведена</span>
-                    <span th:if="${invoice.status != 'draft' and invoice.status != 'ready_for_check' and invoice.status != 'checked' and invoice.status != 'posted'}"
-                          th:text="${invoice.status}">status</span>
+                        <span th:case="'ready_for_check'" class="invoice-status ready">
+                            Ожидает проверки
+                        </span>
+
+                        <span th:case="'checked'" class="invoice-status checked">
+                            Проверена продавцом
+                        </span>
+
+                        <span th:case="'posted'" class="invoice-status posted">
+                            Проведена
+                        </span>
+
+                        <span th:case="*" class="invoice-status unknown">
+                            Неизвестный статус
+                        </span>
+                    </span>
+                </div>
+
+                <div class="warehouse-summary-label">
+                    Номер
+                </div>
+
+                <div class="warehouse-summary-value" th:text="${invoice.invoiceNumber}">
+                    —
                 </div>
             </div>
+        </section>
+
+        <div th:if="${ok}" class="warehouse-message ok" th:text="${ok}">
+            Сообщение
         </div>
 
-        <div class="grid2" style="margin-top:16px;">
+        <div th:if="${err}" class="warehouse-message err" th:text="${err}">
+            Ошибка
+        </div>
 
-            <div>
-                <div class="title" style="font-size:18px;">Позиции накладной</div>
+        <section class="warehouse-invoice-layout">
 
-                <table style="margin-top:10px;">
+            <div class="warehouse-invoice-main">
+
+                <section class="warehouse-panel">
+                    <div class="warehouse-panel-head">
+                        <div>
+                            <h2>Информация о накладной</h2>
+
+                            <p>
+                                Основные данные документа и поставщика.
+                            </p>
+                        </div>
+
+                        <div class="warehouse-top-actions">
+                            <a class="vk-btn vk-btn-light" th:href="@{/warehouse/invoices}">
+                                Назад
+                            </a>
+
+                            <form th:if="${canSendToCheck}"
+                                  th:action="@{/warehouse/invoices/{id}/send-to-check(id=${invoice.id})}"
+                                  method="post"
+                                  onsubmit="return confirm('Отправить накладную продавцу на проверку? После этого редактирование будет недоступно.');"
+                                  style="margin:0;">
+                                <input th:if="${_csrf != null}"
+                                       type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}"/>
+
+                                <button class="vk-btn" type="submit">
+                                    Отправить на проверку
+                                </button>
+                            </form>
+
+                            <form th:if="${canPost}"
+                                  th:action="@{/warehouse/invoices/{id}/post(id=${invoice.id})}"
+                                  method="post"
+                                  onsubmit="return confirm('Провести накладную и оприходовать товары на склад?');"
+                                  style="margin:0;">
+                                <input th:if="${_csrf != null}"
+                                       type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}"/>
+
+                                <button class="vk-btn" type="submit">
+                                    Провести накладную
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="warehouse-meta-grid">
+                        <div class="warehouse-meta-box">
+                            <div class="warehouse-label">Поставщик</div>
+
+                            <div class="warehouse-value" th:text="${invoice.supplier.name}">
+                                Поставщик
+                            </div>
+                        </div>
+
+                        <div class="warehouse-meta-box">
+                            <div class="warehouse-label">Дата</div>
+
+                            <div class="warehouse-value" th:text="${invoice.invoiceDate}">
+                                —
+                            </div>
+                        </div>
+
+                        <div class="warehouse-meta-box">
+                            <div class="warehouse-label">Статус</div>
+
+                            <div class="warehouse-value" th:switch="${invoice.status}">
+                                <span th:case="'draft'">Черновик</span>
+                                <span th:case="'ready_for_check'">Ожидает проверки</span>
+                                <span th:case="'checked'">Проверена продавцом</span>
+                                <span th:case="'posted'">Проведена</span>
+                                <span th:case="*">Неизвестный статус</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <aside class="warehouse-side">
+                <section class="warehouse-form-card">
+                    <div class="warehouse-form-head">
+                        <h2>Добавить позицию</h2>
+
+                        <p>
+                            Добавлять товары можно только пока накладная находится в статусе «Черновик».
+                        </p>
+                    </div>
+
+                    <div th:if="${canEdit}">
+                        <form th:action="@{/warehouse/invoices/{id}/items/add(id=${invoice.id})}"
+                              method="post"
+                              th:object="${itemForm}"
+                              class="warehouse-item-form">
+
+                            <input th:if="${_csrf != null}"
+                                   type="hidden"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}"/>
+
+                            <label class="warehouse-field">
+                                <span>Товар</span>
+
+                                <select th:field="*{productId}" id="productSelect">
+                                    <option value="" disabled selected>
+                                        Выберите товар
+                                    </option>
+
+                                    <option th:each="p : ${products}"
+                                            th:value="${p.id}"
+                                            th:attr="data-shelf-life-days=${p.shelfLifeDays != null ? p.shelfLifeDays : ''}"
+                                            th:text="${p.name + (p.productCode != null ? ' (' + p.productCode + ')' : '')}">
+                                        Товар
+                                    </option>
+                                </select>
+
+                                <small class="warehouse-error"
+                                       th:if="${#fields.hasErrors('productId')}"
+                                       th:errors="*{productId}">
+                                    Ошибка
+                                </small>
+                            </label>
+
+                            <label class="warehouse-field">
+                                <span>Количество</span>
+
+                                <input type="number"
+                                       min="1"
+                                       th:field="*{qty}"/>
+
+                                <small class="warehouse-error"
+                                       th:if="${#fields.hasErrors('qty')}"
+                                       th:errors="*{qty}">
+                                    Ошибка
+                                </small>
+                            </label>
+
+                            <div class="warehouse-field">
+                                <label>Цена</label>
+
+                                <div class="readonly-note">
+                                    Цена будет автоматически взята из прайса выбранного поставщика.
+                                </div>
+                            </div>
+
+                            <label class="warehouse-field">
+                                <span>Годен до</span>
+
+                                <input type="date"
+                                       th:field="*{expiresAt}"
+                                       id="expiresAtInput"/>
+
+                                <small class="warehouse-error"
+                                       th:if="${#fields.hasErrors('expiresAt')}"
+                                       th:errors="*{expiresAt}">
+                                    Ошибка
+                                </small>
+
+                                <span class="warehouse-muted">
+                                    Если у товара задан срок хранения, дата подставится автоматически.
+                                </span>
+                            </label>
+
+                            <button class="vk-btn" type="submit">
+                                Добавить позицию
+                            </button>
+                        </form>
+                    </div>
+
+                    <div th:if="${!canEdit}" style="padding:22px;">
+                        <div class="readonly-note">
+                            Редактирование недоступно. Накладная уже отправлена на проверку,
+                            проверена продавцом или проведена на склад.
+                        </div>
+                    </div>
+                </section>
+            </aside>
+
+        </section>
+
+        <section class="warehouse-panel warehouse-invoice-wide">
+            <div class="warehouse-panel-head">
+                <div>
+                    <h2>Позиции накладной</h2>
+
+                    <p>
+                        Таблица показана на всю ширину страницы, поэтому столбцы помещаются компактнее.
+                    </p>
+                </div>
+            </div>
+
+            <div class="warehouse-table-wrap">
+                <table class="warehouse-items-table">
                     <thead>
                     <tr>
-                        <th style="width:70px;">ID</th>
+                        <th>ID</th>
                         <th>Товар</th>
-                        <th style="width:90px;">Заказано</th>
-                        <th style="width:90px;">Факт</th>
-                        <th style="width:130px;">Цена</th>
-                        <th style="width:150px;">Сумма по документу</th>
-                        <th style="width:150px;">Сумма по факту</th>
-                        <th style="width:140px;">Причина расхождения</th>
-                        <th style="width:130px;">Годен до</th>
-                        <th style="width:140px;">Действия</th>
+                        <th>Заказано</th>
+                        <th>Факт</th>
+                        <th>Цена</th>
+                        <th>Сумма по документу</th>
+                        <th>Сумма по факту</th>
+                        <th>Причина</th>
+                        <th>Годен до</th>
+                        <th>Действие</th>
                     </tr>
                     </thead>
+
                     <tbody>
                     <tr th:each="it : ${items}">
-                        <td class="num" th:text="${it.id}">1</td>
-                        <td th:text="${it.product.name}">Товар</td>
-                        <td class="num" th:text="${it.qty}">1</td>
-                        <td class="num">
-    <span th:if="${invoice.status == 'draft' or invoice.status == 'ready_for_check'}"
-          th:text="${it.receivedQty != null ? it.receivedQty : it.qty}">1</span>
-
-                            <span th:if="${invoice.status == 'checked' or invoice.status == 'posted'}"
-                                  th:text="${it.receivedQty != null ? it.receivedQty : '—'}">—</span>
-                        </td>                        <td class="num" th:text="${it.unitPrice != null ? #numbers.formatDecimal(it.unitPrice, 1, 2) : '—'}">—</td>
-                        <td class="num"
-                            th:text="${it.unitPrice != null ? #numbers.formatDecimal(it.unitPrice * it.qty, 1, 2) : '—'}">—</td>
-                        <td class="num"
-                            th:text="${it.unitPrice != null ? #numbers.formatDecimal(it.unitPrice * (it.receivedQty != null ? it.receivedQty : it.qty), 1, 2) : '—'}">—</td>
-
-                        <td>
-                            <span th:if="${it.acceptanceReason == null}" class="muted">—</span>
-
-                            <span th:if="${it.acceptanceReason == 'ok'}" class="reason-badge">ОК</span>
-                            <span th:if="${it.acceptanceReason == 'defect'}" class="reason-badge">Брак</span>
-                            <span th:if="${it.acceptanceReason == 'shortage'}" class="reason-badge">Недопоставка</span>
-                            <span th:if="${it.acceptanceReason == 'missing'}" class="reason-badge">Товар отсутствовал</span>
-                            <span th:if="${it.acceptanceReason == 'quantity_error'}" class="reason-badge">Ошибка в количестве</span>
+                        <td class="warehouse-num" th:text="${it.id}">
+                            1
                         </td>
 
-                        <td th:text="${it.expiresAt != null ? it.expiresAt : '—'}">—</td>
+                        <td>
+                            <div class="warehouse-product-name" th:text="${it.product.name}">
+                                Товар
+                            </div>
+                        </td>
+
+                        <td class="warehouse-num">
+                            <span th:text="${it.qty}">1</span> шт.
+                        </td>
+
+                        <td class="warehouse-num">
+                            <span th:if="${invoice.status == 'draft' or invoice.status == 'ready_for_check'}"
+                                  th:text="${it.receivedQty != null ? it.receivedQty : it.qty}">
+                                1
+                            </span>
+
+                            <span th:if="${invoice.status == 'checked' or invoice.status == 'posted'}"
+                                  th:text="${it.receivedQty != null ? it.receivedQty : '—'}">
+                                —
+                            </span>
+                        </td>
+
+                        <td class="warehouse-num"
+                            th:text="${it.unitPrice != null ? #numbers.formatDecimal(it.unitPrice, 1, 'COMMA', 2, 'POINT') + ' ₽' : '—'}">
+                            —
+                        </td>
+
+                        <td class="warehouse-num"
+                            th:text="${it.unitPrice != null ? #numbers.formatDecimal(it.unitPrice * it.qty, 1, 'COMMA', 2, 'POINT') + ' ₽' : '—'}">
+                            —
+                        </td>
+
+                        <td class="warehouse-num"
+                            th:text="${it.unitPrice != null ? #numbers.formatDecimal(it.unitPrice * (it.receivedQty != null ? it.receivedQty : it.qty), 1, 'COMMA', 2, 'POINT') + ' ₽' : '—'}">
+                            —
+                        </td>
+
+                        <td>
+                            <span th:if="${it.acceptanceReason == null}" class="warehouse-muted">
+                                —
+                            </span>
+
+                            <span th:if="${it.acceptanceReason == 'ok'}" class="reason-badge">
+                                ОК
+                            </span>
+
+                            <span th:if="${it.acceptanceReason == 'defect'}" class="reason-badge">
+                                Брак
+                            </span>
+
+                            <span th:if="${it.acceptanceReason == 'shortage'}" class="reason-badge">
+                                Недопоставка
+                            </span>
+
+                            <span th:if="${it.acceptanceReason == 'missing'}" class="reason-badge">
+                                Товар отсутствовал
+                            </span>
+
+                            <span th:if="${it.acceptanceReason == 'quantity_error'}" class="reason-badge">
+                                Ошибка в количестве
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="warehouse-muted" th:text="${it.expiresAt != null ? it.expiresAt : '—'}">
+                                —
+                            </div>
+                        </td>
 
                         <td>
                             <form th:if="${canEdit}"
                                   th:action="@{/warehouse/invoices/{invoiceId}/items/{itemId}/delete(invoiceId=${invoice.id}, itemId=${it.id})}"
                                   method="post"
                                   onsubmit="return confirm('Удалить позицию?');"
-                                  style="display:inline;">
-                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                <button class="btn btn-danger" type="submit">Удалить</button>
+                                  style="margin:0;">
+                                <input th:if="${_csrf != null}"
+                                       type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}"/>
+
+                                <button class="vk-btn vk-btn-danger" type="submit">
+                                    Удалить
+                                </button>
                             </form>
-                            <span th:if="${!canEdit}" class="muted">Недоступно</span>
+
+                            <span th:if="${!canEdit}" class="warehouse-muted">
+                                Недоступно
+                            </span>
                         </td>
                     </tr>
 
                     <tr th:if="${#lists.isEmpty(items)}">
-                        <td colspan="10" class="muted">Пока нет позиций. Добавь справа.</td>
+                        <td colspan="10">
+                            <div class="warehouse-empty">
+                                Позиции пока не добавлены.
+                            </div>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
+            </div>
 
-                <div class="summary-box">
-                    <div class="summary-card">
-                        <div class="label">Итого по документу</div>
-                        <div class="value" th:text="${#numbers.formatDecimal(totalPlannedAmount, 1, 2)}">0.00</div>
-                    </div>
+            <div class="warehouse-summary-box">
+                <div class="warehouse-summary-card">
+                    <div class="label">Итого по документу</div>
 
-                    <div class="summary-card">
-                        <div class="label">Итого по факту</div>
-                        <div class="value" th:text="${#numbers.formatDecimal(totalActualAmount, 1, 2)}">0.00</div>
-                    </div>
-
-                    <div class="summary-card">
-                        <div class="label">Основная сумма для учёта</div>
-                        <div class="value" th:text="${#numbers.formatDecimal(totalAmount, 1, 2)}">0.00</div>
+                    <div class="value"
+                         th:text="${#numbers.formatDecimal(totalPlannedAmount, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                        0.00 ₽
                     </div>
                 </div>
 
-                <div class="muted" style="margin-top:10px;">
-                    <b>Итого по документу</b> считается по заказанному количеству.<br>
-                    <b>Итого по факту</b> считается по фактически принятому количеству продавцом.<br>
-                    Для складского учёта и дальнейших расчётов используется именно <b>сумма по факту</b>.
+                <div class="warehouse-summary-card">
+                    <div class="label">Итого по факту</div>
+
+                    <div class="value"
+                         th:text="${#numbers.formatDecimal(totalActualAmount, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                        0.00 ₽
+                    </div>
+                </div>
+
+                <div class="warehouse-summary-card final">
+                    <div class="label">Основная сумма для учёта</div>
+
+                    <div class="value"
+                         th:text="${#numbers.formatDecimal(totalAmount, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                        0.00 ₽
+                    </div>
                 </div>
             </div>
 
-            <div>
-                <div class="title" style="font-size:18px;">Добавить позицию</div>
-
-                <div th:if="${canEdit}">
-                    <form th:action="@{/warehouse/invoices/{id}/items/add(id=${invoice.id})}"
-                          method="post" th:object="${itemForm}">
-
-                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
-                        <div class="field">
-                            <label>Товар</label>
-                            <select th:field="*{productId}" id="productSelect">
-                                <option value="" disabled selected>Выберите товар</option>
-                                <option th:each="p : ${products}"
-                                        th:value="${p.id}"
-                                        th:attr="data-shelf-life-days=${p.shelfLifeDays != null ? p.shelfLifeDays : ''}"
-                                        th:text="${p.name + (p.productCode != null ? ' (' + p.productCode + ')' : '')}">
-                                    P
-                                </option>
-                            </select>
-                            <div class="err" th:if="${#fields.hasErrors('productId')}" th:errors="*{productId}">error</div>
-                        </div>
-
-                        <div class="field">
-                            <label>Количество</label>
-                            <input type="number" min="1" th:field="*{qty}"/>
-                            <div class="err" th:if="${#fields.hasErrors('qty')}" th:errors="*{qty}">error</div>
-                        </div>
-
-                        <div class="field">
-                            <label>Цена</label>
-                            <div class="readonly-note">Цена будет автоматически взята из прайса выбранного поставщика.</div>
-                        </div>
-
-                        <div class="field">
-                            <label>Годен до</label>
-                            <input type="date" th:field="*{expiresAt}" id="expiresAtInput"/>
-                            <div class="err" th:if="${#fields.hasErrors('expiresAt')}" th:errors="*{expiresAt}">error</div>
-                            <div class="muted">Если у товара задан срок хранения, дата подставится автоматически.</div>
-                        </div>
-
-                        <button class="btn btn-primary" type="submit">Добавить</button>
-
-                        <div class="muted" style="margin-top:10px;">
-                            Добавлять позиции можно только в статусе draft.
-                        </div>
-                    </form>
-                </div>
-
-                <div th:if="${!canEdit}" class="readonly-note">
-                    Редактирование недоступно. Накладная уже отправлена на проверку, проверена или проведена.
-                </div>
+            <div class="warehouse-summary-note">
+                <b>Итого по документу</b> считается по заказанному количеству.
+                <b>Итого по факту</b> считается по фактически принятому количеству продавцом.
+                Для складского учёта используется сумма по факту.
             </div>
+        </section>
 
-        </div>
     </div>
-</div>
+</main>
 
 <div th:replace="fragments/footer :: footer"></div>
 
@@ -270,24 +1018,36 @@
         const productSelect = document.getElementById('productSelect');
         const expiresAtInput = document.getElementById('expiresAtInput');
 
-        if (!productSelect || !expiresAtInput) return;
+        if (!productSelect || !expiresAtInput) {
+            return;
+        }
 
         function formatDate(date) {
             const y = date.getFullYear();
             const m = String(date.getMonth() + 1).padStart(2, '0');
             const d = String(date.getDate()).padStart(2, '0');
+
             return `${y}-${m}-${d}`;
         }
 
         function applyExpiryFromSelectedProduct() {
             const option = productSelect.options[productSelect.selectedIndex];
-            if (!option) return;
+
+            if (!option) {
+                return;
+            }
 
             const shelfLifeDaysRaw = option.getAttribute('data-shelf-life-days');
-            if (!shelfLifeDaysRaw) return;
+
+            if (!shelfLifeDaysRaw) {
+                return;
+            }
 
             const shelfLifeDays = parseInt(shelfLifeDaysRaw, 10);
-            if (isNaN(shelfLifeDays) || shelfLifeDays < 1) return;
+
+            if (isNaN(shelfLifeDays) || shelfLifeDays < 1) {
+                return;
+            }
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);

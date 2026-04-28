@@ -2,10 +2,460 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Ошибка</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Ошибка · Буфет МПТ</title>
+
+    <style>
+        :root {
+            --vk-bg: #f5f7fb;
+            --vk-surface: #ffffff;
+            --vk-primary: #162f65;
+            --vk-primary-hover: #102650;
+            --vk-accent: #f3a21a;
+            --vk-text: #13294b;
+            --vk-muted: #6f7f96;
+            --vk-border: #dce4ef;
+            --vk-danger: #a2352a;
+            --vk-danger-soft: #fff2f0;
+            --vk-shadow: 0 28px 70px rgba(22, 47, 101, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background:
+                    radial-gradient(circle at 10% 12%, rgba(22, 47, 101, 0.13), transparent 30%),
+                    radial-gradient(circle at 88% 12%, rgba(243, 162, 26, 0.13), transparent 26%),
+                    linear-gradient(135deg, #eef4ff 0%, #f8fbff 45%, #fff7ea 100%);
+            color: var(--vk-text);
+            font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+        }
+
+        .error-page {
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            width: min(1120px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 32px 0;
+        }
+
+        .error-card {
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 28px;
+            align-items: center;
+            width: 100%;
+            padding: 34px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 34px;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: var(--vk-shadow);
+        }
+
+        .error-card::before {
+            content: "";
+            position: absolute;
+            right: -120px;
+            top: -120px;
+            width: 320px;
+            height: 320px;
+            border-radius: 999px;
+            background: rgba(243, 162, 26, 0.14);
+        }
+
+        .error-card::after {
+            content: "";
+            position: absolute;
+            left: -140px;
+            bottom: -140px;
+            width: 360px;
+            height: 360px;
+            border-radius: 999px;
+            background: rgba(22, 47, 101, 0.08);
+        }
+
+        .error-content,
+        .error-side {
+            position: relative;
+            z-index: 1;
+        }
+
+        .error-brand {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 38px;
+        }
+
+        .error-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 190px;
+            height: 62px;
+            padding: 8px 12px;
+            border: 1px solid var(--vk-border);
+            border-radius: 18px;
+            background: #ffffff;
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .error-logo img {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .error-brand-text {
+            min-width: 0;
+        }
+
+        .error-brand-title {
+            color: var(--vk-text);
+            font-size: 24px;
+            font-weight: 950;
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+        }
+
+        .error-brand-subtitle {
+            margin-top: 5px;
+            color: var(--vk-muted);
+            font-size: 14px;
+            font-weight: 850;
+        }
+
+        .error-eyebrow {
+            margin-bottom: 12px;
+            color: var(--vk-primary);
+            font-size: 13px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .error-title {
+            margin: 0;
+            color: var(--vk-primary);
+            font-size: 54px;
+            font-weight: 950;
+            line-height: 1.02;
+            letter-spacing: -0.06em;
+        }
+
+        .error-text {
+            max-width: 680px;
+            margin: 18px 0 0;
+            color: #44557b;
+            font-size: 17px;
+            font-weight: 750;
+            line-height: 1.55;
+        }
+
+        .error-details {
+            display: grid;
+            gap: 10px;
+            margin-top: 24px;
+            max-width: 720px;
+        }
+
+        .error-detail {
+            display: grid;
+            grid-template-columns: 140px minmax(0, 1fr);
+            gap: 12px;
+            padding: 13px 14px;
+            border: 1px solid var(--vk-border);
+            border-radius: 18px;
+            background: #f8fbff;
+        }
+
+        .error-detail-label {
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .error-detail-value {
+            min-width: 0;
+            color: var(--vk-text);
+            font-size: 14px;
+            font-weight: 850;
+            line-height: 1.35;
+            word-break: break-word;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+
+        .error-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 46px;
+            padding: 0 18px;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            background: var(--vk-primary);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 950;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 12px 24px rgba(22, 47, 101, 0.20);
+            transition: 0.2s ease;
+        }
+
+        .error-btn:hover {
+            background: var(--vk-primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 16px 30px rgba(22, 47, 101, 0.24);
+        }
+
+        .error-btn-light {
+            border-color: #c6d2e2;
+            background: #ffffff;
+            color: var(--vk-primary);
+            box-shadow: none;
+        }
+
+        .error-btn-light:hover {
+            background: #f3f6fa;
+            color: var(--vk-primary);
+            box-shadow: none;
+        }
+
+        .error-side {
+            padding: 24px;
+            border: 1px solid var(--vk-border);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.05), rgba(243, 162, 26, 0.05)),
+                    #ffffff;
+        }
+
+        .error-icon {
+            display: grid;
+            place-items: center;
+            width: 76px;
+            height: 76px;
+            border-radius: 26px;
+            background: linear-gradient(135deg, var(--vk-primary), var(--vk-accent));
+            color: #ffffff;
+            font-size: 36px;
+            box-shadow: 0 18px 34px rgba(22, 47, 101, 0.20);
+        }
+
+        .error-side-title {
+            margin: 18px 0 0;
+            color: var(--vk-primary);
+            font-size: 24px;
+            font-weight: 950;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+        }
+
+        .error-side-text {
+            margin: 10px 0 0;
+            color: var(--vk-muted);
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .error-status {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            min-height: 34px;
+            margin-top: 18px;
+            padding: 7px 12px;
+            border: 1px solid #f3c7c2;
+            border-radius: 999px;
+            background: var(--vk-danger-soft);
+            color: var(--vk-danger);
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        @media (max-width: 900px) {
+            .error-card {
+                grid-template-columns: 1fr;
+            }
+
+            .error-title {
+                font-size: 44px;
+            }
+        }
+
+        @media (max-width: 620px) {
+            .error-page {
+                width: min(100% - 20px, 1120px);
+                padding: 16px 0;
+            }
+
+            .error-card {
+                padding: 22px;
+                border-radius: 26px;
+            }
+
+            .error-brand {
+                align-items: flex-start;
+                flex-direction: column;
+                margin-bottom: 30px;
+            }
+
+            .error-logo {
+                width: 158px;
+                height: 54px;
+            }
+
+            .error-title {
+                font-size: 34px;
+            }
+
+            .error-text {
+                font-size: 15px;
+            }
+
+            .error-detail {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+
+            .error-actions,
+            .error-actions .error-btn,
+            .error-actions button {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-<h2>Произошла ошибка</h2>
-<p>Вернитесь на страницу входа: <a href="/login">/login</a></p>
+
+<main class="error-page">
+    <section class="error-card">
+
+        <div class="error-content">
+            <div class="error-brand">
+                <div class="error-logo">
+                    <img th:src="@{/images/mpt-logo.png}" alt="МПТ">
+                </div>
+
+                <div class="error-brand-text">
+                    <div class="error-brand-title">
+                        Буфет МПТ
+                    </div>
+
+                    <div class="error-brand-subtitle">
+                        заказы и склад
+                    </div>
+                </div>
+            </div>
+
+            <div class="error-eyebrow">
+                Что-то пошло не так
+            </div>
+
+            <h1 class="error-title">
+                Произошла ошибка
+            </h1>
+
+            <p class="error-text">
+                Не удалось открыть запрошенную страницу или выполнить действие.
+                Вернитесь назад, перейдите на страницу входа или попробуйте открыть раздел повторно.
+            </p>
+
+            <div class="error-details">
+                <div class="error-detail" th:if="${status != null}">
+                    <div class="error-detail-label">
+                        Код ошибки
+                    </div>
+
+                    <div class="error-detail-value" th:text="${status}">
+                        500
+                    </div>
+                </div>
+
+                <div class="error-detail" th:if="${error != null}">
+                    <div class="error-detail-label">
+                        Тип
+                    </div>
+
+                    <div class="error-detail-value" th:text="${error}">
+                        Internal Server Error
+                    </div>
+                </div>
+
+                <div class="error-detail" th:if="${message != null and !#strings.isEmpty(message)}">
+                    <div class="error-detail-label">
+                        Описание
+                    </div>
+
+                    <div class="error-detail-value" th:text="${message}">
+                        Ошибка
+                    </div>
+                </div>
+
+                <div class="error-detail" th:if="${path != null}">
+                    <div class="error-detail-label">
+                        Адрес
+                    </div>
+
+                    <div class="error-detail-value" th:text="${path}">
+                        /error
+                    </div>
+                </div>
+            </div>
+
+            <div class="error-actions">
+                <a class="error-btn" href="/login">
+                    Перейти ко входу
+                </a>
+
+                <a class="error-btn error-btn-light" href="/">
+                    На главную
+                </a>
+
+                <button class="error-btn error-btn-light" type="button" onclick="history.back()">
+                    Назад
+                </button>
+            </div>
+        </div>
+
+        <aside class="error-side">
+            <div class="error-icon">⚠️</div>
+
+            <h2 class="error-side-title">
+                Страница временно недоступна
+            </h2>
+
+            <p class="error-side-text">
+                Обычно помогает возврат назад или повторный вход в систему.
+                Если ошибка повторяется, проверьте последний изменённый файл или действие,
+                после которого она появилась.
+            </p>
+
+            <div class="error-status" th:if="${status != null}">
+                Ошибка <span th:text="${status}" style="margin-left:4px;">500</span>
+            </div>
+        </aside>
+
+    </section>
+</main>
+
 </body>
 </html>

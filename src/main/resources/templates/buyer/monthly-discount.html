@@ -4,98 +4,472 @@
     <meta charset="UTF-8"/>
     <title>Месячная скидка</title>
     <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
+    <style>
+        .discount-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .discount-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .discount-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 40px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.04em;
+        }
+
+        .discount-hero p {
+            max-width: 720px;
+            margin: 10px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .discount-period-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .discount-period-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .discount-period-label {
+            margin-top: 14px;
+            color: #6a7ba0;
+            font-size: 12px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .discount-period-value {
+            margin-top: 4px;
+            color: #102a5c;
+            font-size: 22px;
+            font-weight: 950;
+            letter-spacing: -0.02em;
+        }
+
+        .discount-shell {
+            padding: 24px;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .discount-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5ebf5;
+        }
+
+        .discount-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .discount-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .discount-status-pill {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .discount-alert {
+            margin-bottom: 16px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 850;
+            line-height: 1.4;
+        }
+
+        .discount-alert-warning {
+            border: 1px solid #f4d294;
+            background: #fff4de;
+            color: #8a5a00;
+        }
+
+        .discount-alert-danger {
+            border: 1px solid #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+        }
+
+        .discount-alert-empty {
+            display: grid;
+            place-items: center;
+            min-height: 210px;
+            padding: 28px;
+            border: 1px dashed #cfd9ea;
+            border-radius: 24px;
+            background: #f8fbff;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 850;
+            text-align: center;
+        }
+
+        .discount-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
+            gap: 16px;
+        }
+
+        .discount-card {
+            position: relative;
+            display: grid;
+            gap: 14px;
+            min-height: 170px;
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.025), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+            box-shadow: 0 8px 22px rgba(15, 35, 85, 0.04);
+            cursor: pointer;
+            transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+        }
+
+        .discount-card:hover {
+            border-color: rgba(22, 47, 101, 0.20);
+            box-shadow: 0 16px 34px rgba(15, 35, 85, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .discount-card.locked {
+            cursor: default;
+            opacity: 0.86;
+        }
+
+        .discount-card input[type="radio"] {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .discount-card:has(input[type="radio"]:checked) {
+            border-color: #f3a21a;
+            box-shadow: 0 16px 34px rgba(243, 162, 26, 0.16);
+            background:
+                    linear-gradient(135deg, rgba(243, 162, 26, 0.11), rgba(22, 47, 101, 0.03)),
+                    #ffffff;
+        }
+
+        .discount-card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .discount-category-icon {
+            display: grid;
+            place-items: center;
+            width: 50px;
+            height: 50px;
+            flex: 0 0 auto;
+            border-radius: 18px;
+            background: #e8eef8;
+            color: #163067;
+            font-size: 24px;
+            font-weight: 950;
+        }
+
+        .discount-radio-visual {
+            display: grid;
+            place-items: center;
+            width: 26px;
+            height: 26px;
+            flex: 0 0 auto;
+            border: 2px solid #cfd9ea;
+            border-radius: 999px;
+            background: #ffffff;
+        }
+
+        .discount-radio-visual::after {
+            content: "";
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            background: transparent;
+            transition: background .15s ease;
+        }
+
+        .discount-card:has(input[type="radio"]:checked) .discount-radio-visual {
+            border-color: #f3a21a;
+        }
+
+        .discount-card:has(input[type="radio"]:checked) .discount-radio-visual::after {
+            background: #f3a21a;
+        }
+
+        .discount-title {
+            margin-top: 6px;
+            color: #102a5c;
+            font-size: 20px;
+            font-weight: 950;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+        }
+
+        .discount-percent {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            min-height: 32px;
+            padding: 7px 12px;
+            border: 1px solid #f4d294;
+            border-radius: 999px;
+            background: #fff4de;
+            color: #9c6400;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .discount-selected {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            min-height: 32px;
+            padding: 7px 12px;
+            border: 1px solid #bde8c9;
+            border-radius: 999px;
+            background: #e8f8ed;
+            color: #166534;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .discount-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid #e5ebf5;
+        }
+
+        .discount-note {
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 980px) {
+            .discount-hero {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .discount-hero {
+                padding: 22px;
+            }
+
+            .discount-hero h1 {
+                font-size: 32px;
+            }
+
+            .discount-head,
+            .discount-actions {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .discount-actions .vk-btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
 <main class="vk-page">
-    <section class="vk-hero">
-        <h1>Месячная скидка</h1>
-        <p>
-            Выберите категорию, на которую будет действовать персональная скидка в текущем месяце.
-        </p>
-    </section>
+    <div class="discount-page">
 
-    <section class="vk-card vk-card-pad" style="margin-top:18px;">
-        <div class="vk-toolbar" style="margin-bottom:16px;">
-            <div class="vk-muted">
-                Период: <span th:text="${month}">1</span>/<span th:text="${year}">2026</span>
+        <section class="discount-hero">
+            <div>
+                <div class="vk-eyebrow">Персональная скидка</div>
+
+                <h1>Выберите скидку месяца</h1>
+
+                <p>
+                    Один раз в месяц можно выбрать категорию товаров, на которую будет действовать персональная скидка.
+                </p>
             </div>
-        </div>
 
-        <div th:if="${noBuffet}" class="vk-alert vk-alert-warning">
-            Сначала выберите буфет вверху справа.
-        </div>
+            <div class="discount-period-card">
+                <div class="discount-period-icon">%</div>
 
-        <div th:if="${noOffer}" class="vk-empty">
-            На этот месяц нет предложений по скидке для выбранного буфета.
-        </div>
+                <div class="discount-period-label">
+                    Период действия
+                </div>
 
-        <div th:if="${param.error != null and param.error[0] == 'invalid'}"
-             class="vk-alert vk-alert-danger">
-            Нельзя выбрать эту позицию, потому что она не относится к текущему предложению месяца.
-        </div>
+                <div class="discount-period-value">
+                    <span th:text="${month}">1</span>/<span th:text="${year}">2026</span>
+                </div>
+            </div>
+        </section>
 
-        <div th:if="${param.error != null and param.error[0] == 'already-selected'}"
-             class="vk-alert vk-alert-warning">
-            Скидка на текущий месяц уже выбрана. Новый выбор станет доступен в следующем месяце.
-        </div>
+        <section class="discount-shell">
 
-        <form th:if="${!noBuffet and !noOffer}" th:action="@{/buyer/monthly-discount/select}" method="post">
-            <input th:if="${_csrf != null}"
-                   type="hidden"
-                   th:name="${_csrf.parameterName}"
-                   th:value="${_csrf.token}" />
+            <div class="discount-head">
+                <div>
+                    <h2>Категории месяца</h2>
 
-            <div class="discount-grid">
-                <label th:each="it : ${items}"
-                       class="discount-card"
-                       th:classappend="${selectionLocked} ? ' locked' : ''">
-                    <div class="discount-card-head">
-                        <div>
-                            <div class="discount-title" th:text="${it.category.name}">
-                                Категория
-                            </div>
+                    <p>
+                        Выберите одну категорию из предложенных вариантов.
+                    </p>
+                </div>
 
-                            <div class="vk-badge vk-badge-primary" style="margin-top:8px;">
-                                Скидка <span th:text="${it.percent}">2</span>%
-                            </div>
-                        </div>
+                <div class="discount-status-pill">
+                    Выбор доступен один раз в месяц
+                </div>
+            </div>
 
-                        <input class="discount-radio"
-                               type="radio"
+            <div th:if="${noBuffet}" class="discount-alert discount-alert-warning">
+                Сначала выберите буфет вверху справа.
+            </div>
+
+            <div th:if="${param.error != null and param.error[0] == 'invalid'}"
+                 class="discount-alert discount-alert-danger">
+                Нельзя выбрать эту позицию, потому что она не относится к текущему предложению месяца.
+            </div>
+
+            <div th:if="${param.error != null and param.error[0] == 'already-selected'}"
+                 class="discount-alert discount-alert-warning">
+                Скидка на текущий месяц уже выбрана. Новый выбор станет доступен в следующем месяце.
+            </div>
+
+            <div th:if="${noOffer}" class="discount-alert-empty">
+                На этот месяц нет предложений по скидке для выбранного буфета.
+            </div>
+
+            <form th:if="${!noBuffet and !noOffer}"
+                  th:action="@{/buyer/monthly-discount/select}"
+                  method="post">
+
+                <input th:if="${_csrf != null}"
+                       type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}"/>
+
+                <div class="discount-grid">
+                    <label th:each="it : ${items}"
+                           class="discount-card"
+                           th:classappend="${selectionLocked} ? ' locked' : ''">
+
+                        <input type="radio"
                                name="offerItemId"
                                th:value="${it.id}"
                                th:checked="${selectedOfferItemId != null and it.id == selectedOfferItemId}"
                                th:disabled="${selectionLocked}"/>
-                    </div>
 
-                    <div th:if="${selectedOfferItemId != null and it.id == selectedOfferItemId}"
-                         class="selected-text">
-                        Выбрано
-                    </div>
-                </label>
-            </div>
+                        <div class="discount-card-top">
+                            <div class="discount-category-icon">%</div>
 
-            <div class="vk-actions" style="margin-top:16px;">
-                <button class="vk-btn"
-                        type="submit"
-                        th:disabled="${selectionLocked}">
-                    Сохранить выбор
-                </button>
+                            <div class="discount-radio-visual"></div>
+                        </div>
 
-                <span th:if="${!selectionLocked}" class="vk-muted">
-                    Выбор можно сделать только один раз за текущий месяц.
-                </span>
+                        <div>
+                            <div class="discount-title" th:text="${it.category.name}">
+                                Категория
+                            </div>
+                        </div>
 
-                <span th:if="${selectionLocked}" class="vk-muted">
-                    Выбор на этот месяц уже зафиксирован. Новый выбор станет доступен в следующем месяце.
-                </span>
-            </div>
-        </form>
-    </section>
+                        <div class="discount-percent">
+                            Скидка <span th:text="${it.percent}">2</span>%
+                        </div>
+
+                        <div th:if="${selectedOfferItemId != null and it.id == selectedOfferItemId}"
+                             class="discount-selected">
+                            Выбрано
+                        </div>
+                    </label>
+                </div>
+
+                <div class="discount-actions">
+                    <button class="vk-btn"
+                            type="submit"
+                            th:disabled="${selectionLocked}">
+                        Сохранить выбор
+                    </button>
+
+                    <span th:if="${!selectionLocked}" class="discount-note">
+                        Выбор можно сделать только один раз за текущий месяц.
+                    </span>
+
+                    <span th:if="${selectionLocked}" class="discount-note">
+                        Выбор на этот месяц уже зафиксирован. Новый выбор станет доступен в следующем месяце.
+                    </span>
+                </div>
+            </form>
+
+        </section>
+
+    </div>
 </main>
 
+<div th:replace="fragments/footer :: footer"></div>
 </body>
 </html>

@@ -2,84 +2,541 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Списание (вручную по партии)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Кладовщик · Списание по партии</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
     <style>
-        .wrap { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
-        .card { background:#fff; border:1px solid #e6e9ef; border-radius:16px; padding:16px; box-shadow:0 8px 24px rgba(10,20,60,.06); }
-        .title { font-size:20px; font-weight:900; color:#0b1b4d; margin-bottom:12px; }
-        .field { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
-        .field label { font-weight:800; color:#0b1b4d; }
-        .field input, .field select, .field textarea { padding:10px 12px; border-radius:12px; border:1px solid #d8deea; outline:none; }
-        .btn { display:inline-block; padding:10px 14px; border-radius:12px; border:1px solid #d8deea; background:#fff; font-weight:800; cursor:pointer; color:#0b1b4d; }
-        .btn-primary { background:#1d3b8b; color:#fff; border-color:#1d3b8b; }
-        .muted { color:#6b7280; font-size:13px; }
-        .err { color:#b00020; font-weight:700; font-size:13px; }
-        .msg-ok { margin:0 0 12px; padding:10px 12px; border-radius:12px; background:#ecfdf3; border:1px solid #b7f0c9; font-weight:800; }
+        .warehouse-writeoff-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .warehouse-writeoff-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .warehouse-writeoff-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 40px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.04em;
+        }
+
+        .warehouse-writeoff-hero p {
+            max-width: 720px;
+            margin: 10px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .warehouse-writeoff-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .warehouse-writeoff-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .warehouse-writeoff-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .warehouse-writeoff-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .warehouse-writeoff-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+        }
+
+        .warehouse-writeoff-hero-text {
+            margin-top: 6px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .warehouse-writeoff-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 360px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .warehouse-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .warehouse-panel-head {
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .warehouse-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .warehouse-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .warehouse-writeoff-form {
+            display: grid;
+            gap: 14px;
+            padding: 22px;
+        }
+
+        .warehouse-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .warehouse-field label {
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .warehouse-field input,
+        .warehouse-field select,
+        .warehouse-field textarea {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .warehouse-field textarea {
+            min-height: 120px;
+            padding: 13px 14px;
+            resize: vertical;
+            line-height: 1.45;
+        }
+
+        .warehouse-field input:focus,
+        .warehouse-field select:focus,
+        .warehouse-field textarea:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .warehouse-field textarea::placeholder {
+            color: rgba(106, 123, 160, 0.58);
+            font-weight: 700;
+        }
+
+        .warehouse-field select:disabled {
+            background: #f3f6fa;
+            color: #6a7ba0;
+            cursor: not-allowed;
+        }
+
+        .warehouse-error {
+            color: #a2352a;
+            font-size: 12px;
+            font-weight: 850;
+        }
+
+        .warehouse-muted {
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.4;
+        }
+
+        .warehouse-alert {
+            padding: 14px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 850;
+            line-height: 1.4;
+        }
+
+        .warehouse-alert.ok {
+            border: 1px solid #bde8c9;
+            background: #e8f8ed;
+            color: #166534;
+        }
+
+        .warehouse-alert.err {
+            border: 1px solid #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+        }
+
+        .warehouse-note {
+            padding: 14px;
+            border: 1px solid #f4d294;
+            border-radius: 18px;
+            background: #fff4de;
+            color: #8a5a00;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.4;
+        }
+
+        .warehouse-help-card {
+            position: sticky;
+            top: 18px;
+            padding: 22px;
+        }
+
+        .warehouse-help-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .warehouse-help-card h2 {
+            margin: 16px 0 0;
+            color: #102a5c;
+            font-size: 24px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .warehouse-help-card p {
+            margin: 8px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .warehouse-help-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .warehouse-help-item {
+            padding: 12px;
+            border: 1px solid #e2e8f3;
+            border-radius: 18px;
+            background: #f8fbff;
+        }
+
+        .warehouse-help-item-title {
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .warehouse-help-item-text {
+            margin-top: 4px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        @media (max-width: 980px) {
+            .warehouse-writeoff-hero,
+            .warehouse-writeoff-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .warehouse-help-card {
+                position: static;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .warehouse-writeoff-hero {
+                padding: 22px;
+            }
+
+            .warehouse-writeoff-hero h1 {
+                font-size: 32px;
+            }
+
+            .warehouse-writeoff-form .vk-btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
-<div class="wrap">
-    <div class="card">
+<main class="vk-page">
+    <div class="warehouse-writeoff-page">
 
-        <div th:if="${ok}" class="msg-ok" th:text="${ok}">OK</div>
-        <div th:if="${err}" class="msg-err" th:text="${err}">Ошибка</div>
+        <section class="warehouse-writeoff-hero">
+            <div>
+                <div class="vk-eyebrow">Панель кладовщика</div>
 
-        <div class="title">Списание по партиям (вручную)</div>
+                <h1>Списание по партии</h1>
 
-        <form th:action="@{/warehouse/writeoffs}" method="post" th:object="${form}">
-            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <p>
+                    Выберите причину, товар, конкретную активную партию и количество.
+                    После проведения система уменьшит остаток партии и зафиксирует движение склада.
+                </p>
 
-            <div class="field">
-                <label>Причина</label>
-                <select th:field="*{reason}">
-                    <option value="expired">Просрочка</option>
-                    <option value="damaged">Брак</option>
-                    <option value="inventory_adjustment">Инвентаризация</option>
-                    <option value="other">Другое</option>
-                </select>
-                <div class="err" th:if="${#fields.hasErrors('reason')}" th:errors="*{reason}">error</div>
+                <div class="warehouse-writeoff-tags">
+                    <span class="warehouse-writeoff-tag">Ручное списание</span>
+                    <span class="warehouse-writeoff-tag">Партии</span>
+                    <span class="warehouse-writeoff-tag">Контроль остатков</span>
+                </div>
             </div>
 
-            <div class="field">
-                <label>Комментарий (опц.)</label>
-                <textarea rows="3" th:field="*{comment}"></textarea>
-            </div>
+            <div class="warehouse-writeoff-hero-card">
+                <div class="warehouse-writeoff-hero-icon">−</div>
 
-            <div class="field">
-                <label>Товар</label>
-                <select id="productSelect" th:field="*{productId}">
-                    <option value="" disabled selected>Выберите товар</option>
-                    <option th:each="p : ${products}" th:value="${p.id}" th:text="${p.name}">P</option>
-                </select>
-                <div class="err" th:if="${#fields.hasErrors('productId')}" th:errors="*{productId}">error</div>
-            </div>
+                <div class="warehouse-writeoff-hero-title">
+                    Операция склада
+                </div>
 
-            <div class="field">
-                <label>Партия</label>
-                <select id="batchSelect" th:field="*{batchId}" disabled>
-                    <option value="" disabled selected>Сначала выберите товар</option>
-                </select>
-                <div class="muted" id="batchHint">Показываются только активные партии с доступным количеством.</div>
-                <div class="err" th:if="${#fields.hasErrors('batchId')}" th:errors="*{batchId}">error</div>
+                <div class="warehouse-writeoff-hero-text">
+                    Списание создаёт запись в движениях склада и обновляет доступное количество.
+                </div>
             </div>
+        </section>
 
-            <div class="field">
-                <label>Количество</label>
-                <input type="number" min="1" th:field="*{qty}"/>
-                <div class="err" th:if="${#fields.hasErrors('qty')}" th:errors="*{qty}">error</div>
-            </div>
+        <div th:if="${ok}" class="warehouse-alert ok" th:text="${ok}">
+            Сообщение
+        </div>
 
-            <button class="btn btn-primary" type="submit">Провести списание</button>
+        <div th:if="${err}" class="warehouse-alert err" th:text="${err}">
+            Ошибка
+        </div>
 
-            <div class="muted" style="margin-top:10px;">
-                Списание уменьшит qty_available у выбранной партии, обновит inventory_items и добавит inventory_movements.
-            </div>
-        </form>
+        <section class="warehouse-writeoff-layout">
+
+            <section class="warehouse-panel">
+                <div class="warehouse-panel-head">
+                    <h2>Данные списания</h2>
+
+                    <p>
+                        Заполните форму и проверьте выбранную партию перед проведением операции.
+                    </p>
+                </div>
+
+                <form th:action="@{/warehouse/writeoffs}"
+                      method="post"
+                      th:object="${form}"
+                      class="warehouse-writeoff-form">
+
+                    <input th:if="${_csrf != null}"
+                           type="hidden"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}"/>
+
+                    <label class="warehouse-field">
+                        <span>Причина</span>
+
+                        <select th:field="*{reason}">
+                            <option value="expired">Просрочка</option>
+                            <option value="damaged">Брак</option>
+                            <option value="inventory_adjustment">Инвентаризация</option>
+                            <option value="other">Другое</option>
+                        </select>
+
+                        <small class="warehouse-error"
+                               th:if="${#fields.hasErrors('reason')}"
+                               th:errors="*{reason}">
+                            Ошибка
+                        </small>
+                    </label>
+
+                    <label class="warehouse-field">
+                        <span>Комментарий</span>
+
+                        <textarea rows="3"
+                                  th:field="*{comment}"
+                                  placeholder="Опционально: укажите подробности списания"></textarea>
+                    </label>
+
+                    <label class="warehouse-field">
+                        <span>Товар</span>
+
+                        <select id="productSelect" th:field="*{productId}">
+                            <option value="" disabled selected>
+                                Выберите товар
+                            </option>
+
+                            <option th:each="p : ${products}"
+                                    th:value="${p.id}"
+                                    th:text="${p.name}">
+                                Товар
+                            </option>
+                        </select>
+
+                        <small class="warehouse-error"
+                               th:if="${#fields.hasErrors('productId')}"
+                               th:errors="*{productId}">
+                            Ошибка
+                        </small>
+                    </label>
+
+                    <label class="warehouse-field">
+                        <span>Партия</span>
+
+                        <select id="batchSelect"
+                                th:field="*{batchId}"
+                                th:attr="data-selected-batch-id=*{batchId}"
+                                disabled>
+                            <option value="" disabled selected>
+                                Сначала выберите товар
+                            </option>
+                        </select>
+
+                        <div class="warehouse-muted" id="batchHint">
+                            Показываются только активные партии с доступным количеством.
+                        </div>
+
+                        <small class="warehouse-error"
+                               th:if="${#fields.hasErrors('batchId')}"
+                               th:errors="*{batchId}">
+                            Ошибка
+                        </small>
+                    </label>
+
+                    <label class="warehouse-field">
+                        <span>Количество</span>
+
+                        <input type="number"
+                               min="1"
+                               th:field="*{qty}"/>
+
+                        <small class="warehouse-error"
+                               th:if="${#fields.hasErrors('qty')}"
+                               th:errors="*{qty}">
+                            Ошибка
+                        </small>
+                    </label>
+
+                    <button class="vk-btn" type="submit">
+                        Провести списание
+                    </button>
+
+                    <div class="warehouse-note">
+                        Списание уменьшит доступное количество выбранной партии,
+                        обновит общий остаток товара и добавит запись в движения склада.
+                    </div>
+                </form>
+            </section>
+
+            <aside class="warehouse-panel warehouse-help-card">
+                <div class="warehouse-help-icon">💡</div>
+
+                <h2>Как выбрать партию</h2>
+
+                <p>
+                    Сначала выберите товар. После этого система загрузит только активные партии,
+                    у которых есть доступный остаток.
+                </p>
+
+                <div class="warehouse-help-list">
+                    <div class="warehouse-help-item">
+                        <div class="warehouse-help-item-title">
+                            Просрочка
+                        </div>
+
+                        <div class="warehouse-help-item-text">
+                            Используйте, если срок годности товара истёк.
+                        </div>
+                    </div>
+
+                    <div class="warehouse-help-item">
+                        <div class="warehouse-help-item-title">
+                            Брак
+                        </div>
+
+                        <div class="warehouse-help-item-text">
+                            Используйте для повреждённой или непригодной продукции.
+                        </div>
+                    </div>
+
+                    <div class="warehouse-help-item">
+                        <div class="warehouse-help-item-title">
+                            Инвентаризация
+                        </div>
+
+                        <div class="warehouse-help-item-text">
+                            Используйте при корректировке остатков по результатам проверки.
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+        </section>
+
     </div>
-</div>
+</main>
 
 <div th:replace="fragments/footer :: footer"></div>
 
@@ -98,44 +555,77 @@
             opt.disabled = true;
             opt.selected = true;
             batchSelect.appendChild(opt);
+
+            batchHint.textContent = 'Показываются только активные партии с доступным количеством.';
             return;
         }
 
-        const resp = await fetch(`/warehouse/writeoffs/batches?productId=${productId}`, { headers: { 'Accept': 'application/json' } });
-        const data = await resp.json();
+        try {
+            const resp = await fetch(`/warehouse/writeoffs/batches?productId=${productId}`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
 
-        if (!data || data.length === 0) {
+            const data = await resp.json();
+
+            if (!data || data.length === 0) {
+                const opt = document.createElement('option');
+                opt.textContent = 'Нет доступных партий';
+                opt.disabled = true;
+                opt.selected = true;
+                batchSelect.appendChild(opt);
+
+                batchHint.textContent = 'Для этого товара нет активных партий со свободным остатком.';
+                return;
+            }
+
+            const placeholder = document.createElement('option');
+            placeholder.textContent = 'Выберите партию';
+            placeholder.value = '';
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            batchSelect.appendChild(placeholder);
+
+            data.forEach(function (batch) {
+                const opt = document.createElement('option');
+                opt.value = batch.id;
+                opt.textContent = batch.label;
+                batchSelect.appendChild(opt);
+            });
+
+            const selectedBatchId = batchSelect.dataset.selectedBatchId;
+
+            if (selectedBatchId) {
+                const optionToSelect = Array.from(batchSelect.options)
+                    .find(function (opt) {
+                        return opt.value === selectedBatchId;
+                    });
+
+                if (optionToSelect) {
+                    placeholder.selected = false;
+                    optionToSelect.selected = true;
+                }
+            }
+
+            batchSelect.disabled = false;
+            batchHint.textContent = 'Партии отсортированы по сроку годности: раньше — выше.';
+        } catch (e) {
             const opt = document.createElement('option');
-            opt.textContent = 'Нет доступных партий';
+            opt.textContent = 'Ошибка загрузки партий';
             opt.disabled = true;
             opt.selected = true;
             batchSelect.appendChild(opt);
-            batchHint.textContent = 'Для этого товара нет партий со свободным остатком.';
-            return;
+
+            batchHint.textContent = 'Не удалось загрузить партии. Попробуйте выбрать товар ещё раз.';
         }
-
-        const ph = document.createElement('option');
-        ph.textContent = 'Выберите партию';
-        ph.disabled = true;
-        ph.selected = true;
-        batchSelect.appendChild(ph);
-
-        data.forEach(b => {
-            const opt = document.createElement('option');
-            opt.value = b.id;
-            opt.textContent = b.label;
-            batchSelect.appendChild(opt);
-        });
-
-        batchSelect.disabled = false;
-        batchHint.textContent = 'Партии отсортированы по сроку годности (раньше — выше).';
     }
 
-    productSelect.addEventListener('change', (e) => {
+    productSelect.addEventListener('change', function (e) {
+        batchSelect.dataset.selectedBatchId = '';
         loadBatches(e.target.value);
     });
 
-    // если вдруг форма перерисовалась с выбранным productId (после ошибок)
     if (productSelect.value) {
         loadBatches(productSelect.value);
     }

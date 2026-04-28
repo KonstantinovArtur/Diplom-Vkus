@@ -4,108 +4,535 @@
     <meta charset="utf-8">
     <title th:text="${tpl.name}">Комбо</title>
     <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
+    <style>
+        .combo-page-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 22px;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: var(--vk-radius-xl);
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: var(--vk-shadow-md);
+        }
+
+        .combo-page-hero h1 {
+            margin: 0;
+            color: var(--vk-text);
+            font-size: 38px;
+            font-weight: 950;
+            line-height: 1.05;
+            letter-spacing: -0.05em;
+        }
+
+        .combo-page-hero p {
+            max-width: 680px;
+            margin: 10px 0 0;
+            color: var(--vk-muted);
+            font-size: 16px;
+            font-weight: 750;
+        }
+
+        .combo-hero-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .combo-hero-tags span {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: var(--vk-accent-soft);
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .combo-price-mini-card {
+            padding: 18px;
+            border: 1px solid var(--vk-border);
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: var(--vk-shadow-sm);
+        }
+
+        .combo-price-icon {
+            display: grid;
+            place-items: center;
+            width: 54px;
+            height: 54px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--vk-primary), var(--vk-accent));
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 47, 101, 0.18);
+        }
+
+        .combo-price-label {
+            margin-top: 14px;
+            color: var(--vk-muted);
+            font-size: 12px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .combo-price-value {
+            margin-top: 4px;
+            color: var(--vk-text);
+            font-size: 27px;
+            font-weight: 950;
+            line-height: 1;
+            letter-spacing: -0.04em;
+        }
+
+        .combo-choice-grid {
+            display: grid;
+            grid-template-columns: 370px minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .combo-preview-card,
+        .combo-config-card {
+            overflow: hidden;
+            border: 1px solid var(--vk-border);
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: var(--vk-shadow-sm);
+        }
+
+        .combo-preview-card {
+            position: sticky;
+            top: 18px;
+        }
+
+        .combo-preview-image {
+            height: 235px;
+            overflow: hidden;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.08), rgba(243, 162, 26, 0.08)),
+                    #f8fafc;
+        }
+
+        .combo-preview-image img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .combo-preview-placeholder {
+            display: grid;
+            place-items: center;
+            width: 100%;
+            height: 100%;
+            color: var(--vk-muted);
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .combo-preview-body {
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+        }
+
+        .combo-preview-title {
+            margin: 0;
+            color: var(--vk-text);
+            font-size: 22px;
+            font-weight: 950;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+        }
+
+        .combo-preview-subtitle {
+            margin-top: 5px;
+            color: var(--vk-muted);
+            font-size: 13px;
+            font-weight: 850;
+        }
+
+        .combo-preview-text {
+            margin: 0;
+            color: var(--vk-text-soft);
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.4;
+        }
+
+        .combo-help-card {
+            padding: 14px;
+            border: 1px solid #f6d499;
+            border-radius: 18px;
+            background: var(--vk-accent-soft);
+        }
+
+        .combo-help-title {
+            color: #9a6500;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .combo-help-card ol {
+            margin: 8px 0 0 18px;
+            padding: 0;
+            color: var(--vk-text-soft);
+            font-size: 13px;
+            font-weight: 750;
+        }
+
+        .combo-help-card li + li {
+            margin-top: 4px;
+        }
+
+        .combo-config-card {
+            padding: 22px;
+        }
+
+        .combo-config-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--vk-border);
+            margin-bottom: 18px;
+        }
+
+        .combo-config-head h2 {
+            margin: 0;
+            color: var(--vk-text);
+            font-size: 26px;
+            font-weight: 950;
+            letter-spacing: -0.04em;
+        }
+
+        .combo-config-head p {
+            margin: 6px 0 0;
+            color: var(--vk-muted);
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .combo-qty-box {
+            min-width: 104px;
+        }
+
+        .combo-qty-box label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--vk-muted);
+            font-size: 12px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .combo-qty-box input {
+            width: 104px;
+            height: 46px;
+            padding: 0 10px;
+            border: 1px solid var(--vk-border-strong);
+            border-radius: 16px;
+            background: var(--vk-surface);
+            color: var(--vk-text);
+            font-size: 16px;
+            font-weight: 950;
+            text-align: center;
+            outline: none;
+        }
+
+        .combo-qty-box input:focus {
+            border-color: var(--vk-primary);
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .combo-slots-grid {
+            display: grid;
+            gap: 13px;
+        }
+
+        .combo-slot-card {
+            padding: 16px;
+            border: 1px solid var(--vk-border);
+            border-radius: 20px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.035)),
+                    var(--vk-surface-soft);
+        }
+
+        .combo-slot-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .combo-slot-title {
+            color: var(--vk-text);
+            font-size: 17px;
+            font-weight: 950;
+            line-height: 1.15;
+        }
+
+        .combo-slot-subtitle {
+            margin-top: 4px;
+            color: var(--vk-muted);
+            font-size: 13px;
+            font-weight: 750;
+        }
+
+        .combo-slot-select {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid var(--vk-border-strong);
+            border-radius: 16px;
+            background: var(--vk-surface);
+            color: var(--vk-text);
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+        }
+
+        .combo-slot-select:focus {
+            border-color: var(--vk-primary);
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .combo-form-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        @media (max-width: 980px) {
+            .combo-page-hero,
+            .combo-choice-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .combo-preview-card {
+                position: static;
+            }
+
+            .combo-price-mini-card {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .combo-page-hero {
+                padding: 22px;
+            }
+
+            .combo-page-hero h1 {
+                font-size: 30px;
+            }
+
+            .combo-config-head,
+            .combo-slot-head,
+            .combo-form-actions {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .combo-qty-box,
+            .combo-qty-box input,
+            .combo-form-actions .vk-btn {
+                width: 100%;
+            }
+
+            .combo-preview-image {
+                height: 190px;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div th:replace="~{fragments/header :: header}"></div>
 
 <main class="vk-page">
-    <div class="vk-page-head">
+
+    <section class="combo-page-hero">
         <div>
-            <h1 class="vk-page-title" th:text="${tpl.name}">Комбо</h1>
-            <p class="vk-page-subtitle">Соберите нужный состав и добавьте набор в корзину.</p>
+            <div class="vk-eyebrow">Настройка комбо</div>
+
+            <h1 th:text="${tpl.name}">
+                Комбо-набор
+            </h1>
+
+            <p>
+                Выберите товары для каждого слота, укажите количество наборов и добавьте комбо в корзину.
+            </p>
+
+            <div class="combo-hero-tags">
+                <span>Настраиваемый состав</span>
+                <span th:text="'Слотов: ' + ${#lists.size(slotsSorted)}">Слотов: 0</span>
+                <span>Быстрое оформление</span>
+            </div>
         </div>
 
-        <a class="vk-btn vk-btn-secondary" th:href="@{/combos}">
-            ← Назад к комбо
-        </a>
+        <div class="combo-price-mini-card">
+            <div class="combo-price-icon">🍱</div>
+
+            <div class="combo-price-label">
+                Базовая цена
+            </div>
+
+            <div class="combo-price-value"
+                 th:text="${#numbers.formatDecimal(tpl.basePrice, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                0,00 ₽
+            </div>
+        </div>
+    </section>
+
+    <div th:if="${msg}" class="vk-alert vk-alert-success" style="margin-bottom:16px;">
+        <span th:text="${msg}">Сообщение</span>
     </div>
 
-    <div th:if="${msg}" class="vk-alert vk-alert-success" th:text="${msg}">
-        Сообщение
+    <div th:if="${err}" class="vk-alert vk-alert-danger" style="margin-bottom:16px;">
+        <span th:text="${err}">Ошибка</span>
     </div>
 
-    <div th:if="${err}" class="vk-alert vk-alert-danger" th:text="${err}">
-        Ошибка
-    </div>
+    <section class="combo-choice-grid">
 
-    <section class="combo-detail-grid">
-        <div class="vk-card combo-info-card">
-            <img th:if="${tpl.imageData != null}"
-                 class="combo-image combo-image-lg"
-                 th:src="@{/combos/{id}/image(id=${tpl.id})}"
-                 alt="combo">
+        <article class="combo-preview-card">
+            <div class="combo-preview-image">
+                <img th:if="${tpl.imageData != null}"
+                     th:src="@{/combos/{id}/image(id=${tpl.id})}"
+                     alt="combo">
 
-            <div th:unless="${tpl.imageData != null}" class="image-placeholder image-placeholder-lg">
-                <div>
-                    <div class="placeholder-title" th:text="${tpl.name}">Комбо</div>
-                    <div class="placeholder-subtitle">Готовый набор с настраиваемым составом</div>
+                <div th:if="${tpl.imageData == null}" class="combo-preview-placeholder">
+                    Нет изображения
                 </div>
             </div>
 
-            <div class="combo-info-body">
-                <div class="combo-price-row">
-                    <div>
-                        <div class="vk-muted" style="font-size:13px;">Базовая цена комбо</div>
-                        <div class="price"
-                             th:text="${#numbers.formatDecimal(tpl.basePrice, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
-                            0,00 ₽
-                        </div>
-                    </div>
+            <div class="combo-preview-body">
+                <div>
+                    <h2 class="combo-preview-title" th:text="${tpl.name}">
+                        Комбо
+                    </h2>
 
-                    <span class="vk-badge vk-badge-primary"
-                          th:text="'Слотов: ' + ${#lists.size(slotsSorted)}">
-                        Слотов: 0
+                    <div class="combo-preview-subtitle">
+                        Комбо-набор
+                    </div>
+                </div>
+
+                <div class="vk-badges">
+                    <span class="vk-badge vk-badge-primary">
+                        Готовый набор
+                    </span>
+
+                    <span class="vk-badge vk-badge-info">
+                        Настройка состава
                     </span>
                 </div>
 
-                <p class="vk-muted">
-                    Выберите товары для каждого слота. Если для отдельной позиции есть доплата, она будет показана прямо в списке выбора.
+                <p class="combo-preview-text">
+                    Если у выбранной позиции есть доплата, она будет указана прямо в списке выбора.
                 </p>
 
-                <div class="combo-help">
-                    <div class="combo-help-title">Как оформить комбо</div>
-                    <ul>
-                        <li>выберите товар для каждого слота;</li>
+                <div class="combo-help-card">
+                    <div class="combo-help-title">
+                        Как оформить
+                    </div>
+
+                    <ol>
+                        <li>выберите товар в каждом слоте;</li>
                         <li>укажите количество наборов;</li>
-                        <li>нажмите «Добавить комбо в корзину».</li>
-                    </ul>
+                        <li>нажмите кнопку добавления в корзину.</li>
+                    </ol>
+                </div>
+
+                <div class="vk-product-bottom">
+                    <div>
+                        <div class="combo-price-label">
+                            Цена от
+                        </div>
+
+                        <div class="vk-price"
+                             th:text="${#numbers.formatDecimal(tpl.basePrice, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                            0.00 ₽
+                        </div>
+                    </div>
+
+                    <a class="vk-btn vk-btn-light" th:href="@{/combos}">
+                        Назад
+                    </a>
                 </div>
             </div>
-        </div>
+        </article>
 
-        <form class="vk-card combo-form"
+        <form class="combo-config-card"
               th:action="@{/combos/{id}/add-to-cart(id=${tpl.id})}"
               method="post">
-            <div class="combo-form-head">
-                <div class="combo-form-title">Настройка набора</div>
 
-                <div class="vk-actions">
-                    <label for="qty" class="vk-muted">Кол-во</label>
+            <div class="combo-config-head">
+                <div>
+                    <div class="vk-eyebrow">Состав набора</div>
+
+                    <h2>
+                        Выберите позиции
+                    </h2>
+
+                    <p>
+                        Каждый слот обязателен для заполнения.
+                    </p>
+                </div>
+
+                <div class="combo-qty-box">
+                    <label for="qty">
+                        Кол-во
+                    </label>
+
                     <input id="qty"
-                           class="vk-input"
                            type="number"
                            name="qty"
                            value="1"
-                           min="1"
-                           style="width:92px;">
+                           min="1">
                 </div>
             </div>
 
-            <div class="slot-list">
-                <div th:each="s : ${slotsSorted}" class="slot-card">
-                    <div class="slot-head">
-                        <div class="slot-title" th:text="${s.name}">
-                            Слот
+            <div class="combo-slots-grid">
+                <div th:each="s : ${slotsSorted}" class="combo-slot-card">
+
+                    <div class="combo-slot-head">
+                        <div>
+                            <div class="combo-slot-title" th:text="${s.name}">
+                                Слот
+                            </div>
+
+                            <div class="combo-slot-subtitle">
+                                Выберите одну позицию из списка
+                            </div>
                         </div>
 
-                        <span class="vk-badge">
-                            Выбор обязателен
+                        <span class="vk-badge vk-badge-accent">
+                            Обязательно
                         </span>
                     </div>
 
-                    <select th:name="${'slot_' + s.id}">
-                        <option value="" selected>-- выберите --</option>
+                    <select class="combo-slot-select"
+                            th:name="${'slot_' + s.id}"
+                            required>
+                        <option value="" selected>
+                            Выберите товар
+                        </option>
 
                         <option th:each="sp : ${s.products}"
                                 th:value="${sp.product.id}"
@@ -113,20 +540,24 @@
                             Товар
                         </option>
                     </select>
+
                 </div>
             </div>
 
-            <div class="vk-actions" style="margin-top:16px;">
+            <div class="combo-form-actions">
                 <button class="vk-btn" type="submit">
                     Добавить комбо в корзину
                 </button>
 
-                <a class="vk-btn vk-btn-secondary" th:href="@{/cart}">
+                <a class="vk-btn vk-btn-light" th:href="@{/cart}">
                     Перейти в корзину
                 </a>
             </div>
+
         </form>
+
     </section>
+
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>

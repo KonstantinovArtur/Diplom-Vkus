@@ -2,123 +2,609 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Движения склада</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Кладовщик · Движения склада</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
     <style>
-        .wrap{max-width:1100px;margin:20px auto;padding:0 16px}
-        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,.06)}
-        .title{font-size:20px;font-weight:900;color:#0b1b4d;margin:0 0 12px}
-        table{width:100%;border-collapse:collapse}
-        th,td{padding:10px 8px;border-bottom:1px solid #eef1f6;text-align:left;vertical-align:top}
-        th{font-weight:900;color:#0b1b4d}
-        .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid #d8deea;background:#eef2ff;font-weight:900;color:#0b1b4d;font-size:12px}
-        .muted{color:#6b7280;font-size:13px}
-        .num{font-variant-numeric:tabular-nums}
-        .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-        .filters{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
-        .field{display:flex;flex-direction:column;gap:6px}
-        .field label{font-size:13px;font-weight:800;color:#0b1b4d}
-        .field select{min-width:220px;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;outline:none;background:#fff}
-        .field select:focus{border-color:#0b1b4d}
-        .btn{display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;background:#fff;font-weight:800;cursor:pointer;text-decoration:none;color:#0b1b4d}
-        .btn:hover{border-color:#0b1b4d}
+        .warehouse-movements-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .warehouse-movements-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .warehouse-movements-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 40px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.04em;
+        }
+
+        .warehouse-movements-hero p {
+            max-width: 720px;
+            margin: 10px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .warehouse-movements-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .warehouse-movements-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .warehouse-movements-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .warehouse-movements-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .warehouse-movements-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+        }
+
+        .warehouse-movements-hero-text {
+            margin-top: 6px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .warehouse-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .warehouse-panel-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .warehouse-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .warehouse-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .warehouse-count-pill {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .warehouse-filters {
+            padding: 18px 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background: #ffffff;
+        }
+
+        .warehouse-filter-form {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(180px, 1fr)) auto auto;
+            gap: 12px;
+            align-items: end;
+            margin: 0;
+        }
+
+        .warehouse-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .warehouse-field label {
+            color: #102a5c;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .warehouse-field select {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .warehouse-field select:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .warehouse-table-wrap {
+            overflow-x: auto;
+        }
+
+        .warehouse-table {
+            width: 100%;
+            min-width: 1040px;
+            border-collapse: collapse;
+        }
+
+        .warehouse-table th {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e5ebf5;
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .warehouse-table td {
+            padding: 16px;
+            border-bottom: 1px solid #edf1f7;
+            vertical-align: middle;
+        }
+
+        .warehouse-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .warehouse-id {
+            color: #102a5c;
+            font-size: 15px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .warehouse-product {
+            color: #102a5c;
+            font-size: 15px;
+            font-weight: 950;
+            line-height: 1.25;
+        }
+
+        .warehouse-muted {
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.35;
+        }
+
+        .warehouse-num {
+            color: #102a5c;
+            font-size: 15px;
+            font-weight: 950;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .movement-type {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            max-width: 100%;
+            min-height: 32px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 950;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .movement-type.type-receipt {
+            border: 1px solid #bde8c9;
+            background: #e8f8ed;
+            color: #166534;
+        }
+
+        .movement-type.type-sale {
+            border: 1px solid #b7ceec;
+            background: #eef4ff;
+            color: #163067;
+        }
+
+        .movement-type.type-writeoff {
+            border: 1px solid #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+        }
+
+        .movement-type.type-adjustment {
+            border: 1px solid #f4d294;
+            background: #fff4de;
+            color: #9c6400;
+        }
+
+        .movement-type.type-unknown {
+            border: 1px solid #d8e1f0;
+            background: #f8fbff;
+            color: #44557b;
+        }
+
+        .warehouse-empty {
+            padding: 42px 22px;
+            text-align: center;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 850;
+        }
+
+        .warehouse-empty-icon {
+            margin-bottom: 10px;
+            font-size: 42px;
+        }
+
+        .warehouse-empty-title {
+            margin: 0;
+            color: #102a5c;
+            font-size: 26px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .warehouse-empty-text {
+            max-width: 520px;
+            margin: 8px auto 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        @media (max-width: 1100px) {
+            .warehouse-filter-form {
+                grid-template-columns: repeat(2, minmax(180px, 1fr));
+            }
+        }
+
+        @media (max-width: 900px) {
+            .warehouse-movements-hero {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .warehouse-movements-hero {
+                padding: 22px;
+            }
+
+            .warehouse-movements-hero h1 {
+                font-size: 32px;
+            }
+
+            .warehouse-panel-head {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .warehouse-filter-form {
+                grid-template-columns: 1fr;
+            }
+
+            .warehouse-filter-form .vk-btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
-<div class="wrap">
-    <div class="card">
-        <div class="top">
-            <div class="title">Движения склада</div>
+<main class="vk-page">
+    <div class="warehouse-movements-page">
 
-            <form class="filters" method="get" th:action="@{/warehouse/movements}">
-                <div class="field">
-                    <label for="supplierId">Поставщик</label>
-                    <select id="supplierId" name="supplierId">
-                        <option value="">Все поставщики</option>
-                        <option th:each="s : ${suppliers}"
-                                th:value="${s.id}"
-                                th:text="${s.name}"
-                                th:selected="${selectedSupplierId != null and selectedSupplierId.toString() == s.id.toString()}">
+        <section class="warehouse-movements-hero">
+            <div>
+                <div class="vk-eyebrow">Панель кладовщика</div>
+
+                <h1>Движения склада</h1>
+
+                <p>
+                    Просматривайте все изменения складских остатков: поступления, продажи,
+                    списания и корректировки по выбранному буфету.
+                </p>
+
+                <div class="warehouse-movements-tags">
+                    <span class="warehouse-movements-tag">История склада</span>
+                    <span class="warehouse-movements-tag">Фильтрация</span>
+                    <span class="warehouse-movements-tag">Контроль операций</span>
+                </div>
+            </div>
+
+            <div class="warehouse-movements-hero-card">
+                <div class="warehouse-movements-hero-icon">↔</div>
+
+                <div class="warehouse-movements-hero-title">
+                    Журнал операций
+                </div>
+
+                <div class="warehouse-movements-hero-text">
+                    Каждая операция фиксирует товар, количество, партию, источник и пользователя.
+                </div>
+            </div>
+        </section>
+
+        <section class="warehouse-panel">
+            <div class="warehouse-panel-head">
+                <div>
+                    <h2>Список движений</h2>
+
+                    <p>
+                        Используйте фильтры, чтобы быстро найти операции по поставщику, товару или типу движения.
+                    </p>
+                </div>
+
+                <div class="warehouse-count-pill">
+                    Найдено: <span th:text="${#lists.size(rows)}">0</span>
+                </div>
+            </div>
+
+            <div class="warehouse-filters">
+                <form class="warehouse-filter-form"
+                      method="get"
+                      th:action="@{/warehouse/movements}">
+
+                    <div class="warehouse-field">
+                        <label for="supplierId">
                             Поставщик
-                        </option>
-                    </select>
-                </div>
+                        </label>
 
-                <div class="field">
-                    <label for="productId">Товар</label>
-                    <select id="productId" name="productId">
-                        <option value="">Все товары</option>
-                        <option th:each="p : ${products}"
-                                th:value="${p.id}"
-                                th:text="${p.name}"
-                                th:selected="${selectedProductId != null and selectedProductId.toString() == p.id.toString()}">
+                        <select id="supplierId" name="supplierId">
+                            <option value="">Все поставщики</option>
+
+                            <option th:each="s : ${suppliers}"
+                                    th:value="${s.id}"
+                                    th:text="${s.name}"
+                                    th:selected="${selectedSupplierId != null and selectedSupplierId.toString() == s.id.toString()}">
+                                Поставщик
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="warehouse-field">
+                        <label for="productId">
                             Товар
-                        </option>
-                    </select>
-                </div>
+                        </label>
 
-                <div class="field">
-                    <label for="type">Тип движения</label>
-                    <select id="type" name="type">
-                        <option value="">Все типы</option>
-                        <option value="receipt" th:selected="${selectedType == 'receipt'}">Поступление</option>
-                        <option value="sale" th:selected="${selectedType == 'sale'}">Продажа</option>
-                        <option value="writeoff" th:selected="${selectedType == 'writeoff'}">Списание</option>
-                        <option value="adjustment" th:selected="${selectedType == 'adjustment'}">Корректировка</option>
-                    </select>
-                </div>
+                        <select id="productId" name="productId">
+                            <option value="">Все товары</option>
 
-                <button type="submit" class="btn">Применить</button>
-                <a class="btn" th:href="@{/warehouse/movements}">Сбросить</a>
-            </form>
-        </div>
+                            <option th:each="p : ${products}"
+                                    th:value="${p.id}"
+                                    th:text="${p.name}"
+                                    th:selected="${selectedProductId != null and selectedProductId.toString() == p.id.toString()}">
+                                Товар
+                            </option>
+                        </select>
+                    </div>
 
-        <table>
-            <thead>
-            <tr>
-                <th style="width:70px">ID</th>
-                <th>Товар</th>
-                <th style="width:220px">Поставщик</th>
-                <th style="width:120px">Тип</th>
-                <th style="width:90px">Кол-во</th>
-                <th style="width:90px">Партия</th>
-                <th style="width:140px">Ссылка</th>
-                <th style="width:190px">Когда</th>
-                <th style="width:160px">Кто</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="r : ${rows}">
-                <td class="num" th:text="${r.id}">1</td>
-                <td th:text="${r.product_name}">—</td>
-                <td th:text="${r.supplier_name} ?: '—'">—</td>
-                <td>
-          <span class="pill" th:switch="${r.type}">
-              <span th:case="'receipt'">Поступление</span>
-              <span th:case="'sale'">Продажа</span>
-              <span th:case="'writeoff'">Списание</span>
-              <span th:case="'adjustment'">Корректировка</span>
-              <span th:case="*"
-                    th:text="${r.type}">—</span>
-          </span>
-                </td>
+                    <div class="warehouse-field">
+                        <label for="type">
+                            Тип движения
+                        </label>
 
-                <td class="num" th:text="${r.qty}">0</td>
-                <td class="num" th:text="${r.batch_id} ?: '—'">—</td>
-                <td class="muted" th:text="${(r.ref_type ?: '—') + ' #' + (r.ref_id ?: '—')}">—</td>
-                <td th:text="${r.created_at}">—</td>
-                <td th:text="${r.created_by_name}">—</td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(rows)}">
-                <td colspan="9" class="muted">Пока нет движений.</td>
-            </tr>
-            </tbody>
-        </table>
+                        <select id="type" name="type">
+                            <option value="">Все типы</option>
+                            <option value="receipt" th:selected="${selectedType == 'receipt'}">Поступление</option>
+                            <option value="sale" th:selected="${selectedType == 'sale'}">Продажа</option>
+                            <option value="writeoff" th:selected="${selectedType == 'writeoff'}">Списание</option>
+                            <option value="adjustment" th:selected="${selectedType == 'adjustment'}">Корректировка</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="vk-btn">
+                        Применить
+                    </button>
+
+                    <a class="vk-btn vk-btn-light" th:href="@{/warehouse/movements}">
+                        Сбросить
+                    </a>
+                </form>
+            </div>
+
+            <div class="warehouse-table-wrap">
+                <table class="warehouse-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Товар</th>
+                        <th>Поставщик</th>
+                        <th>Тип</th>
+                        <th>Кол-во</th>
+                        <th>Партия</th>
+                        <th>Ссылка</th>
+                        <th>Когда</th>
+                        <th>Кто</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="r : ${rows}">
+                        <td>
+                            <div class="warehouse-id">
+                                #<span th:text="${r.id}">1</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="warehouse-product" th:text="${r.product_name}">
+                                —
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="warehouse-muted" th:text="${r.supplier_name} ?: '—'">
+                                —
+                            </div>
+                        </td>
+
+                        <td>
+                            <span th:switch="${r.type}">
+                                <span th:case="'receipt'" class="movement-type type-receipt">
+                                    Поступление
+                                </span>
+
+                                <span th:case="'sale'" class="movement-type type-sale">
+                                    Продажа
+                                </span>
+
+                                <span th:case="'writeoff'" class="movement-type type-writeoff">
+                                    Списание
+                                </span>
+
+                                <span th:case="'adjustment'" class="movement-type type-adjustment">
+                                    Корректировка
+                                </span>
+
+                                <span th:case="*" class="movement-type type-unknown">
+                                    Неизвестный тип
+                                </span>
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="warehouse-num" th:text="${r.qty}">
+                                0
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="warehouse-num" th:text="${r.batch_id} ?: '—'">
+                                —
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="warehouse-muted">
+                                <span th:switch="${r.ref_type}">
+                                    <span th:case="'invoice'">Накладная</span>
+                                    <span th:case="'order'">Заказ</span>
+                                    <span th:case="'writeoff'">Списание</span>
+                                    <span th:case="'adjustment'">Корректировка</span>
+                                    <span th:case="*">Операция</span>
+                                </span>
+                                #
+                                <span th:text="${r.ref_id} ?: '—'">—</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="warehouse-muted" th:text="${r.created_at}">
+                                —
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="warehouse-muted" th:text="${r.created_by_name} ?: '—'">
+                                —
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(rows)}">
+                        <td colspan="9">
+                            <div class="warehouse-empty">
+                                <div class="warehouse-empty-icon">📭</div>
+
+                                <h3 class="warehouse-empty-title">
+                                    Движений пока нет
+                                </h3>
+
+                                <div class="warehouse-empty-text">
+                                    Когда на складе появятся поступления, продажи, списания или корректировки,
+                                    они отобразятся на этой странице.
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </div>
-</div>
+</main>
 
 <div th:replace="fragments/footer :: footer"></div>
+
 </body>
 </html>

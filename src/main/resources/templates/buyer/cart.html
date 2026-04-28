@@ -4,207 +4,815 @@
     <meta charset="UTF-8"/>
     <title>Корзина</title>
     <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
+    <style>
+        .cart-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .cart-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 260px;
+            gap: 20px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .cart-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 40px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.04em;
+        }
+
+        .cart-hero p {
+            max-width: 720px;
+            margin: 10px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .cart-hero-side {
+            display: grid;
+            gap: 12px;
+            justify-items: stretch;
+        }
+
+        .cart-shell {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .cart-main {
+            display: grid;
+            gap: 18px;
+        }
+
+        .cart-block {
+            padding: 20px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .cart-block-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 16px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e5ebf5;
+        }
+
+        .cart-block-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .cart-block-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .cart-items {
+            display: grid;
+            gap: 14px;
+        }
+
+        .cart-card {
+            display: grid;
+            grid-template-columns: 150px minmax(0, 1fr);
+            gap: 16px;
+            padding: 14px;
+            border: 1px solid #e2e8f3;
+            border-radius: 22px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.025), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .cart-card-media {
+            width: 150px;
+            height: 132px;
+            overflow: hidden;
+            border-radius: 18px;
+            background: #f4f7fc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-card-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .cart-card-placeholder {
+            padding: 12px;
+            text-align: center;
+            color: #7b8ba8;
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .cart-card-body {
+            display: grid;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .cart-card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .cart-card-title {
+            margin: 0;
+            color: #102a5c;
+            font-size: 21px;
+            font-weight: 950;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .cart-card-meta {
+            margin-top: 5px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .cart-card-price-box {
+            text-align: right;
+            min-width: 120px;
+        }
+
+        .cart-label {
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .cart-price {
+            margin-top: 4px;
+            color: #102a5c;
+            font-size: 23px;
+            font-weight: 950;
+            line-height: 1;
+            letter-spacing: -0.03em;
+        }
+
+        .cart-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .cart-badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 900;
+            line-height: 1.2;
+        }
+
+        .cart-badge-accent {
+            background: #fff4de;
+            color: #9c6400;
+            border-color: #f4d294;
+        }
+
+        .cart-badge-primary {
+            background: #eef4ff;
+            color: #163067;
+            border-color: #cfdaf0;
+        }
+
+        .cart-badge-info {
+            background: #eef9fb;
+            color: #1f6170;
+            border-color: #cfe8ed;
+        }
+
+        .cart-card-bottom {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .cart-qty-form {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .cart-qty-field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .cart-qty-field input {
+            width: 92px;
+            height: 44px;
+            padding: 0 10px;
+            border: 1px solid #cfd9ea;
+            border-radius: 14px;
+            background: #fff;
+            color: #102a5c;
+            font-size: 15px;
+            font-weight: 900;
+            text-align: center;
+            outline: none;
+        }
+
+        .cart-qty-field input:focus {
+            border-color: #163067;
+            box-shadow: 0 0 0 4px rgba(22, 48, 103, 0.10);
+        }
+
+        .cart-qty-hint {
+            color: #8a98b1;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .cart-line-total {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .cart-combo-list {
+            margin: 0;
+            padding-left: 18px;
+            color: #44557b;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .cart-combo-list li + li {
+            margin-top: 5px;
+        }
+
+        .cart-combo-qty-box {
+            display: grid;
+            gap: 4px;
+        }
+
+        .cart-combo-qty-value {
+            min-height: 44px;
+            min-width: 92px;
+            padding: 0 14px;
+            border: 1px solid #cfd9ea;
+            border-radius: 14px;
+            background: #f7f9fd;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #102a5c;
+            font-size: 16px;
+            font-weight: 950;
+        }
+
+        .cart-summary {
+            position: sticky;
+            top: 18px;
+            display: grid;
+            gap: 16px;
+            padding: 22px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 24px;
+            background:
+                    linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,254,0.98));
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.07);
+        }
+
+        .cart-summary-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #fff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .cart-summary h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .cart-summary p {
+            margin: -8px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .cart-summary-total {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 18px;
+            background: #f8fbff;
+        }
+
+        .cart-summary-total span {
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 850;
+        }
+
+        .cart-summary-total strong {
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            line-height: 1;
+            letter-spacing: -0.03em;
+        }
+
+        .cart-summary-actions {
+            display: grid;
+            gap: 10px;
+        }
+
+        .cart-empty {
+            padding: 42px 24px;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255,255,255,0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.06);
+            text-align: center;
+        }
+
+        .cart-empty-icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+
+        .cart-empty h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 30px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .cart-empty p {
+            max-width: 560px;
+            margin: 10px auto 0;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .cart-empty-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .vk-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 46px;
+            padding: 0 18px;
+            border: 0;
+            border-radius: 14px;
+            background: #163067;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 900;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+            box-shadow: 0 10px 22px rgba(22, 48, 103, 0.18);
+        }
+
+        .vk-btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.96;
+        }
+
+        .vk-btn-light {
+            background: #fff;
+            color: #163067;
+            border: 1px solid #cfd9ea;
+            box-shadow: none;
+        }
+
+        .vk-btn-danger {
+            background: #fff;
+            color: #b42318;
+            border: 1px solid #f0c7c4;
+            box-shadow: none;
+        }
+
+        .vk-alert {
+            padding: 14px 16px;
+            border-radius: 16px;
+            font-weight: 850;
+        }
+
+        .vk-alert-danger {
+            border: 1px solid #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+        }
+
+        .vk-eyebrow {
+            color: #163067;
+            font-size: 13px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        @media (max-width: 1100px) {
+            .cart-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-summary {
+                position: static;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .cart-hero {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-hero h1 {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .cart-card {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-card-media {
+                width: 100%;
+                height: 210px;
+            }
+
+            .cart-card-top,
+            .cart-card-bottom,
+            .cart-block-head {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .cart-card-price-box {
+                text-align: left;
+            }
+
+            .cart-qty-form,
+            .cart-line-total,
+            .cart-empty-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .cart-qty-field input,
+            .vk-btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
 <main class="vk-page">
-    <section class="vk-hero">
-        <h1>Корзина</h1>
-        <p>Проверьте товары и комбо-наборы перед оформлением заказа.</p>
-    </section>
+    <div class="cart-page">
 
-    <div th:if="${err}" class="vk-alert vk-alert-danger" style="margin-top:16px;">
-        <span th:text="${err}">Ошибка</span>
-    </div>
+        <section class="cart-hero">
+            <div>
+                <div class="vk-eyebrow">Корзина</div>
 
-    <div th:if="${#lists.isEmpty(lines) and (#lists.isEmpty(combos) or combos == null)}"
-         class="vk-empty"
-         style="margin-top:18px;">
-        Корзина пустая. <a th:href="@{/menu}">Перейти в меню</a>
-    </div>
+                <h1>Проверьте заказ перед оформлением</h1>
 
-    <section th:if="${!(#lists.isEmpty(lines) and (#lists.isEmpty(combos) or combos == null))}"
-             class="cart-layout"
-             style="margin-top:18px;">
-        <div class="cart-items">
-            <div th:if="${!#lists.isEmpty(lines)}" class="vk-list">
-                <div class="cart-section-title">Товары</div>
-
-                <article th:each="it : ${lines}" class="cart-row">
-                    <img th:if="${it.hasImage()}"
-                         class="cart-img"
-                         th:src="@{/products/{id}/image(id=${it.productId()})}"
-                         alt="img"/>
-
-                    <div th:if="${!it.hasImage()}" class="cart-img-placeholder">
-                        Нет изображения
-                    </div>
-
-                    <div class="cart-content">
-                        <div class="cart-main">
-                            <div>
-                                <div class="cart-name" th:text="${it.name()}">Название</div>
-                                <div class="cart-meta" th:text="${it.categoryName()}">Категория</div>
-
-                                <div class="vk-badges" style="margin-top:8px;">
-                                    <span th:if="${it.batchPercent() != null}" class="vk-badge vk-badge-accent">
-                                        <span th:text="${it.batchText()}">Уценка</span>
-                                    </span>
-
-                                    <span th:if="${it.promoPercent() != null}" class="vk-badge vk-badge-primary">
-                                        <span th:text="${it.promoText()}">Акция</span>
-                                    </span>
-
-                                    <span th:if="${it.monthlyPercent() != null}" class="vk-badge vk-badge-success">
-                                        <span th:text="${it.monthlyText()}">Скидка месяца</span>
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div style="text-align:right;">
-                                <div class="vk-muted" style="font-size:13px;">Цена за шт.</div>
-                                <div class="price price-small"
-                                     th:text="${#numbers.formatDecimal(it.finalUnitPrice(), 1, 'COMMA', 2, 'POINT')} + ' ₽'">
-                                    0.00 ₽
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="cart-controls">
-                            <form th:action="@{/cart/setQty}" method="post" class="cart-qty-form">
-                                <input type="hidden" name="productId" th:value="${it.productId()}"/>
-                                <input class="cart-qty-input"
-                                       type="number"
-                                       name="qty"
-                                       min="0"
-                                       th:value="${it.qty()}"/>
-
-                                <button class="vk-btn vk-btn-secondary" type="submit">
-                                    Обновить
-                                </button>
-
-                                <span class="vk-hint">0 = удалить</span>
-                            </form>
-
-                            <div class="cart-sum">
-                                <div class="vk-muted">Сумма:</div>
-
-                                <div class="price price-small"
-                                     th:text="${#numbers.formatDecimal(it.lineTotal(), 1, 'COMMA', 2, 'POINT')} + ' ₽'">
-                                    0.00 ₽
-                                </div>
-
-                                <form th:action="@{/cart/remove}" method="post">
-                                    <input type="hidden" name="productId" th:value="${it.productId()}"/>
-                                    <button class="vk-btn vk-btn-danger" type="submit">
-                                        Удалить
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </article>
+                <p>
+                    Измените количество товаров, удалите лишнее и переходите к подтверждению заказа.
+                </p>
             </div>
 
-            <div th:if="${combos != null and !#lists.isEmpty(combos)}" class="vk-list">
-                <div class="cart-section-title">Комбо-наборы</div>
+            <div class="cart-hero-side">
+                <a class="vk-btn vk-btn-light" th:href="@{/menu}">
+                    Продолжить покупки
+                </a>
 
-                <article th:each="cc : ${combos}" class="cart-row">
-                    <img th:if="${cc.comboTemplate.imageUpdatedAt != null}"
-                         class="cart-img"
-                         th:src="@{/combos/{id}/image(id=${cc.comboTemplate.id})}"
-                         alt="combo"/>
-
-                    <div th:unless="${cc.comboTemplate.imageUpdatedAt != null}" class="cart-img-placeholder">
-                        COMBO
-                    </div>
-
-                    <div class="cart-content">
-                        <div class="cart-main">
-                            <div>
-                                <div class="cart-name" th:text="${cc.comboTemplate.name}">Комбо</div>
-                                <div class="cart-meta">Состав:</div>
-
-                                <ul class="combo-items">
-                                    <li th:each="it : ${cc.items}">
-                                        <span th:text="${it.comboSlot.name}">Слот</span>:
-                                        <span th:text="${it.product.name}">Товар</span>
-                                        <span th:if="${it.extraPriceSnapshot != null}"
-                                              th:text="${' (+' + #numbers.formatDecimal(it.extraPriceSnapshot, 1, 'COMMA', 2, 'POINT') + ')'}"></span>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div style="text-align:right;">
-                                <div class="vk-muted" style="font-size:13px;">Цена комбо</div>
-                                <div class="price price-small"
-                                     th:text="${#numbers.formatDecimal(cc.comboPriceSnapshot, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
-                                    0.00 ₽
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="cart-controls">
-                            <div class="vk-actions">
-                                <div class="vk-muted">Кол-во:</div>
-                                <div class="cart-name" th:text="${cc.qty}">1</div>
-                            </div>
-
-                            <div class="cart-sum">
-                                <div class="vk-muted">Сумма:</div>
-
-                                <div class="price price-small"
-                                     th:text="${#numbers.formatDecimal(cc.comboPriceSnapshot * cc.qty, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
-                                    0.00 ₽
-                                </div>
-
-                                <form th:action="@{/cart/remove-combo}" method="post">
-                                    <input type="hidden" name="cartComboId" th:value="${cc.id}"/>
-                                    <button class="vk-btn vk-btn-danger" type="submit">
-                                        Удалить комбо
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </article>
+                <a class="vk-btn vk-btn-light" th:href="@{/combos}">
+                    Смотреть комбо
+                </a>
             </div>
+        </section>
+
+        <div th:if="${err}" class="vk-alert vk-alert-danger">
+            <span th:text="${err}">Ошибка</span>
         </div>
 
-        <aside class="cart-summary">
-            <h2 class="cart-summary-title">Итоги заказа</h2>
+        <section th:if="${#lists.isEmpty(lines) and (combos == null or #lists.isEmpty(combos))}"
+                 class="cart-empty">
+            <div class="cart-empty-icon">🛒</div>
 
-            <div class="vk-muted">
-                Проверьте количество товаров и перейдите к подтверждению заказа.
+            <h2>Корзина пока пустая</h2>
+
+            <p>
+                Добавьте товары из меню или выберите готовый комбо-набор, чтобы оформить заказ.
+            </p>
+
+            <div class="cart-empty-actions">
+                <a class="vk-btn" th:href="@{/menu}">
+                    Перейти в меню
+                </a>
+
+                <a class="vk-btn vk-btn-light" th:href="@{/combos}">
+                    Открыть комбо
+                </a>
+            </div>
+        </section>
+
+        <section th:if="${!(#lists.isEmpty(lines) and (combos == null or #lists.isEmpty(combos)))}"
+                 class="cart-shell">
+
+            <div class="cart-main">
+
+                <section th:if="${!#lists.isEmpty(lines)}" class="cart-block">
+                    <div class="cart-block-head">
+                        <div>
+                            <h2>Товары</h2>
+                            <p>Позиции, добавленные из меню.</p>
+                        </div>
+                    </div>
+
+                    <div class="cart-items">
+                        <article th:each="it : ${lines}" class="cart-card">
+                            <div class="cart-card-media">
+                                <img th:if="${it.hasImage()}"
+                                     th:src="@{/products/{id}/image(id=${it.productId()})}"
+                                     alt="img"/>
+
+                                <div th:if="${!it.hasImage()}" class="cart-card-placeholder">
+                                    Нет изображения
+                                </div>
+                            </div>
+
+                            <div class="cart-card-body">
+                                <div class="cart-card-top">
+                                    <div>
+                                        <h3 class="cart-card-title" th:text="${it.name()}">
+                                            Название
+                                        </h3>
+
+                                        <div class="cart-card-meta" th:text="${it.categoryName()}">
+                                            Категория
+                                        </div>
+
+                                        <div class="cart-badges" style="margin-top:10px;">
+                                            <span th:if="${it.batchPercent() != null}" class="cart-badge cart-badge-accent">
+                                                <span th:text="${it.batchText()}">Уценка</span>
+                                            </span>
+
+                                            <span th:if="${it.promoPercent() != null}" class="cart-badge cart-badge-primary">
+                                                <span th:text="${it.promoText()}">Акция</span>
+                                            </span>
+
+                                            <span th:if="${it.monthlyPercent() != null}" class="cart-badge cart-badge-info">
+                                                <span th:text="${it.monthlyText()}">Скидка месяца</span>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="cart-card-price-box">
+                                        <div class="cart-label">Цена за шт.</div>
+
+                                        <div class="cart-price"
+                                             th:text="${#numbers.formatDecimal(it.finalUnitPrice(), 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                                            0.00 ₽
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="cart-card-bottom">
+                                    <form th:action="@{/cart/setQty}" method="post" class="cart-qty-form">
+                                        <input type="hidden" name="productId" th:value="${it.productId()}"/>
+
+                                        <div class="cart-qty-field">
+                                            <label class="cart-label">Количество</label>
+
+                                            <input type="number"
+                                                   name="qty"
+                                                   min="0"
+                                                   th:value="${it.qty()}"/>
+                                        </div>
+
+                                        <button class="vk-btn vk-btn-light" type="submit">
+                                            Обновить
+                                        </button>
+
+                                        <span class="cart-qty-hint">0 = удалить</span>
+                                    </form>
+
+                                    <div class="cart-line-total">
+                                        <div>
+                                            <div class="cart-label">Сумма</div>
+
+                                            <div class="cart-price"
+                                                 th:text="${#numbers.formatDecimal(it.lineTotal(), 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                                                0.00 ₽
+                                            </div>
+                                        </div>
+
+                                        <form th:action="@{/cart/remove}" method="post">
+                                            <input type="hidden" name="productId" th:value="${it.productId()}"/>
+
+                                            <button class="vk-btn vk-btn-danger" type="submit">
+                                                Удалить
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <section th:if="${combos != null and !#lists.isEmpty(combos)}" class="cart-block">
+                    <div class="cart-block-head">
+                        <div>
+                            <h2>Комбо-наборы</h2>
+                            <p>Наборы с уже выбранным составом.</p>
+                        </div>
+                    </div>
+
+                    <div class="cart-items">
+                        <article th:each="cc : ${combos}" class="cart-card">
+                            <div class="cart-card-media">
+                                <img th:if="${cc.comboTemplate.imageUpdatedAt != null}"
+                                     th:src="@{/combos/{id}/image(id=${cc.comboTemplate.id})}"
+                                     alt="combo"/>
+
+                                <div th:unless="${cc.comboTemplate.imageUpdatedAt != null}" class="cart-card-placeholder">
+                                    COMBO
+                                </div>
+                            </div>
+
+                            <div class="cart-card-body">
+                                <div class="cart-card-top">
+                                    <div>
+                                        <h3 class="cart-card-title" th:text="${cc.comboTemplate.name}">
+                                            Комбо
+                                        </h3>
+
+                                        <div class="cart-card-meta">
+                                            Состав набора
+                                        </div>
+
+                                        <ul class="cart-combo-list" style="margin-top:10px;">
+                                            <li th:each="it : ${cc.items}">
+                                                <span th:text="${it.comboSlot.name}">Слот</span>:
+                                                <strong th:text="${it.product.name}">Товар</strong>
+                                                <span th:if="${it.extraPriceSnapshot != null}"
+                                                      th:text="${' (+' + #numbers.formatDecimal(it.extraPriceSnapshot, 1, 'COMMA', 2, 'POINT') + ' ₽)'}">
+                                                </span>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="cart-card-price-box">
+                                        <div class="cart-label">Цена комбо</div>
+
+                                        <div class="cart-price"
+                                             th:text="${#numbers.formatDecimal(cc.comboPriceSnapshot, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                                            0.00 ₽
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="cart-card-bottom">
+                                    <div class="cart-combo-qty-box">
+                                        <div class="cart-label">Количество</div>
+
+                                        <div class="cart-combo-qty-value" th:text="${cc.qty}">
+                                            1
+                                        </div>
+                                    </div>
+
+                                    <div class="cart-line-total">
+                                        <div>
+                                            <div class="cart-label">Сумма</div>
+
+                                            <div class="cart-price"
+                                                 th:text="${#numbers.formatDecimal(cc.comboPriceSnapshot * cc.qty, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                                                0.00 ₽
+                                            </div>
+                                        </div>
+
+                                        <form th:action="@{/cart/remove-combo}" method="post">
+                                            <input type="hidden" name="cartComboId" th:value="${cc.id}"/>
+
+                                            <button class="vk-btn vk-btn-danger" type="submit">
+                                                Удалить комбо
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
             </div>
 
-            <div class="cart-total-row">
-                <div class="vk-muted">Итого:</div>
-                <div class="cart-total"
-                     th:text="${#numbers.formatDecimal(total, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
-                    0.00 ₽
+            <aside class="cart-summary">
+                <div class="cart-summary-icon">🧾</div>
+
+                <h2>Итоги заказа</h2>
+
+                <p>
+                    Проверьте позиции в корзине и переходите к подтверждению заказа.
+                </p>
+
+                <div class="cart-summary-total">
+                    <span>Итого</span>
+
+                    <strong th:text="${#numbers.formatDecimal(total, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                        0.00 ₽
+                    </strong>
                 </div>
-            </div>
 
-            <div class="cart-summary-actions">
-                <a class="vk-btn" th:href="@{/orders/checkout}">
-                    Оформить
-                </a>
+                <div class="cart-summary-actions">
+                    <a class="vk-btn" th:href="@{/orders/checkout}">
+                        Оформить заказ
+                    </a>
 
-                <form th:action="@{/cart/clear}" method="post">
-                    <button class="vk-btn vk-btn-secondary" type="submit">
-                        Очистить корзину
-                    </button>
-                </form>
+                    <form th:action="@{/cart/clear}" method="post" style="margin:0;">
+                        <button class="vk-btn vk-btn-light" type="submit" style="width:100%;">
+                            Очистить корзину
+                        </button>
+                    </form>
 
-                <a class="vk-btn vk-btn-secondary" th:href="@{/menu}">
-                    Вернуться в меню
-                </a>
-            </div>
-        </aside>
-    </section>
+                    <a class="vk-btn vk-btn-light" th:href="@{/menu}">
+                        Вернуться в меню
+                    </a>
+                </div>
+            </aside>
+
+        </section>
+    </div>
 </main>
 
 <div th:replace="fragments/footer :: footer"></div>

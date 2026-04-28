@@ -2,116 +2,554 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Продавец · Проверка накладной</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
+    <style>
+        .invoice-check-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .invoice-check-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 300px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .invoice-check-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 40px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.04em;
+        }
+
+        .invoice-check-hero p {
+            max-width: 720px;
+            margin: 10px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .invoice-check-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .invoice-check-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .invoice-summary-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .invoice-summary-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .invoice-summary-label {
+            margin-top: 14px;
+            color: #6a7ba0;
+            font-size: 12px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .invoice-summary-value {
+            margin-top: 4px;
+            color: #102a5c;
+            font-size: 22px;
+            font-weight: 950;
+            line-height: 1.05;
+        }
+
+        .invoice-status {
+            display: inline-flex;
+            align-items: center;
+            min-height: 32px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .invoice-status.ready {
+            border: 1px solid #f4d294;
+            background: #fff4de;
+            color: #9c6400;
+        }
+
+        .invoice-status.checked {
+            border: 1px solid #b7ceec;
+            background: #eef4ff;
+            color: #163067;
+        }
+
+        .invoice-status.posted {
+            border: 1px solid #bde8c9;
+            background: #e8f8ed;
+            color: #166534;
+        }
+
+        .invoice-status.unknown {
+            border: 1px solid #d8e1f0;
+            background: #f8fbff;
+            color: #44557b;
+        }
+
+        .invoice-message {
+            padding: 14px 16px;
+            border: 1px solid #b7ceec;
+            border-radius: 18px;
+            background: #eef4ff;
+            color: #163067;
+            font-size: 14px;
+            font-weight: 850;
+            line-height: 1.4;
+        }
+
+        .invoice-check-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .invoice-check-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .invoice-check-title {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+        }
+
+        .invoice-check-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .invoice-meta-pill {
+            display: inline-flex;
+            align-items: center;
+            min-height: 32px;
+            padding: 7px 12px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 850;
+        }
+
+        .invoice-check-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .invoice-table-wrap {
+            overflow-x: auto;
+        }
+
+        .invoice-check-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .invoice-check-table th {
+            padding: 14px 18px;
+            border-bottom: 1px solid #e5ebf5;
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .invoice-check-table td {
+            padding: 16px 18px;
+            border-bottom: 1px solid #edf1f7;
+            vertical-align: top;
+        }
+
+        .invoice-check-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .invoice-product-name {
+            color: #102a5c;
+            font-size: 16px;
+            font-weight: 950;
+            line-height: 1.2;
+        }
+
+        .invoice-expected {
+            color: #102a5c;
+            font-size: 16px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .invoice-input,
+        .invoice-select {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 850;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .invoice-input:focus,
+        .invoice-select:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .invoice-input:disabled,
+        .invoice-select:disabled {
+            background: #f3f6fa;
+            color: #6a7ba0;
+            cursor: not-allowed;
+        }
+
+        .reason-hint {
+            margin-top: 7px;
+            color: #6a7ba0;
+            font-size: 12px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .invoice-empty {
+            padding: 36px 22px;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 850;
+            text-align: center;
+        }
+
+        .invoice-form-footer {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 18px 22px 22px;
+            border-top: 1px solid #e5ebf5;
+        }
+
+        .invoice-note {
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 1.4;
+        }
+
+        .invoice-note.warning {
+            color: #9c6400;
+        }
+
+        .invoice-note.success {
+            color: #166534;
+        }
+
+        @media (max-width: 980px) {
+            .invoice-check-hero {
+                grid-template-columns: 1fr;
+            }
+
+            .invoice-check-head {
+                align-items: stretch;
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .invoice-check-hero {
+                padding: 22px;
+            }
+
+            .invoice-check-hero h1 {
+                font-size: 32px;
+            }
+
+            .invoice-form-footer,
+            .invoice-check-actions {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .invoice-form-footer .vk-btn,
+            .invoice-check-actions .vk-btn {
+                width: 100%;
+            }
+
+            .invoice-check-table th,
+            .invoice-check-table td {
+                padding: 13px 14px;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
-<main style="max-width:1180px;margin:18px auto;padding:0 12px;">
-    <h2 style="margin:0 0 12px 0;">Продавец · Проверка накладной</h2>
+<main class="vk-page">
+    <div class="invoice-check-page">
 
-    <div th:if="${msg}"
-         style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;background:#eef2ff;margin-bottom:12px;"
-         th:text="${msg}">Сообщение</div>
-
-    <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
+        <section class="invoice-check-hero">
             <div>
-                <div style="font-weight:900;font-size:20px;" th:text="'Накладная #' + ${header.id()}">Накладная</div>
-                <div style="margin-top:6px;color:#0b1b4d;font-weight:800;">
-                    Поставщик: <span th:text="${header.supplierName()}">—</span>
-                    &nbsp;•&nbsp; Номер: <span th:text="${header.invoiceNumber()}">—</span>
-                    &nbsp;•&nbsp; Дата: <span th:text="${header.invoiceDate()}">—</span>
-                </div>
-                <div style="margin-top:6px;color:#6b7280;">
-                    Статус: <b th:text="${header.status()}">draft</b>
+                <div class="vk-eyebrow">Панель продавца</div>
+
+                <h1>Проверка накладной</h1>
+
+                <p>
+                    Сверьте ожидаемое количество товаров с фактическим поступлением
+                    и укажите причину расхождения, если оно есть.
+                </p>
+
+                <div class="invoice-check-tags">
+                    <span class="invoice-check-tag">Фактическое поступление</span>
+                    <span class="invoice-check-tag">Контроль расхождений</span>
+                    <span class="invoice-check-tag">Подтверждение продавцом</span>
                 </div>
             </div>
 
-            <a th:href="@{/seller/invoices}"
-               style="text-decoration:none;border:1px solid #d8deea;padding:8px 10px;border-radius:12px;font-weight:800;color:#0b1b4d;">
-                К списку
-            </a>
+            <div class="invoice-summary-card">
+                <div class="invoice-summary-icon">📋</div>
+
+                <div class="invoice-summary-label">
+                    Накладная
+                </div>
+
+                <div class="invoice-summary-value">
+                    #<span th:text="${header.id()}">0</span>
+                </div>
+
+                <div style="margin-top:10px;">
+                    <span th:switch="${header.status()}">
+                        <span th:case="'ready_for_check'" class="invoice-status ready">
+                            Ожидает проверки
+                        </span>
+
+                        <span th:case="'checked'" class="invoice-status checked">
+                            Проверена продавцом
+                        </span>
+
+                        <span th:case="'posted'" class="invoice-status posted">
+                            Проведена складом
+                        </span>
+
+                        <span th:case="*" class="invoice-status unknown">
+                            Неизвестный статус
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <div th:if="${msg}" class="invoice-message" th:text="${msg}">
+            Сообщение
         </div>
 
-        <form th:action="@{/seller/invoices/{id}/check(id=${header.id()})}" method="post" th:object="${form}">
-            <input type="hidden" th:field="*{invoiceId}"/>
-            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <section class="invoice-check-panel">
+            <div class="invoice-check-head">
+                <div>
+                    <h2 class="invoice-check-title">
+                        Накладная #<span th:text="${header.id()}">0</span>
+                    </h2>
 
-            <table style="width:100%;border-collapse:collapse;margin-top:10px;">
-                <thead>
-                <tr style="text-align:left;border-bottom:1px solid #e6e9ef;">
-                    <th style="padding:10px 8px;">Товар</th>
-                    <th style="padding:10px 8px;width:120px;">Ожидалось</th>
-                    <th style="padding:10px 8px;width:180px;">Факт (принято)</th>
-                    <th style="padding:10px 8px;width:280px;">Причина</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="it, st : ${items}" style="border-bottom:1px solid #f0f2f7;">
-                    <td style="padding:10px 8px;font-weight:800;" th:text="${it.productName()}">Товар</td>
+                    <div class="invoice-check-meta">
+                        <span class="invoice-meta-pill">
+                            Поставщик:
+                            <strong style="margin-left:4px;" th:text="${header.supplierName()}">—</strong>
+                        </span>
 
-                    <td style="padding:10px 8px;">
-                        <span th:text="${it.qty()}">0</span>
-                    </td>
+                        <span class="invoice-meta-pill">
+                            Номер:
+                            <strong style="margin-left:4px;" th:text="${header.invoiceNumber()}">—</strong>
+                        </span>
 
-                    <td style="padding:10px 8px;">
-                        <input type="hidden"
-                               th:field="*{items[__${st.index}__].invoiceItemId}"
-                               th:value="${it.id()}"/>
+                        <span class="invoice-meta-pill">
+                            Дата:
+                            <strong style="margin-left:4px;" th:text="${header.invoiceDate()}">—</strong>
+                        </span>
+                    </div>
+                </div>
 
-                        <input th:field="*{items[__${st.index}__].receivedQty}"
-                               type="number"
-                               min="0"
-                               th:attr="data-expected=${it.qty()}, data-row-index=${st.index}"
-                               class="received-input"
-                               style="width:100%;padding:10px 12px;border:1px solid #d8deea;border-radius:12px;"/>
-                    </td>
-
-                    <td style="padding:10px 8px;">
-                        <select th:field="*{items[__${st.index}__].acceptanceReason}"
-                                th:attr="data-expected=${it.qty()}, data-row-index=${st.index}"
-                                class="reason-select"
-                                style="width:100%;padding:10px 12px;border:1px solid #d8deea;border-radius:12px;">
-                            <option value="ok">ОК</option>
-                            <option value="defect">Брак</option>
-                            <option value="shortage">Недопоставка</option>
-                            <option value="missing">Товар отсутствовал</option>
-                            <option value="quantity_error">Ошибка в количестве</option>
-                        </select>
-
-                        <div class="reason-hint"
-                             th:attr="data-row-index=${st.index}"
-                             style="margin-top:6px;color:#6b7280;font-size:12px;">
-                            Если факт равен ожидаемому, причина будет автоматически «ОК».
-                        </div>
-                    </td>
-                </tr>
-
-                <tr th:if="${#lists.isEmpty(items)}">
-                    <td colspan="4" style="padding:12px 8px;color:#6b7280;">Позиции отсутствуют.</td>
-                </tr>
-                </tbody>
-            </table>
-
-            <div style="display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap;">
-                <button type="submit"
-                        th:disabled="${header.status() != 'ready_for_check'}"
-                        style="border:0;background:#1d3b8b;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
-                    Подтвердить проверку
-                </button>
-
-                <span style="color:#6b7280;" th:if="${header.status() == 'checked'}">
-                    Накладная уже проверена продавцом.
-                </span>
-
-                <span style="color:#6b7280;" th:if="${header.status() == 'posted'}">
-                    Накладная уже проведена складом — редактирование запрещено.
-                </span>
+                <div class="invoice-check-actions">
+                    <a th:href="@{/seller/invoices}" class="vk-btn vk-btn-light">
+                        К списку
+                    </a>
+                </div>
             </div>
-        </form>
-    </section>
+
+            <form th:action="@{/seller/invoices/{id}/check(id=${header.id()})}"
+                  method="post"
+                  th:object="${form}">
+
+                <input type="hidden" th:field="*{invoiceId}"/>
+
+                <input th:if="${_csrf != null}"
+                       type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}"/>
+
+                <div class="invoice-table-wrap">
+                    <table class="invoice-check-table">
+                        <thead>
+                        <tr>
+                            <th>Товар</th>
+                            <th>Ожидалось</th>
+                            <th>Факт</th>
+                            <th>Причина</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="it, st : ${items}">
+                            <td>
+                                <div class="invoice-product-name" th:text="${it.productName()}">
+                                    Товар
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="invoice-expected">
+                                    <span th:text="${it.qty()}">0</span> шт.
+                                </div>
+                            </td>
+
+                            <td>
+                                <input type="hidden"
+                                       th:field="*{items[__${st.index}__].invoiceItemId}"
+                                       th:value="${it.id()}"/>
+
+                                <input th:field="*{items[__${st.index}__].receivedQty}"
+                                       type="number"
+                                       min="0"
+                                       th:disabled="${header.status() != 'ready_for_check'}"
+                                       th:attr="data-expected=${it.qty()}, data-row-index=${st.index}"
+                                       class="received-input invoice-input"/>
+                            </td>
+
+                            <td>
+                                <select th:field="*{items[__${st.index}__].acceptanceReason}"
+                                        th:disabled="${header.status() != 'ready_for_check'}"
+                                        th:attr="data-expected=${it.qty()}, data-row-index=${st.index}"
+                                        class="reason-select invoice-select">
+                                    <option value="ok">ОК</option>
+                                    <option value="defect">Брак</option>
+                                    <option value="shortage">Недопоставка</option>
+                                    <option value="missing">Товар отсутствовал</option>
+                                    <option value="quantity_error">Ошибка в количестве</option>
+                                </select>
+
+                                <div class="reason-hint"
+                                     th:attr="data-row-index=${st.index}">
+                                    Если факт равен ожидаемому, причина будет автоматически «ОК».
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(items)}">
+                            <td colspan="4">
+                                <div class="invoice-empty">
+                                    Позиции отсутствуют.
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="invoice-form-footer">
+                    <button type="submit"
+                            class="vk-btn"
+                            th:disabled="${header.status() != 'ready_for_check'}">
+                        Подтвердить проверку
+                    </button>
+
+                    <span class="invoice-note success" th:if="${header.status() == 'checked'}">
+                        Накладная уже проверена продавцом.
+                    </span>
+
+                    <span class="invoice-note success" th:if="${header.status() == 'posted'}">
+                        Накладная уже проведена складом. Редактирование запрещено.
+                    </span>
+
+                    <span class="invoice-note warning" th:if="${header.status() != 'ready_for_check' and header.status() != 'checked' and header.status() != 'posted'}">
+                        Проверка недоступна для текущего статуса накладной.
+                    </span>
+                </div>
+            </form>
+        </section>
+
+    </div>
 </main>
 
 <div th:replace="fragments/footer :: footer"></div>
@@ -122,20 +560,15 @@
         const reasonSelects = document.querySelectorAll('.reason-select');
 
         function allowedReasons(expected, received) {
-            if (received === expected) return ['ok'];
-            if (received < expected) return ['defect', 'shortage', 'missing'];
-            return ['quantity_error'];
-        }
-
-        function labelFor(reason) {
-            switch (reason) {
-                case 'ok': return 'ОК';
-                case 'defect': return 'Брак';
-                case 'shortage': return 'Недопоставка';
-                case 'missing': return 'Товар отсутствовал';
-                case 'quantity_error': return 'Ошибка в количестве';
-                default: return reason;
+            if (received === expected) {
+                return ['ok'];
             }
+
+            if (received < expected) {
+                return ['defect', 'shortage', 'missing'];
+            }
+
+            return ['quantity_error'];
         }
 
         function applyRow(index) {
@@ -143,14 +576,15 @@
             const reasonSelect = document.querySelector('.reason-select[data-row-index="' + index + '"]');
             const hint = document.querySelector('.reason-hint[data-row-index="' + index + '"]');
 
-            if (!qtyInput || !reasonSelect) return;
+            if (!qtyInput || !reasonSelect) {
+                return;
+            }
 
             const expected = parseInt(qtyInput.dataset.expected || '0', 10);
             const received = parseInt(qtyInput.value || '0', 10);
-
             const allowed = allowedReasons(expected, received);
 
-            Array.from(reasonSelect.options).forEach(opt => {
+            Array.from(reasonSelect.options).forEach(function (opt) {
                 opt.hidden = !allowed.includes(opt.value);
             });
 
@@ -166,20 +600,20 @@
                 if (received === expected) {
                     hint.textContent = 'Количество совпадает. Причина автоматически: «ОК».';
                 } else if (received < expected) {
-                    hint.textContent = 'Выбери причину: «Брак», «Недопоставка» или «Товар отсутствовал».';
+                    hint.textContent = 'Выберите причину: «Брак», «Недопоставка» или «Товар отсутствовал».';
                 } else {
                     hint.textContent = 'Допустимая причина при излишке: «Ошибка в количестве».';
                 }
             }
         }
 
-        receivedInputs.forEach(input => {
+        receivedInputs.forEach(function (input) {
             input.addEventListener('input', function () {
                 applyRow(this.dataset.rowIndex);
             });
         });
 
-        reasonSelects.forEach(select => {
+        reasonSelects.forEach(function (select) {
             applyRow(select.dataset.rowIndex);
         });
     })();

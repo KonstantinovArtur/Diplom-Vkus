@@ -2,20 +2,38 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Вход в систему</title>
 
     <style>
         :root {
-            --blue-dark: #0f1c3f;
-            --blue-main: #1e3a8a;
-            --bg-page: #ffffff;
-            --border-light: #e5e7eb;
-            --text-main: #111827;
-            --text-muted: #6b7280;
-            --error-bg: #fee2e2;
-            --error-text: #991b1b;
-            --success-bg: #ecfdf5;
-            --success-text: #065f46;
+            --vk-bg: #f5f7fb;
+            --vk-surface: #ffffff;
+            --vk-surface-soft: #f3f6fa;
+
+            --vk-primary: #162f65;
+            --vk-primary-hover: #102650;
+            --vk-primary-soft: #e8eef8;
+
+            --vk-accent: #f3a21a;
+            --vk-accent-soft: #fff3da;
+
+            --vk-success: #1f8f4d;
+            --vk-success-soft: #dcf5e6;
+
+            --vk-danger: #d14343;
+            --vk-danger-soft: #fde7e7;
+
+            --vk-text: #13294b;
+            --vk-text-soft: #334a6b;
+            --vk-muted: #6f7f96;
+
+            --vk-border: #dce4ef;
+            --vk-border-strong: #c6d2e2;
+
+            --vk-shadow-sm: 0 8px 20px rgba(22, 47, 101, 0.06);
+            --vk-shadow-md: 0 18px 40px rgba(22, 47, 101, 0.10);
+            --vk-shadow-lg: 0 28px 70px rgba(22, 47, 101, 0.16);
         }
 
         * {
@@ -23,159 +41,497 @@
         }
 
         body {
-            margin: 0;
             min-height: 100vh;
+            margin: 0;
+            background:
+                    radial-gradient(circle at 8% 8%, rgba(22, 47, 101, 0.12), transparent 30%),
+                    radial-gradient(circle at 92% 10%, rgba(243, 162, 26, 0.12), transparent 26%),
+                    var(--vk-bg);
+            color: var(--vk-text);
+            font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        .login-page {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 460px;
+            gap: 28px;
+            align-items: center;
+            width: min(1180px, calc(100% - 32px));
+            min-height: 100vh;
+            margin: 0 auto;
+            padding: 34px 0;
+        }
+
+        .login-hero {
+            position: relative;
+            overflow: hidden;
+            min-height: 560px;
+            padding: 36px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 32px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.08), rgba(243, 162, 26, 0.06)),
+                    rgba(255, 255, 255, 0.82);
+            box-shadow: var(--vk-shadow-md);
+            backdrop-filter: blur(18px);
+        }
+
+        .login-hero::after {
+            content: "";
+            position: absolute;
+            right: -120px;
+            bottom: -120px;
+            width: 340px;
+            height: 340px;
+            border-radius: 999px;
+            background: rgba(243, 162, 26, 0.14);
+        }
+
+        .login-brand {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-logo {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-            background: var(--bg-page);
-            color: var(--text-main);
+            width: 190px;
+            height: 62px;
+            padding: 8px 12px;
+            border: 1px solid var(--vk-border);
+            border-radius: 18px;
+            background: #ffffff;
+            box-shadow: var(--vk-shadow-sm);
         }
 
-        .container {
-            width: 100%;
-            max-width: 520px;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .welcome {
-            margin-bottom: 28px;
-        }
-
-        .welcome h1 {
-            margin: 0 0 8px;
-            font-size: 28px;
-            font-weight: 600;
-            color: var(--blue-dark);
-        }
-
-        .welcome p {
-            margin: 0;
-            font-size: 15px;
-            color: var(--text-muted);
-        }
-
-        .card {
-            background: #fff;
-            border-radius: 14px;
-            padding: 32px 28px;
-            border: 1px solid var(--border-light);
-            box-shadow: 0 12px 30px rgba(15, 28, 63, 0.15);
-        }
-
-        .title {
-            margin: 0 0 6px;
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--blue-dark);
-        }
-
-        .subtitle {
-            margin: 0 0 26px;
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-
-        .subtitle b {
-            color: var(--blue-main);
-            font-weight: 600;
-        }
-
-        .login-btn {
+        .login-logo img {
             display: block;
-            width: 100%;
-            padding: 12px 16px;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
 
-            border-radius: 10px;
-            border: 2px solid var(--blue-main);
-            background: var(--blue-main);
+        .login-brand-text {
+            min-width: 0;
+        }
 
+        .login-brand-title {
+            color: var(--vk-text);
+            font-size: 24px;
+            font-weight: 950;
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+        }
+
+        .login-brand-subtitle {
+            margin-top: 5px;
+            color: var(--vk-muted);
+            font-size: 14px;
+            font-weight: 850;
+        }
+
+        .login-hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 680px;
+            margin-top: 86px;
+        }
+
+        .login-eyebrow {
+            margin-bottom: 12px;
+            color: var(--vk-primary);
+            font-size: 13px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .login-hero h1 {
+            margin: 0;
+            color: var(--vk-text);
+            font-size: 54px;
+            font-weight: 950;
+            line-height: 1.02;
+            letter-spacing: -0.06em;
+        }
+
+        .login-hero p {
+            max-width: 560px;
+            margin: 18px 0 0;
+            color: var(--vk-text-soft);
+            font-size: 17px;
+            font-weight: 750;
+            line-height: 1.5;
+        }
+
+        .login-hero-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+
+        .login-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: 7px 13px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: var(--vk-accent-soft);
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .login-info-card {
+            position: absolute;
+            left: 36px;
+            right: 36px;
+            bottom: 36px;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 54px minmax(0, 1fr);
+            gap: 14px;
+            padding: 16px;
+            border: 1px solid var(--vk-border);
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: var(--vk-shadow-sm);
+        }
+
+        .login-info-icon {
+            display: grid;
+            place-items: center;
+            width: 54px;
+            height: 54px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--vk-primary), var(--vk-accent));
+            color: #ffffff;
+            font-size: 24px;
+            box-shadow: 0 14px 30px rgba(22, 47, 101, 0.18);
+        }
+
+        .login-info-title {
+            color: var(--vk-text);
+            font-size: 16px;
+            font-weight: 950;
+        }
+
+        .login-info-text {
+            margin-top: 4px;
+            color: var(--vk-muted);
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.4;
+        }
+
+        .login-panel {
+            padding: 28px;
+            border: 1px solid rgba(220, 228, 239, 0.95);
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: var(--vk-shadow-lg);
+            backdrop-filter: blur(18px);
+        }
+
+        .login-panel-top {
+            text-align: center;
+        }
+
+        .login-panel-icon {
+            display: grid;
+            place-items: center;
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 16px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--vk-primary), var(--vk-accent));
+            color: #ffffff;
+            font-size: 32px;
+            box-shadow: 0 18px 34px rgba(22, 47, 101, 0.20);
+        }
+
+        .login-panel h2 {
+            margin: 0;
+            color: var(--vk-text);
+            font-size: 30px;
+            font-weight: 950;
+            line-height: 1.08;
+            letter-spacing: -0.04em;
+        }
+
+        .login-panel-subtitle {
+            margin: 10px 0 0;
+            color: var(--vk-muted);
             font-size: 15px;
-            font-weight: 500;
-            color: #fff;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .login-form-area {
+            margin-top: 24px;
+        }
+
+        .google-login-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            min-height: 52px;
+            padding: 0 18px;
+            border: 1px solid transparent;
+            border-radius: 16px;
+            background: var(--vk-primary);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 950;
+            line-height: 1;
             text-decoration: none;
-
-            cursor: pointer;
-            transition: all 0.2s ease;
+            box-shadow: 0 12px 24px rgba(22, 47, 101, 0.20);
+            transition: 0.2s ease;
         }
 
-        .login-btn:hover {
-            background: #fff;
-            color: var(--blue-main);
-            box-shadow: 0 6px 16px rgba(30, 58, 138, 0.25);
+        .google-login-btn:hover {
+            background: var(--vk-primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 16px 30px rgba(22, 47, 101, 0.24);
         }
 
-        .login-btn:active {
-            transform: translateY(1px);
-            box-shadow: none;
+        .google-icon {
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            flex: 0 0 auto;
+            border-radius: 10px;
+            background: #ffffff;
+            color: var(--vk-primary);
+            font-size: 16px;
+            font-weight: 950;
         }
 
-        .error {
-            margin-top: 18px;
-            padding: 10px 12px;
-            border-radius: 8px;
-            background: var(--error-bg);
-            color: var(--error-text);
-            font-size: 14px;
-        }
-
-        .logout {
+        .login-note {
             margin-top: 16px;
-            padding: 10px 12px;
-            border-radius: 8px;
-            background: var(--success-bg);
-            color: var(--success-text);
-            font-size: 14px;
+            padding: 14px;
+            border: 1px solid var(--vk-border);
+            border-radius: 18px;
+            background: var(--vk-surface-soft);
+            color: var(--vk-text-soft);
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.45;
         }
 
-        .footer {
-            margin-top: 26px;
+        .login-alert {
+            margin-top: 16px;
+            padding: 14px 15px;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 850;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        .login-alert-error {
+            border: 1px solid #f2baba;
+            background: var(--vk-danger-soft);
+            color: #9b2424;
+        }
+
+        .login-alert-success {
+            border: 1px solid #bde8c9;
+            background: var(--vk-success-soft);
+            color: #166534;
+        }
+
+        .login-footer {
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px solid var(--vk-border);
+            color: var(--vk-muted);
             font-size: 12px;
-            color: #9ca3af;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        @media (max-width: 980px) {
+            .login-page {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+            }
+
+            .login-hero {
+                min-height: auto;
+            }
+
+            .login-info-card {
+                position: relative;
+                left: auto;
+                right: auto;
+                bottom: auto;
+                margin-top: 34px;
+            }
+
+            .login-hero-content {
+                margin-top: 54px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .login-page {
+                width: min(100% - 20px, 1180px);
+                padding: 16px 0;
+            }
+
+            .login-hero,
+            .login-panel {
+                padding: 22px;
+                border-radius: 24px;
+            }
+
+            .login-brand {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .login-logo {
+                width: 158px;
+                height: 54px;
+            }
+
+            .login-hero-content {
+                margin-top: 42px;
+            }
+
+            .login-hero h1 {
+                font-size: 38px;
+            }
+
+            .login-hero p {
+                font-size: 15px;
+            }
+
+            .login-info-card {
+                grid-template-columns: 1fr;
+            }
+
+            .login-panel h2 {
+                font-size: 26px;
+            }
         }
     </style>
 </head>
 
 <body>
-<div class="container">
 
-    <div class="welcome">
-        <h1>Добро пожаловать в буфет МПТ!</h1>
-        <p>Для продолжения авторизируйтесь</p>
-    </div>
+<main class="login-page">
 
-    <div class="card">
+    <section class="login-hero">
+        <div class="login-brand">
+            <div class="login-logo">
+                <img th:src="@{/images/mpt-logo.png}" alt="МПТ">
+            </div>
 
-        <h2 class="title">Вход в систему</h2>
-        <p class="subtitle">
-            Для продолжения войдите через Google-аккаунт
-        </p>
+            <div class="login-brand-text">
+                <div class="login-brand-title">
+                    Буфет МПТ
+                </div>
 
-        <a class="login-btn" href="/oauth2/authorization/google">
-            Войти через Google
-        </a>
-
-        <div class="error" th:if="${param.error}">
-    <span th:if="${param.error[0] == 'blocked'}">
-        Ваш аккаунт заблокирован
-    </span>
-
-            <span th:unless="${param.error[0] == 'blocked'}">
-        Ошибка входа. Проверьте Google-аккаунт и попробуйте ещё раз.
-    </span>
+                <div class="login-brand-subtitle">
+                    заказы и склад
+                </div>
+            </div>
         </div>
 
-        <div class="logout" th:if="${param.logout}">
-            Вы успешно вышли из системы
+        <div class="login-hero-content">
+            <div class="login-eyebrow">
+
+            </div>
+
+            <h1>
+                Быстрый заказ в буфете колледжа
+            </h1>
+
+            <p>
+                Авторизируйтесь через Google-аккаунт, чтобы открыть меню, собрать корзину,
+                оформить заказ и отслеживать его статус.
+            </p>
+
+            <div class="login-hero-tags">
+
+            </div>
         </div>
 
-        <div class="footer">
+        <div class="login-info-card">
+            <div class="login-info-icon">🧾</div>
+
+            <div>
+                <div class="login-info-title">
+                    Всё в одном личном кабинете
+                </div>
+
+                <div class="login-info-text">
+                    После входа пользователь получает доступ к заказам, уведомлениям,
+                    чекам и персональным скидкам.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="login-panel">
+        <div class="login-panel-top">
+            <div class="login-panel-icon">🔐</div>
+
+            <h2>
+                Вход в систему
+            </h2>
+
+            <p class="login-panel-subtitle">
+                Для продолжения войдите через Google-аккаунт.
+            </p>
+        </div>
+
+        <div class="login-form-area">
+            <a class="google-login-btn" href="/oauth2/authorization/google">
+                <span class="google-icon">G</span>
+                <span>Войти через Google</span>
+            </a>
+
+            <div class="login-note">
+                Используйте аккаунт, который был указан при регистрации или назначении роли в системе.
+            </div>
+
+            <div class="login-alert login-alert-error" th:if="${param.error}">
+                <span th:if="${param.error[0] == 'blocked'}">
+                    Ваш аккаунт заблокирован. Обратитесь к администратору.
+                </span>
+
+                <span th:unless="${param.error[0] == 'blocked'}">
+                    Ошибка входа. Проверьте Google-аккаунт и попробуйте ещё раз.
+                </span>
+            </div>
+
+            <div class="login-alert login-alert-success" th:if="${param.logout}">
+                Вы успешно вышли из системы.
+            </div>
+        </div>
+
+        <div class="login-footer">
             © 2026 · Буфет МПТ · Учебный проект
         </div>
+    </section>
 
-    </div>
-</div>
+</main>
+
 </body>
 </html>

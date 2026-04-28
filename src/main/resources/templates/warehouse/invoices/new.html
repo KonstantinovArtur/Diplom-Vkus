@@ -2,58 +2,411 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Создать накладную</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Кладовщик · Создание накладной</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
     <style>
-        .wrap { max-width: 720px; margin: 20px auto; padding: 0 16px; }
-        .card { background:#fff; border:1px solid #e6e9ef; border-radius:16px; padding:16px; box-shadow:0 8px 24px rgba(10,20,60,.06); }
-        .title { font-size:20px; font-weight:900; color:#0b1b4d; margin-bottom:12px; }
-        .field { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
-        .field label { font-weight:800; color:#0b1b4d; }
-        .field input, .field select { padding:10px 12px; border-radius:12px; border:1px solid #d8deea; outline:none; }
-        .field input:focus, .field select:focus { border-color:#0b1b4d; }
-        .err { color:#b00020; font-weight:700; font-size:13px; }
-        .btn { display:inline-block; padding:10px 12px; border-radius:12px; border:1px solid #d8deea; background:#fff; font-weight:900; cursor:pointer; text-decoration:none; color:#0b1b4d; }
-        .btn-primary { background:#1d3b8b; color:#fff; border-color:#1d3b8b; }
-        .muted { color:#6b7280; font-size:13px; margin-top:8px; }
-        .actions { display:flex; gap:10px; }
-        .warn { margin:0 0 12px; padding:10px 12px; border-radius:12px; background:#fff7ed; border:1px solid #fed7aa; font-weight:800; color:#7c2d12; }
+        .warehouse-new-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .warehouse-new-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .warehouse-new-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 40px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.04em;
+        }
+
+        .warehouse-new-hero p {
+            max-width: 720px;
+            margin: 10px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .warehouse-new-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .warehouse-new-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .warehouse-new-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .warehouse-new-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .warehouse-new-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+        }
+
+        .warehouse-new-hero-text {
+            margin-top: 6px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .warehouse-new-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 340px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .warehouse-new-card,
+        .warehouse-help-card {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .warehouse-new-card-head {
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .warehouse-new-card-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .warehouse-new-card-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .warehouse-new-form {
+            display: grid;
+            gap: 16px;
+            padding: 22px;
+        }
+
+        .warehouse-warning {
+            padding: 14px 16px;
+            border: 1px solid #f4d294;
+            border-radius: 18px;
+            background: #fff4de;
+            color: #8a5a00;
+            font-size: 14px;
+            font-weight: 850;
+            line-height: 1.4;
+        }
+
+        .warehouse-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .warehouse-field label {
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .warehouse-field select {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .warehouse-field select:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .warehouse-field select:disabled {
+            background: #f3f6fa;
+            color: #6a7ba0;
+            cursor: not-allowed;
+        }
+
+        .warehouse-error {
+            color: #a2352a;
+            font-size: 12px;
+            font-weight: 850;
+        }
+
+        .warehouse-form-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .warehouse-note {
+            padding: 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 18px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.4;
+        }
+
+        .warehouse-help-card {
+            position: sticky;
+            top: 18px;
+            padding: 22px;
+        }
+
+        .warehouse-help-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .warehouse-help-card h2 {
+            margin: 16px 0 0;
+            color: #102a5c;
+            font-size: 24px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .warehouse-help-card p {
+            margin: 8px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        @media (max-width: 980px) {
+            .warehouse-new-hero,
+            .warehouse-new-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .warehouse-help-card {
+                position: static;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .warehouse-new-hero {
+                padding: 22px;
+            }
+
+            .warehouse-new-hero h1 {
+                font-size: 32px;
+            }
+
+            .warehouse-form-actions {
+                flex-direction: column;
+            }
+
+            .warehouse-form-actions .vk-btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
-<div class="wrap">
-    <div class="card">
-        <div class="title">Создать накладную</div>
+<main class="vk-page">
+    <div class="warehouse-new-page">
 
-        <div th:if="${#lists.isEmpty(suppliers)}" class="warn">
-            Нет поставщиков. Сначала добавьте поставщика в разделе «Поставщики».
-        </div>
+        <section class="warehouse-new-hero">
+            <div>
+                <div class="vk-eyebrow">Панель кладовщика</div>
 
-        <form th:action="@{/warehouse/invoices/new}" method="post" th:object="${form}">
-            <input type="hidden" name="openedBuffetId" th:value="${openedBuffetId}"/>
+                <h1>Создание накладной</h1>
 
-            <div class="field">
-                <label>Поставщик</label>
-                <select th:field="*{supplierId}" th:disabled="${#lists.isEmpty(suppliers)}">
-                    <option value="" disabled selected>Выберите поставщика</option>
-                    <option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.name}">S</option>
-                </select>
-                <div class="err" th:if="${#fields.hasErrors('supplierId')}" th:errors="*{supplierId}">error</div>
+                <p>
+                    Выберите поставщика. После создания откроется страница,
+                    где можно добавить товары, количество и срок годности.
+                </p>
+
+                <div class="warehouse-new-tags">
+                    <span class="warehouse-new-tag">Поставщик</span>
+                    <span class="warehouse-new-tag">Позиции поставки</span>
+                    <span class="warehouse-new-tag">Поступление на склад</span>
+                </div>
             </div>
 
-            <div class="actions">
-                <button class="btn btn-primary" type="submit" th:disabled="${#lists.isEmpty(suppliers)}">Создать</button>
-                <a class="btn" th:href="@{/warehouse/invoices}">Назад</a>
-                <a class="btn" th:href="@{/warehouse/suppliers}">Поставщики</a>
-            </div>
+            <div class="warehouse-new-hero-card">
+                <div class="warehouse-new-hero-icon">➕</div>
 
-            <div class="muted">После создания накладной откроется страница добавления позиций.</div>
-        </form>
+                <div class="warehouse-new-hero-title">
+                    Новая накладная
+                </div>
+
+                <div class="warehouse-new-hero-text">
+                    Сначала создаётся документ, затем в него добавляются позиции товаров.
+                </div>
+            </div>
+        </section>
+
+        <section class="warehouse-new-layout">
+
+            <article class="warehouse-new-card">
+                <div class="warehouse-new-card-head">
+                    <h2>Данные накладной</h2>
+
+                    <p>
+                        Укажите поставщика, от которого поступают товары.
+                    </p>
+                </div>
+
+                <form th:action="@{/warehouse/invoices/new}"
+                      method="post"
+                      th:object="${form}"
+                      class="warehouse-new-form">
+
+                    <input th:if="${_csrf != null}"
+                           type="hidden"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}"/>
+
+                    <input type="hidden" name="openedBuffetId" th:value="${openedBuffetId}"/>
+
+                    <div th:if="${#lists.isEmpty(suppliers)}" class="warehouse-warning">
+                        Нет поставщиков. Сначала добавьте поставщика в разделе «Поставщики».
+                    </div>
+
+                    <label class="warehouse-field">
+                        <span>Поставщик</span>
+
+                        <select th:field="*{supplierId}"
+                                th:disabled="${#lists.isEmpty(suppliers)}">
+                            <option value="" disabled selected>
+                                Выберите поставщика
+                            </option>
+
+                            <option th:each="s : ${suppliers}"
+                                    th:value="${s.id}"
+                                    th:text="${s.name}">
+                                Поставщик
+                            </option>
+                        </select>
+
+                        <small class="warehouse-error"
+                               th:if="${#fields.hasErrors('supplierId')}"
+                               th:errors="*{supplierId}">
+                            Ошибка
+                        </small>
+                    </label>
+
+                    <div class="warehouse-form-actions">
+                        <button class="vk-btn"
+                                type="submit"
+                                th:disabled="${#lists.isEmpty(suppliers)}">
+                            Создать накладную
+                        </button>
+
+                        <a class="vk-btn vk-btn-light" th:href="@{/warehouse/invoices}">
+                            Назад
+                        </a>
+
+                        <a class="vk-btn vk-btn-light" th:href="@{/warehouse/suppliers}">
+                            Поставщики
+                        </a>
+                    </div>
+
+                    <div class="warehouse-note">
+                        После создания накладной откроется страница добавления позиций.
+                        Редактировать накладную можно только до отправки продавцу на проверку.
+                    </div>
+                </form>
+            </article>
+
+            <aside class="warehouse-help-card">
+                <div class="warehouse-help-icon">💡</div>
+
+                <h2>Как работает</h2>
+
+                <p>
+                    Накладная создаётся в статусе «Черновик». Затем кладовщик добавляет товары
+                    и отправляет документ продавцу для проверки фактического поступления.
+                </p>
+            </aside>
+
+        </section>
+
     </div>
-</div>
+</main>
 
 <div th:replace="fragments/footer :: footer"></div>
+
 </body>
 </html>

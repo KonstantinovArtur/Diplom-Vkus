@@ -2,56 +2,654 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Заказы</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Продавец · Заказы</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
+    <style>
+        .seller-orders-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .seller-orders-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .seller-orders-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 40px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.04em;
+        }
+
+        .seller-orders-hero p {
+            max-width: 720px;
+            margin: 10px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .seller-orders-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .seller-orders-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .seller-orders-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .seller-orders-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .seller-orders-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+        }
+
+        .seller-orders-hero-text {
+            margin-top: 6px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .seller-orders-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .seller-orders-panel-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .seller-orders-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .seller-orders-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .seller-orders-count {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .seller-orders-filter {
+            display: grid;
+            gap: 10px;
+            padding: 16px 18px;
+            border-bottom: 1px solid #e5ebf5;
+            background: #ffffff;
+        }
+
+        .seller-orders-filter-title {
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .seller-orders-filter-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .seller-orders-filter-btn {
+            min-height: 36px;
+            padding: 7px 13px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .seller-orders-filter-btn:hover {
+            border-color: rgba(22, 47, 101, 0.20);
+            background: #eef4ff;
+            color: #163067;
+        }
+
+        .seller-orders-filter-btn.active {
+            border-color: #f3a21a;
+            background: #fff3da;
+            color: #9a6500;
+            box-shadow: 0 8px 18px rgba(243, 162, 26, 0.12);
+        }
+
+        .seller-orders-list {
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+        }
+
+        .seller-order-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 18px;
+            align-items: center;
+            padding: 18px;
+            border: 1px solid #e2e8f3;
+            border-radius: 24px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.025), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+            box-shadow: 0 8px 22px rgba(15, 35, 85, 0.04);
+            transition: 0.2s ease;
+        }
+
+        .seller-order-card:hover {
+            border-color: rgba(22, 47, 101, 0.18);
+            box-shadow: 0 16px 34px rgba(15, 35, 85, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .seller-order-main {
+            min-width: 0;
+        }
+
+        .seller-order-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .seller-order-title {
+            margin: 0;
+            color: #102a5c;
+            font-size: 22px;
+            font-weight: 950;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+        }
+
+        .seller-order-date {
+            margin-top: 6px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .seller-order-status {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            min-height: 32px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 950;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .seller-order-status.status-created {
+            border: 1px solid #d8e1f0;
+            background: #f8fbff;
+            color: #44557b;
+        }
+
+        .seller-order-status.status-accepted,
+        .seller-order-status.status-assembling {
+            border: 1px solid #f4d294;
+            background: #fff4de;
+            color: #9c6400;
+        }
+
+        .seller-order-status.status-ready {
+            border: 1px solid #b7ceec;
+            background: #eef4ff;
+            color: #163067;
+        }
+
+        .seller-order-status.status-issued {
+            border: 1px solid #bde8c9;
+            background: #e8f8ed;
+            color: #166534;
+        }
+
+        .seller-order-status.status-cancelled {
+            border: 1px solid #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+        }
+
+        .seller-order-status.status-unknown {
+            border: 1px solid #d8e1f0;
+            background: #f8fbff;
+            color: #44557b;
+        }
+
+        .seller-order-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .seller-order-meta-box {
+            min-width: 150px;
+            padding: 12px;
+            border: 1px solid #e2e8f3;
+            border-radius: 18px;
+            background: #f8fbff;
+        }
+
+        .seller-order-meta-label {
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .seller-order-meta-value {
+            margin-top: 4px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+            line-height: 1;
+        }
+
+        .seller-order-actions {
+            display: grid;
+            gap: 10px;
+            min-width: 150px;
+        }
+
+        .seller-orders-empty,
+        .seller-orders-filter-empty {
+            display: grid;
+            place-items: center;
+            min-height: 260px;
+            padding: 36px 22px;
+            text-align: center;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 850;
+        }
+
+        .seller-orders-filter-empty {
+            display: none;
+        }
+
+        .seller-orders-empty-icon,
+        .seller-orders-filter-empty-icon {
+            margin-bottom: 10px;
+            font-size: 42px;
+        }
+
+        .seller-orders-empty-title {
+            margin: 0;
+            color: #102a5c;
+            font-size: 26px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .seller-orders-empty-text {
+            max-width: 520px;
+            margin: 8px auto 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        @media (max-width: 900px) {
+            .seller-orders-hero,
+            .seller-order-card {
+                grid-template-columns: 1fr;
+            }
+
+            .seller-order-actions {
+                min-width: 0;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .seller-orders-hero {
+                padding: 22px;
+            }
+
+            .seller-orders-hero h1 {
+                font-size: 32px;
+            }
+
+            .seller-orders-panel-head {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .seller-order-actions .vk-btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
-<main style="max-width:1000px;margin:18px auto;padding:0 12px;">
-    <h2 style="margin:0 0 12px 0;">Заказы буфета</h2>
+<main class="vk-page">
+    <div class="seller-orders-page">
 
-    <section th:if="${#lists.isEmpty(orders)}"
-             style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
-        Заказов пока нет
-    </section>
-
-    <section th:each="o : ${orders}"
-             style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
+        <section class="seller-orders-hero">
             <div>
-                <div style="font-weight:900;color:#0b1b4d;font-size:18px;">
-                    Заказ № <span th:text="${o.id}">1</span>
-                </div>
+                <div class="vk-eyebrow">Панель продавца</div>
 
-                <div style="color:#6b7280;font-weight:800;font-size:12px;margin-top:4px;">
-                    <span th:text="${#temporals.format(o.createdAt, 'dd.MM.yyyy HH:mm')}">—</span>
-                    • Статус:
-                    <b th:switch="${o.status}">
-                        <span th:case="'created'">Создан</span>
-                        <span th:case="'accepted'">Принят</span>
-                        <span th:case="'assembling'">В сборке</span>
-                        <span th:case="'ready'">Готов к выдаче</span>
-                        <span th:case="'issued'">Выдан</span>
-                        <span th:case="'cancelled'">Отменён</span>
-                        <span th:case="*">—</span>
-                    </b>
-                </div>
+                <h1>Заказы буфета</h1>
 
-                <div style="color:#6b7280;font-weight:800;font-size:12px;margin-top:4px;">
-                    Итого: <b th:text="${#numbers.formatDecimal(o.finalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</b>
+                <p>
+                    Управляйте заказами покупателей: переводите их в сборку, отмечайте готовность,
+                    выдавайте по коду или отменяйте при необходимости.
+                </p>
+
+                <div class="seller-orders-tags">
+                    <span class="seller-orders-tag">Обработка заказов</span>
+                    <span class="seller-orders-tag">Код выдачи</span>
+                    <span class="seller-orders-tag">Фильтр по статусу</span>
                 </div>
             </div>
 
-            <a th:href="@{|/seller/orders/${o.id}|}"
-               style="display:inline-block;border:1px solid #d8deea;background:#fff;color:#0b1b4d;
-                      padding:10px 12px;border-radius:12px;font-weight:900;text-decoration:none;">
-                Открыть
-            </a>
-        </div>
-    </section>
+            <div class="seller-orders-hero-card">
+                <div class="seller-orders-hero-icon">🧾</div>
+
+                <div class="seller-orders-hero-title">
+                    Рабочая очередь
+                </div>
+
+                <div class="seller-orders-hero-text">
+                    Откройте заказ, чтобы посмотреть состав, оплату и доступные действия.
+                </div>
+            </div>
+        </section>
+
+        <section class="seller-orders-panel">
+            <div class="seller-orders-panel-head">
+                <div>
+                    <h2>Список заказов</h2>
+
+                    <p>
+                        Здесь отображаются заказы выбранного буфета.
+                    </p>
+                </div>
+
+                <div class="seller-orders-count">
+                    Показано:
+                    <span id="sellerOrdersVisibleCount" th:text="${#lists.size(orders)}">0</span>
+                </div>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(orders)}" class="seller-orders-filter">
+                <div class="seller-orders-filter-title">
+                    Фильтр по статусу
+                </div>
+
+                <div class="seller-orders-filter-buttons">
+                    <button type="button"
+                            class="seller-orders-filter-btn active"
+                            data-status=""
+                            onclick="filterSellerOrders(this)">
+                        Все
+                    </button>
+
+                    <button type="button"
+                            class="seller-orders-filter-btn"
+                            data-status="created"
+                            onclick="filterSellerOrders(this)">
+                        Создан
+                    </button>
+
+                    <button type="button"
+                            class="seller-orders-filter-btn"
+                            data-status="accepted"
+                            onclick="filterSellerOrders(this)">
+                        Принят
+                    </button>
+
+                    <button type="button"
+                            class="seller-orders-filter-btn"
+                            data-status="assembling"
+                            onclick="filterSellerOrders(this)">
+                        В сборке
+                    </button>
+
+                    <button type="button"
+                            class="seller-orders-filter-btn"
+                            data-status="ready"
+                            onclick="filterSellerOrders(this)">
+                        Готов к выдаче
+                    </button>
+
+                    <button type="button"
+                            class="seller-orders-filter-btn"
+                            data-status="issued"
+                            onclick="filterSellerOrders(this)">
+                        Выдан
+                    </button>
+
+                    <button type="button"
+                            class="seller-orders-filter-btn"
+                            data-status="cancelled"
+                            onclick="filterSellerOrders(this)">
+                        Отменён
+                    </button>
+                </div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(orders)}" class="seller-orders-empty">
+                <div>
+                    <div class="seller-orders-empty-icon">📭</div>
+
+                    <h3 class="seller-orders-empty-title">
+                        Заказов пока нет
+                    </h3>
+
+                    <div class="seller-orders-empty-text">
+                        Когда покупатели оформят заказы, они появятся на этой странице.
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(orders)}" class="seller-orders-list">
+                <article th:each="o : ${orders}"
+                         class="seller-order-card"
+                         th:attr="data-status=${o.status}">
+                    <div class="seller-order-main">
+                        <div class="seller-order-top">
+                            <div>
+                                <h3 class="seller-order-title">
+                                    Заказ № <span th:text="${o.id}">1</span>
+                                </h3>
+
+                                <div class="seller-order-date">
+                                    <span th:text="${#temporals.format(o.createdAt, 'dd.MM.yyyy HH:mm')}">—</span>
+                                </div>
+                            </div>
+
+                            <span class="seller-order-status"
+                                  th:classappend="${o.status != null ? ' status-' + o.status : ' status-unknown'}"
+                                  th:switch="${o.status}">
+                                <span th:case="'created'">Создан</span>
+                                <span th:case="'accepted'">Принят</span>
+                                <span th:case="'assembling'">В сборке</span>
+                                <span th:case="'ready'">Готов к выдаче</span>
+                                <span th:case="'issued'">Выдан</span>
+                                <span th:case="'cancelled'">Отменён</span>
+                                <span th:case="*">Неизвестный статус</span>
+                            </span>
+                        </div>
+
+                        <div class="seller-order-meta">
+                            <div class="seller-order-meta-box">
+                                <div class="seller-order-meta-label">
+                                    Сумма
+                                </div>
+
+                                <div class="seller-order-meta-value">
+                                    <span th:text="${#numbers.formatDecimal(o.finalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</span> ₽
+                                </div>
+                            </div>
+
+                            <div class="seller-order-meta-box">
+                                <div class="seller-order-meta-label">
+                                    Статус
+                                </div>
+
+                                <div class="seller-order-meta-value" th:switch="${o.status}">
+                                    <span th:case="'created'">Создан</span>
+                                    <span th:case="'accepted'">Принят</span>
+                                    <span th:case="'assembling'">В сборке</span>
+                                    <span th:case="'ready'">Готов</span>
+                                    <span th:case="'issued'">Выдан</span>
+                                    <span th:case="'cancelled'">Отменён</span>
+                                    <span th:case="*">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="seller-order-actions">
+                        <a th:href="@{|/seller/orders/${o.id}|}"
+                           class="vk-btn">
+                            Открыть заказ
+                        </a>
+                    </div>
+                </article>
+            </div>
+
+            <div id="sellerOrdersFilterEmpty" class="seller-orders-filter-empty">
+                <div>
+                    <div class="seller-orders-filter-empty-icon">🔎</div>
+                    По выбранному статусу заказов нет.
+                </div>
+            </div>
+        </section>
+
+    </div>
 </main>
 
 <div th:replace="fragments/footer :: footer"></div>
+
+<script>
+    function filterSellerOrders(button) {
+        const status = button.dataset.status || '';
+
+        document.querySelectorAll('.seller-orders-filter-btn').forEach(function (btn) {
+            btn.classList.remove('active');
+        });
+
+        button.classList.add('active');
+
+        let visibleCount = 0;
+
+        document.querySelectorAll('.seller-order-card[data-status]').forEach(function (card) {
+            const cardStatus = card.dataset.status || '';
+            const shouldShow = status === '' || cardStatus === status;
+
+            card.style.display = shouldShow ? '' : 'none';
+
+            if (shouldShow) {
+                visibleCount++;
+            }
+        });
+
+        const countEl = document.getElementById('sellerOrdersVisibleCount');
+
+        if (countEl) {
+            countEl.textContent = visibleCount;
+        }
+
+        const emptyEl = document.getElementById('sellerOrdersFilterEmpty');
+
+        if (emptyEl) {
+            emptyEl.style.display = visibleCount === 0 ? 'grid' : 'none';
+        }
+    }
+</script>
+
 </body>
 </html>

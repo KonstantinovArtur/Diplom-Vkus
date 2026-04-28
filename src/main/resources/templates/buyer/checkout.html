@@ -4,34 +4,407 @@
     <meta charset="UTF-8"/>
     <title>Оформление заказа</title>
     <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
+    <style>
+        .checkout-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .checkout-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .checkout-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 40px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.04em;
+        }
+
+        .checkout-hero p {
+            max-width: 720px;
+            margin: 10px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .checkout-mini-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .checkout-mini-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .checkout-mini-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+        }
+
+        .checkout-mini-text {
+            margin-top: 6px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .checkout-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 340px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .checkout-card {
+            padding: 24px;
+            border: 1px solid #d8e1f0;
+            border-radius: 26px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .checkout-card h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .checkout-card p {
+            margin: 8px 0 0;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .checkout-warning {
+            display: grid;
+            grid-template-columns: 48px minmax(0, 1fr);
+            gap: 14px;
+            margin-top: 18px;
+            padding: 16px;
+            border: 1px solid #f4d294;
+            border-radius: 20px;
+            background: #fff4de;
+        }
+
+        .checkout-warning-icon {
+            display: grid;
+            place-items: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #9c6400;
+            font-size: 24px;
+            font-weight: 950;
+        }
+
+        .checkout-warning-title {
+            color: #9c6400;
+            font-size: 15px;
+            font-weight: 950;
+        }
+
+        .checkout-warning-text {
+            margin-top: 4px;
+            color: #5f4a22;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.4;
+        }
+
+        .checkout-steps {
+            display: grid;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .checkout-step {
+            display: grid;
+            grid-template-columns: 38px minmax(0, 1fr);
+            gap: 12px;
+            padding: 14px;
+            border: 1px solid #e2e8f3;
+            border-radius: 18px;
+            background: #f8fbff;
+        }
+
+        .checkout-step-number {
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 14px;
+            background: #e8eef8;
+            color: #163067;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .checkout-step-title {
+            color: #102a5c;
+            font-size: 15px;
+            font-weight: 950;
+        }
+
+        .checkout-step-text {
+            margin-top: 3px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .checkout-side {
+            position: sticky;
+            top: 18px;
+            display: grid;
+            gap: 14px;
+            padding: 22px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 26px;
+            background:
+                    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 254, 0.98));
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.07);
+        }
+
+        .checkout-side-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .checkout-side h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 26px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .checkout-side p {
+            margin: -5px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .checkout-actions {
+            display: grid;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .checkout-actions form {
+            margin: 0;
+        }
+
+        .checkout-actions button,
+        .checkout-actions a {
+            width: 100%;
+        }
+
+        @media (max-width: 980px) {
+            .checkout-hero,
+            .checkout-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .checkout-side {
+                position: static;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .checkout-hero {
+                padding: 22px;
+            }
+
+            .checkout-hero h1 {
+                font-size: 32px;
+            }
+
+            .checkout-warning {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
-<main class="vk-page vk-page-narrow">
-    <section class="vk-hero">
-        <h1>Оформление заказа</h1>
-        <p>Подтвердите заказ. После подтверждения товары сразу спишутся со склада.</p>
-    </section>
+<main class="vk-page">
+    <div class="checkout-page">
 
-    <section class="vk-card vk-card-pad" style="margin-top:18px;">
-        <div class="vk-alert vk-alert-warning">
-            Товары будут <b>сразу списаны со склада</b>. Перед подтверждением проверьте корзину.
-        </div>
+        <section class="checkout-hero">
+            <div>
+                <div class="vk-eyebrow">Оформление заказа</div>
 
-        <form th:action="@{/orders/checkout}" method="post" class="vk-actions">
-            <input type="hidden" name="checkoutBuffetId" th:value="${checkoutBuffetId}"/>
+                <h1>Подтвердите заказ</h1>
 
-            <button class="vk-btn" type="submit">
-                Подтвердить заказ
-            </button>
+                <p>
+                    После подтверждения заказ будет создан, товары зарезервируются и сразу спишутся со склада.
+                </p>
+            </div>
 
-            <a class="vk-btn vk-btn-secondary" th:href="@{/cart}">
-                Вернуться в корзину
-            </a>
-        </form>
-    </section>
+            <div class="checkout-mini-card">
+                <div class="checkout-mini-icon">✅</div>
+
+                <div class="checkout-mini-title">
+                    Финальный шаг
+                </div>
+
+                <div class="checkout-mini-text">
+                    Проверьте корзину перед подтверждением. После оформления заказ попадёт продавцу.
+                </div>
+            </div>
+        </section>
+
+        <section class="checkout-layout">
+
+            <article class="checkout-card">
+                <h2>Что произойдёт после подтверждения</h2>
+
+                <p>
+                    Система создаст заказ, зафиксирует состав корзины и передаст заказ продавцу для дальнейшей обработки.
+                </p>
+
+                <div class="checkout-warning">
+                    <div class="checkout-warning-icon">!</div>
+
+                    <div>
+                        <div class="checkout-warning-title">
+                            Важно
+                        </div>
+
+                        <div class="checkout-warning-text">
+                            Товары будут <b>сразу списаны со склада</b>. Перед подтверждением проверьте количество товаров и состав комбо в корзине.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checkout-steps">
+                    <div class="checkout-step">
+                        <div class="checkout-step-number">1</div>
+
+                        <div>
+                            <div class="checkout-step-title">
+                                Проверка корзины
+                            </div>
+
+                            <div class="checkout-step-text">
+                                Убедитесь, что все товары и комбо-наборы выбраны правильно.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkout-step">
+                        <div class="checkout-step-number">2</div>
+
+                        <div>
+                            <div class="checkout-step-title">
+                                Создание заказа
+                            </div>
+
+                            <div class="checkout-step-text">
+                                После подтверждения заказ появится в разделе «Мои заказы».
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkout-step">
+                        <div class="checkout-step-number">3</div>
+
+                        <div>
+                            <div class="checkout-step-title">
+                                Получение кода выдачи
+                            </div>
+
+                            <div class="checkout-step-text">
+                                Используйте код заказа при получении в буфете.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <aside class="checkout-side">
+                <div class="checkout-side-icon">🧾</div>
+
+                <h2>Подтверждение</h2>
+
+                <p>
+                    Нажмите кнопку ниже, если заказ готов к оформлению.
+                </p>
+
+                <div class="checkout-actions">
+                    <form th:action="@{/orders/checkout}" method="post">
+                        <input th:if="${_csrf != null}"
+                               type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}"/>
+
+                        <input type="hidden" name="checkoutBuffetId" th:value="${checkoutBuffetId}"/>
+
+                        <button class="vk-btn" type="submit">
+                            Подтвердить заказ
+                        </button>
+                    </form>
+
+                    <a class="vk-btn vk-btn-light" th:href="@{/cart}">
+                        Вернуться в корзину
+                    </a>
+
+                    <a class="vk-btn vk-btn-light" th:href="@{/menu}">
+                        Продолжить покупки
+                    </a>
+                </div>
+            </aside>
+
+        </section>
+
+    </div>
 </main>
 
 <div th:replace="fragments/footer :: footer"></div>

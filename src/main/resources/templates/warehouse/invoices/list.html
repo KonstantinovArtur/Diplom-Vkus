@@ -2,59 +2,401 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Накладные</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Кладовщик · Накладные</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
     <style>
-        .wrap { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
-        .card { background:#fff; border:1px solid #e6e9ef; border-radius:16px; padding:16px; box-shadow:0 8px 24px rgba(10,20,60,.06); }
-        table { width:100%; border-collapse: collapse; }
-        th, td { padding:10px 8px; border-bottom:1px solid #eef1f6; text-align:left; }
-        th { font-weight:900; color:#0b1b4d; }
-        .top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
-        .title { font-size:20px; font-weight:900; color:#0b1b4d; }
-        .btn { display:inline-block; padding:8px 12px; border-radius:12px; border:1px solid #d8deea; background:#fff; font-weight:800; cursor:pointer; text-decoration:none; color:#0b1b4d; }
-        .btn-primary { background:#1d3b8b; color:#fff; border-color:#1d3b8b; }
-        .muted { color:#6b7280; font-size:13px; }
+        .warehouse-invoices-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .warehouse-invoices-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .warehouse-invoices-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 40px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.04em;
+        }
+
+        .warehouse-invoices-hero p {
+            max-width: 720px;
+            margin: 10px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .warehouse-invoices-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .warehouse-invoices-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .warehouse-invoices-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .warehouse-invoices-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .warehouse-invoices-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+        }
+
+        .warehouse-invoices-hero-text {
+            margin-top: 6px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .warehouse-invoices-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .warehouse-invoices-panel-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .warehouse-invoices-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .warehouse-invoices-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .warehouse-invoices-count {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .warehouse-invoices-actions {
+            padding: 16px 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background: #ffffff;
+        }
+
+        .warehouse-invoices-table-wrap {
+            overflow-x: auto;
+        }
+
+        .warehouse-invoices-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .warehouse-invoices-table th {
+            padding: 14px 18px;
+            border-bottom: 1px solid #e5ebf5;
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .warehouse-invoices-table td {
+            padding: 16px 18px;
+            border-bottom: 1px solid #edf1f7;
+            vertical-align: middle;
+        }
+
+        .warehouse-invoices-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .invoice-id {
+            color: #102a5c;
+            font-size: 16px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .invoice-supplier {
+            color: #102a5c;
+            font-size: 16px;
+            font-weight: 950;
+            line-height: 1.2;
+        }
+
+        .invoice-muted {
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .warehouse-empty {
+            padding: 42px 22px;
+            text-align: center;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 850;
+        }
+
+        .warehouse-empty-icon {
+            margin-bottom: 10px;
+            font-size: 42px;
+        }
+
+        .warehouse-empty-title {
+            margin: 0;
+            color: #102a5c;
+            font-size: 26px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .warehouse-empty-text {
+            max-width: 520px;
+            margin: 8px auto 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        @media (max-width: 900px) {
+            .warehouse-invoices-hero {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .warehouse-invoices-hero {
+                padding: 22px;
+            }
+
+            .warehouse-invoices-hero h1 {
+                font-size: 32px;
+            }
+
+            .warehouse-invoices-panel-head {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .warehouse-invoices-actions .vk-btn {
+                width: 100%;
+            }
+
+            .warehouse-invoices-table th,
+            .warehouse-invoices-table td {
+                padding: 13px 14px;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
-<div class="wrap">
-    <div class="card">
-        <div class="top">
-            <div class="title">Склад · Накладные</div>
-            <a class="btn btn-primary" th:href="@{/warehouse/invoices/new}">+ Создать накладную</a>
-        </div>
+<main class="vk-page">
+    <div class="warehouse-invoices-page">
 
-        <table>
-            <thead>
-            <tr>
-                <th style="width:80px;">ID</th>
-                <th style="width:170px;">Дата</th>
-                <th>Поставщик</th>
-                <th style="width:220px;">Номер</th>
-                <th style="width:140px;">Действия</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="i : ${invoices}">
-                <td th:text="${i.id}">1</td>
-                <td th:text="${i.invoiceDate}">2026-01-01</td>
-                <td th:text="${i.supplier.name}">Поставщик</td>
-                <td th:text="${i.invoiceNumber}">A-123</td>
-                <td>
-                    <a class="btn" th:href="@{/warehouse/invoices/{id}(id=${i.id})}">Открыть</a>
-                </td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(invoices)}">
-                <td colspan="5" class="muted">Накладных пока нет. Создай первую.</td>
-            </tr>
-            </tbody>
-        </table>
+        <section class="warehouse-invoices-hero">
+            <div>
+                <div class="vk-eyebrow">Панель кладовщика</div>
+
+                <h1>Складские накладные</h1>
+
+                <p>
+                    Создавайте накладные, добавляйте позиции поставки, отправляйте их продавцу
+                    на проверку и проводите поступление товаров на склад.
+                </p>
+
+                <div class="warehouse-invoices-tags">
+                    <span class="warehouse-invoices-tag">Поступление товаров</span>
+                    <span class="warehouse-invoices-tag">Проверка продавцом</span>
+                    <span class="warehouse-invoices-tag">Пополнение склада</span>
+                </div>
+            </div>
+
+            <div class="warehouse-invoices-hero-card">
+                <div class="warehouse-invoices-hero-icon">📄</div>
+
+                <div class="warehouse-invoices-hero-title">
+                    Накладные
+                </div>
+
+                <div class="warehouse-invoices-hero-text">
+                    После проведения накладной товары появляются на складе отдельными партиями.
+                </div>
+            </div>
+        </section>
+
+        <section class="warehouse-invoices-panel">
+            <div class="warehouse-invoices-panel-head">
+                <div>
+                    <h2>Список накладных</h2>
+
+                    <p>
+                        Все созданные складские накладные по выбранному буфету.
+                    </p>
+                </div>
+
+                <div class="warehouse-invoices-count">
+                    Всего: <span th:text="${#lists.size(invoices)}">0</span>
+                </div>
+            </div>
+
+            <div class="warehouse-invoices-actions">
+                <a class="vk-btn" th:href="@{/warehouse/invoices/new}">
+                    + Создать накладную
+                </a>
+            </div>
+
+            <div class="warehouse-invoices-table-wrap">
+                <table class="warehouse-invoices-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Дата</th>
+                        <th>Поставщик</th>
+                        <th>Номер</th>
+                        <th>Действие</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="i : ${invoices}">
+                        <td>
+                            <div class="invoice-id">
+                                #<span th:text="${i.id}">1</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="invoice-muted" th:text="${i.invoiceDate}">
+                                2026-01-01
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="invoice-supplier" th:text="${i.supplier.name}">
+                                Поставщик
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="invoice-muted" th:text="${i.invoiceNumber}">
+                                A-123
+                            </div>
+                        </td>
+
+                        <td>
+                            <a class="vk-btn vk-btn-light"
+                               th:href="@{/warehouse/invoices/{id}(id=${i.id})}">
+                                Открыть
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(invoices)}">
+                        <td colspan="5">
+                            <div class="warehouse-empty">
+                                <div class="warehouse-empty-icon">📭</div>
+
+                                <h3 class="warehouse-empty-title">
+                                    Накладных пока нет
+                                </h3>
+
+                                <div class="warehouse-empty-text">
+                                    Создайте первую накладную, чтобы оформить поступление товаров от поставщика.
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </div>
-</div>
+</main>
 
 <div th:replace="fragments/footer :: footer"></div>
+
 </body>
 </html>

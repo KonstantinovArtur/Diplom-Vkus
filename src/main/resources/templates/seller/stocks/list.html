@@ -1,152 +1,631 @@
 <!doctype html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
-    <title>Остатки</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Продавец · Остатки</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
     <style>
-        textarea::placeholder {
-            color: #9ca3af;      /* серый */
+        .seller-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .seller-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .seller-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 40px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.04em;
+        }
+
+        .seller-hero p {
+            max-width: 720px;
+            margin: 10px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .seller-hero-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .seller-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .seller-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .seller-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .seller-hero-card-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+        }
+
+        .seller-hero-card-text {
+            margin-top: 6px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .seller-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 0.85fr) 500px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .seller-panel {
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+            overflow: hidden;
+        }
+
+        .seller-panel-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .seller-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .seller-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .seller-count-pill {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .seller-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 16px 22px;
+            border-bottom: 1px solid #e5ebf5;
+        }
+
+        .seller-search {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .seller-search:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .seller-search::placeholder {
+            color: rgba(106, 123, 160, 0.55);
             font-weight: 700;
         }
-    </style>
 
+        .seller-table-wrap {
+            overflow-x: auto;
+        }
+
+        .seller-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .seller-table th {
+            padding: 14px 18px;
+            border-bottom: 1px solid #e5ebf5;
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .seller-table th:nth-child(2),
+        .seller-table th:nth-child(3) {
+            text-align: right;
+        }
+
+        .seller-table td {
+            padding: 16px 18px;
+            border-bottom: 1px solid #edf1f7;
+            vertical-align: middle;
+        }
+
+        .seller-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .seller-product-name {
+            color: #102a5c;
+            font-size: 16px;
+            font-weight: 950;
+            line-height: 1.15;
+        }
+
+        .seller-product-meta {
+            margin-top: 5px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .seller-price,
+        .seller-qty {
+            color: #102a5c;
+            font-size: 16px;
+            font-weight: 950;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .seller-status {
+            display: inline-flex;
+            align-items: center;
+            min-height: 32px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .seller-status.ok {
+            border: 1px solid #bde8c9;
+            background: #e8f8ed;
+            color: #166534;
+        }
+
+        .seller-status.empty {
+            border: 1px solid #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+        }
+
+        .seller-empty {
+            padding: 36px 22px;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 850;
+            text-align: center;
+        }
+
+        .seller-request-panel {
+            position: sticky;
+            top: 18px;
+        }
+
+        .seller-form {
+            display: grid;
+            gap: 14px;
+            padding: 22px;
+        }
+
+        .seller-msg {
+            padding: 14px 15px;
+            border: 1px solid #bde8c9;
+            border-radius: 18px;
+            background: #e8f8ed;
+            color: #166534;
+            font-size: 14px;
+            font-weight: 850;
+            line-height: 1.4;
+        }
+
+        .seller-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .seller-field span {
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .seller-field input,
+        .seller-field select,
+        .seller-field textarea {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .seller-field textarea {
+            min-height: 250px;
+            padding: 13px 14px;
+            resize: vertical;
+            color: #13294b;
+            line-height: 1.45;
+        }
+
+        .seller-field input:focus,
+        .seller-field select:focus,
+        .seller-field textarea:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .seller-field input::placeholder,
+        .seller-field select::placeholder,
+        .seller-field textarea::placeholder {
+            color: rgba(106, 123, 160, 0.55);
+            font-weight: 700;
+        }
+
+        .seller-field textarea::-webkit-input-placeholder {
+            color: rgba(106, 123, 160, 0.55);
+            font-weight: 700;
+        }
+
+        .seller-field textarea::-moz-placeholder {
+            color: rgba(106, 123, 160, 0.55);
+            font-weight: 700;
+            opacity: 1;
+        }
+
+        .seller-error {
+            color: #a2352a;
+            font-size: 12px;
+            font-weight: 850;
+        }
+
+        .seller-form-note {
+            padding: 14px;
+            border: 1px solid #f4d294;
+            border-radius: 18px;
+            background: #fff4de;
+            color: #8a5a00;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 1180px) {
+            .seller-layout {
+                grid-template-columns: minmax(0, 1fr) 440px;
+            }
+        }
+
+        @media (max-width: 1080px) {
+            .seller-hero,
+            .seller-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .seller-request-panel {
+                position: static;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .seller-hero {
+                padding: 22px;
+            }
+
+            .seller-hero h1 {
+                font-size: 32px;
+            }
+
+            .seller-panel-head,
+            .seller-toolbar {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .seller-table th,
+            .seller-table td {
+                padding: 13px 14px;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
-<main style="max-width:1100px;margin:18px auto;padding:0 12px;">
-    <h2 style="margin:0 0 12px 0;">Продавец · Остатки</h2>
+<main class="vk-page">
+    <div class="seller-page">
 
-    <div style="display:grid;grid-template-columns: 1.6fr 1fr;gap:14px;align-items:start;">
+        <section class="seller-hero">
+            <div>
+                <div class="vk-eyebrow">Панель продавца</div>
 
-        <!-- Таблица -->
-        <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
-                <div>
-                    <strong>Список товаров</strong>
-                    <div style="margin-top:6px;color:#6b7280;font-weight:700;">
-                        Буфет ID: <span th:text="${buffetId}">-</span>
+                <h1>Остатки товаров и запрос складу</h1>
+
+                <p>
+                    Просматривайте наличие товаров в выбранном буфете и отправляйте запросы сотрудникам склада.
+                </p>
+
+                <div class="seller-hero-tags">
+                    <span class="seller-tag">Остатки</span>
+                    <span class="seller-tag">Контроль наличия</span>
+                    <span class="seller-tag">Запрос складу</span>
+                </div>
+            </div>
+
+            <div class="seller-hero-card">
+                <div class="seller-hero-icon">📦</div>
+
+                <div class="seller-hero-card-title">
+                    Текущий буфет
+                </div>
+
+                <div class="seller-hero-card-text">
+                    ID буфета:
+                    <strong th:text="${buffetId}">-</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="seller-layout">
+
+            <section class="seller-panel">
+                <div class="seller-panel-head">
+                    <div>
+                        <h2>Список товаров</h2>
+
+                        <p>
+                            Актуальные остатки и цены товаров для выбранного буфета.
+                        </p>
+                    </div>
+
+                    <div class="seller-count-pill">
+                        Всего: <span th:text="${#lists.size(rows)}">0</span>
                     </div>
                 </div>
 
-                <input id="q"
-                       placeholder="Поиск по названию..."
-                       style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;min-width:260px;"
-                       onkeyup="filterRows()" />
-            </div>
+                <div class="seller-toolbar">
+                    <input id="q"
+                           class="seller-search"
+                           placeholder="Поиск по названию..."
+                           onkeyup="filterRows()"/>
+                </div>
 
-            <table style="width:100%;border-collapse:collapse;">
-                <thead>
-                <tr style="text-align:left;border-bottom:1px solid #e6e9ef;">
-                    <th style="padding:10px 8px;">Товар</th>
-                    <th style="padding:10px 8px;text-align:right;">Цена</th>
-                    <th style="padding:10px 8px;text-align:right;">Остаток</th>
-                    <th style="padding:10px 8px;width:130px;">Статус</th>
-                </tr>
-                </thead>
+                <div class="seller-table-wrap">
+                    <table class="seller-table">
+                        <thead>
+                        <tr>
+                            <th>Товар</th>
+                            <th>Цена</th>
+                            <th>Остаток</th>
+                            <th>Статус</th>
+                        </tr>
+                        </thead>
 
-                <tbody id="tbody">
-                <tr th:each="r : ${rows}" style="border-bottom:1px solid #f0f2f7;">
-                    <td style="padding:10px 8px;">
-                        <div style="font-weight:800;" th:text="${r.name()}">Название</div>
-                        <div style="color:#6b7280;font-weight:700;margin-top:4px;">
-                            ID: <span th:text="${r.productId()}">0</span>
-                        </div>
-                    </td>
+                        <tbody id="tbody">
+                        <tr th:each="r : ${rows}">
+                            <td data-name>
+                                <div class="seller-product-name" th:text="${r.name()}">
+                                    Название
+                                </div>
 
-                    <td style="padding:10px 8px;text-align:right;"
-                        th:text="${#numbers.formatDecimal(r.basePrice(), 1, 'COMMA', 2, 'POINT')}">
-                        0.00
-                    </td>
+                                <div class="seller-product-meta">
+                                    ID:
+                                    <span th:text="${r.productId()}">0</span>
+                                </div>
+                            </td>
 
-                    <td style="padding:10px 8px;text-align:right;" th:text="${r.qty()}">0</td>
+                            <td>
+                                <div class="seller-price"
+                                     th:text="${#numbers.formatDecimal(r.basePrice(), 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                                    0.00 ₽
+                                </div>
+                            </td>
 
-                    <td style="padding:10px 8px;">
-                        <span th:if="${r.qty() > 0}"
-                              style="font-weight:900;color:#0b1b4d;">
-                            В наличии
-                        </span>
-                        <span th:if="${r.qty() == 0}"
-                              style="font-weight:900;color:#7a0b0b;">
-                            Нет
-                        </span>
-                    </td>
-                </tr>
+                            <td>
+                                <div class="seller-qty" th:text="${r.qty()}">
+                                    0
+                                </div>
+                            </td>
 
-                <tr th:if="${#lists.isEmpty(rows)}">
-                    <td colspan="4" style="padding:12px 8px;color:#6b7280;">
-                        Пока нет товаров.
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+                            <td>
+                                <span th:if="${r.qty() > 0}" class="seller-status ok">
+                                    В наличии
+                                </span>
+
+                                <span th:if="${r.qty() == 0}" class="seller-status empty">
+                                    Нет в наличии
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(rows)}">
+                            <td colspan="4">
+                                <div class="seller-empty">
+                                    Пока нет товаров.
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <aside class="seller-panel seller-request-panel">
+                <div class="seller-panel-head">
+                    <div>
+                        <h2>Запрос складу</h2>
+
+                        <p>
+                            Отправьте письмо сотруднику склада о необходимости пополнения товаров.
+                        </p>
+                    </div>
+                </div>
+
+                <form th:action="@{/seller/stocks/request-warehouse}"
+                      method="post"
+                      th:object="${warehouseMailForm}"
+                      class="seller-form">
+
+                    <input th:if="${_csrf != null}"
+                           type="hidden"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}"/>
+
+                    <div th:if="${msg}" class="seller-msg" th:text="${msg}">
+                        Сообщение
+                    </div>
+
+                    <label class="seller-field">
+                        <span>Сотрудник склада</span>
+
+                        <select th:field="*{warehouseUserId}">
+                            <option value="" disabled selected>Выберите сотрудника</option>
+
+                            <option th:each="u : ${warehouseUsers}"
+                                    th:value="${u.id()}"
+                                    th:text="${u.label()}">
+                                Сотрудник
+                            </option>
+                        </select>
+
+                        <small th:if="${#fields.hasErrors('warehouseUserId')}"
+                               th:errors="*{warehouseUserId}"
+                               class="seller-error">
+                        </small>
+                    </label>
+
+                    <label class="seller-field">
+                        <span>Тема</span>
+
+                        <input th:field="*{subject}"
+                               placeholder="Например: Пополнение товаров"/>
+
+                        <small th:if="${#fields.hasErrors('subject')}"
+                               th:errors="*{subject}"
+                               class="seller-error">
+                        </small>
+                    </label>
+
+                    <label class="seller-field">
+                        <span>Текст письма</span>
+
+                        <textarea th:field="*{body}"
+                                  rows="8"
+                                  th:placeholder="|Здравствуйте!
+
+Прошу закупить и доставить товары для буфета.
+Например:
+Багет — 20 шт.
+Кофе — 30 шт.
+
+Спасибо!|"></textarea>
+
+                        <small th:if="${#fields.hasErrors('body')}"
+                               th:errors="*{body}"
+                               class="seller-error">
+                        </small>
+                    </label>
+
+                    <div class="seller-form-note">
+                        Укажите товары и количество. Сообщение будет отправлено выбранному сотруднику склада.
+                    </div>
+
+                    <button type="submit" class="vk-btn">
+                        Отправить на склад
+                    </button>
+                </form>
+            </aside>
+
         </section>
-
-        <!-- Инфо -->
-        <!-- ПРАВАЯ КАРТОЧКА: запрос складу -->
-        <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
-            <strong>Запрос складу</strong>
-
-            <div th:if="${msg}"
-                 style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;background:#eef2ff;margin-top:10px;margin-bottom:10px;"
-                 th:text="${msg}">
-                Сообщение
-            </div>
-
-            <form th:action="@{/seller/stocks/request-warehouse}"
-                  method="post"
-                  th:object="${warehouseMailForm}"
-                  style="margin-top:10px;display:grid;gap:10px;">
-
-                <input th:if="${_csrf != null}" type="hidden"
-                       th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-                <label style="display:grid;gap:6px;">
-                    <span style="font-weight:800;">Сотрудник склада</span>
-                    <select th:field="*{warehouseUserId}"
-                            style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;background:#fff;">
-                        <option value="" disabled selected>Выберите сотрудника</option>
-                        <option th:each="u : ${warehouseUsers}"
-                                th:value="${u.id()}"
-                                th:text="${u.label()}">
-                            Сотрудник
-                        </option>
-                    </select>
-                    <small th:if="${#fields.hasErrors('warehouseUserId')}"
-                           th:errors="*{warehouseUserId}" style="color:#b42318;font-weight:700;"></small>
-                </label>
-
-                <label style="display:grid;gap:6px;">
-                    <span style="font-weight:800;">Тема</span>
-                    <input th:field="*{subject}"
-                           style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;" />
-                    <small th:if="${#fields.hasErrors('subject')}"
-                           th:errors="*{subject}" style="color:#b42318;font-weight:700;"></small>
-                </label>
-
-                <label style="display:grid;gap:6px;">
-                    <span style="font-weight:800;">Текст письма</span>
-                    <textarea name="body" rows="8"
-                              th:placeholder="|Здравствуйте!
-
-Прошу закупить и доставить товары для буфета (Название буфета).
-Перечисление товаров(Багет 20шт.)
-
-Спасибо!|"
-                              style="padding:10px 12px;border:1px solid #d8deea;border-radius:12px;resize:vertical;"></textarea>
-
-                    <small th:if="${#fields.hasErrors('body')}"
-                           th:errors="*{body}" style="color:#b42318;font-weight:700;"></small>
-                </label>
-
-                <button type="submit"
-                        style="border:0;background:#1d3b8b;color:#fff;padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;">
-                    Отправить на склад
-                </button>
-            </form>
-        </section>
-
 
     </div>
 </main>
@@ -155,10 +634,23 @@
 
 <script>
     function filterRows() {
-        const q = document.getElementById('q').value.toLowerCase();
-        document.querySelectorAll('#tbody tr').forEach(tr => {
-            const name = tr.children[0].innerText.toLowerCase();
-            tr.style.display = name.includes(q) ? '' : 'none';
+        const input = document.getElementById('q');
+
+        if (!input) {
+            return;
+        }
+
+        const q = input.value.toLowerCase().trim();
+
+        document.querySelectorAll('#tbody tr').forEach(function (tr) {
+            const nameCell = tr.querySelector('[data-name]');
+
+            if (!nameCell) {
+                return;
+            }
+
+            const text = nameCell.innerText.toLowerCase();
+            tr.style.display = text.includes(q) ? '' : 'none';
         });
     }
 </script>

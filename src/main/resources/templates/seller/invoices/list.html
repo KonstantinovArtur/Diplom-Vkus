@@ -2,77 +2,414 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Продавец · Накладные</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
+    <style>
+        .seller-invoices-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .seller-invoices-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .seller-invoices-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 40px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.04em;
+        }
+
+        .seller-invoices-hero p {
+            max-width: 720px;
+            margin: 10px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .seller-invoices-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .seller-invoices-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .seller-invoices-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .seller-invoices-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 26px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .seller-invoices-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+        }
+
+        .seller-invoices-hero-text {
+            margin-top: 6px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .seller-invoices-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .seller-invoices-panel-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .seller-invoices-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .seller-invoices-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .seller-invoices-count {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .seller-invoices-table-wrap {
+            overflow-x: auto;
+        }
+
+        .seller-invoices-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .seller-invoices-table th {
+            padding: 14px 18px;
+            border-bottom: 1px solid #e5ebf5;
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .seller-invoices-table td {
+            padding: 16px 18px;
+            border-bottom: 1px solid #edf1f7;
+            vertical-align: middle;
+        }
+
+        .seller-invoices-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .invoice-id {
+            color: #102a5c;
+            font-size: 16px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .invoice-supplier {
+            color: #102a5c;
+            font-size: 16px;
+            font-weight: 950;
+            line-height: 1.2;
+        }
+
+        .invoice-muted {
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .invoice-status {
+            display: inline-flex;
+            align-items: center;
+            min-height: 32px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .invoice-status.ready {
+            border: 1px solid #f4d294;
+            background: #fff4de;
+            color: #9c6400;
+        }
+
+        .invoice-status.checked {
+            border: 1px solid #b7ceec;
+            background: #eef4ff;
+            color: #163067;
+        }
+
+        .invoice-status.posted {
+            border: 1px solid #bde8c9;
+            background: #e8f8ed;
+            color: #166534;
+        }
+
+        .invoice-status.unknown {
+            border: 1px solid #d8e1f0;
+            background: #f8fbff;
+            color: #44557b;
+        }
+
+        .seller-invoices-empty {
+            padding: 42px 22px;
+            text-align: center;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 850;
+        }
+
+        .seller-invoices-empty-icon {
+            margin-bottom: 10px;
+            font-size: 38px;
+        }
+
+        @media (max-width: 900px) {
+            .seller-invoices-hero {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .seller-invoices-hero {
+                padding: 22px;
+            }
+
+            .seller-invoices-hero h1 {
+                font-size: 32px;
+            }
+
+            .seller-invoices-panel-head {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .seller-invoices-table th,
+            .seller-invoices-table td {
+                padding: 13px 14px;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div th:replace="fragments/header :: header"></div>
 
-<main style="max-width:1100px;margin:18px auto;padding:0 12px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;">
-        <div>
-            <h2 style="margin:0;">Накладные</h2>
-            <div style="margin-top:6px;color:#6b7280;">
-                Здесь отображаются только накладные, отправленные продавцу на проверку, уже проверенные или проведённые.
+<main class="vk-page">
+    <div class="seller-invoices-page">
+
+        <section class="seller-invoices-hero">
+            <div>
+                <div class="vk-eyebrow">Панель продавца</div>
+
+                <h1>Накладные на проверку</h1>
+
+                <p>
+                    Здесь отображаются накладные, которые отправлены продавцу на проверку,
+                    уже проверены или проведены складом.
+                </p>
+
+                <div class="seller-invoices-tags">
+                    <span class="seller-invoices-tag">Проверка поставки</span>
+                    <span class="seller-invoices-tag">Фактическое количество</span>
+                    <span class="seller-invoices-tag">Контроль статусов</span>
+                </div>
             </div>
-        </div>
+
+            <div class="seller-invoices-hero-card">
+                <div class="seller-invoices-hero-icon">📄</div>
+
+                <div class="seller-invoices-hero-title">
+                    Накладные
+                </div>
+
+                <div class="seller-invoices-hero-text">
+                    Откройте накладную, проверьте фактическое количество товаров и подтвердите результат.
+                </div>
+            </div>
+        </section>
+
+        <section class="seller-invoices-panel">
+            <div class="seller-invoices-panel-head">
+                <div>
+                    <h2>Список накладных</h2>
+
+                    <p>
+                        Для проверки доступны только накладные, отправленные продавцу.
+                    </p>
+                </div>
+
+                <div class="seller-invoices-count">
+                    Всего: <span th:text="${#lists.size(rows)}">0</span>
+                </div>
+            </div>
+
+            <div class="seller-invoices-table-wrap">
+                <table class="seller-invoices-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Поставщик</th>
+                        <th>Номер</th>
+                        <th>Дата</th>
+                        <th>Статус</th>
+                        <th>Действие</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="r : ${rows}">
+                        <td>
+                            <div class="invoice-id">
+                                #<span th:text="${r.id()}">1</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="invoice-supplier" th:text="${r.supplierName()}">
+                                Поставщик
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="invoice-muted" th:text="${r.invoiceNumber()}">
+                                Номер
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="invoice-muted" th:text="${r.invoiceDate()}">
+                                Дата
+                            </div>
+                        </td>
+
+                        <td>
+                            <span th:switch="${r.status()}">
+                                <span th:case="'ready_for_check'" class="invoice-status ready">
+                                    Ожидает проверки
+                                </span>
+
+                                <span th:case="'checked'" class="invoice-status checked">
+                                    Проверена продавцом
+                                </span>
+
+                                <span th:case="'posted'" class="invoice-status posted">
+                                    Проведена складом
+                                </span>
+
+                                <span th:case="*" class="invoice-status unknown">
+                                    Неизвестный статус
+                                </span>
+                            </span>
+                        </td>
+
+                        <td>
+                            <a th:href="@{/seller/invoices/{id}(id=${r.id()})}"
+                               class="vk-btn vk-btn-light">
+                                Открыть
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(rows)}">
+                        <td colspan="6">
+                            <div class="seller-invoices-empty">
+                                <div class="seller-invoices-empty-icon">📭</div>
+                                У продавца пока нет доступных накладных.
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </div>
-
-    <section style="background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(10, 20, 60, 0.06);">
-        <table style="width:100%;border-collapse:collapse;">
-            <thead>
-            <tr style="text-align:left;border-bottom:1px solid #e6e9ef;">
-                <th style="padding:10px 8px;width:90px;">ID</th>
-                <th style="padding:10px 8px;">Поставщик</th>
-                <th style="padding:10px 8px;width:220px;">Номер</th>
-                <th style="padding:10px 8px;width:160px;">Дата</th>
-                <th style="padding:10px 8px;width:200px;">Статус</th>
-                <th style="padding:10px 8px;width:150px;">Действие</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="r : ${rows}" style="border-bottom:1px solid #f0f2f7;">
-                <td style="padding:10px 8px;" th:text="${r.id()}">1</td>
-                <td style="padding:10px 8px;font-weight:800;" th:text="${r.supplierName()}">Поставщик</td>
-                <td style="padding:10px 8px;" th:text="${r.invoiceNumber()}">Номер</td>
-                <td style="padding:10px 8px;" th:text="${r.invoiceDate()}">Дата</td>
-                <td style="padding:10px 8px;">
-                    <span th:if="${r.status() == 'ready_for_check'}"
-                          style="display:inline-block;padding:6px 10px;border-radius:999px;background:#fff7ed;color:#9a3412;font-weight:800;border:1px solid #fdba74;">
-                        Ожидает проверки
-                    </span>
-
-                    <span th:if="${r.status() == 'checked'}"
-                          style="display:inline-block;padding:6px 10px;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-weight:800;border:1px solid #93c5fd;">
-                        Проверена
-                    </span>
-
-                    <span th:if="${r.status() == 'posted'}"
-                          style="display:inline-block;padding:6px 10px;border-radius:999px;background:#ecfdf5;color:#065f46;font-weight:800;border:1px solid #86efac;">
-                        Проведена
-                    </span>
-
-                    <span th:if="${r.status() != 'ready_for_check' and r.status() != 'checked' and r.status() != 'posted'}"
-                          th:text="${r.status()}">
-                        status
-                    </span>
-                </td>
-                <td style="padding:10px 8px;">
-                    <a th:href="@{/seller/invoices/{id}(id=${r.id()})}"
-                       style="text-decoration:none;border:1px solid #d8deea;padding:8px 10px;border-radius:12px;font-weight:800;color:#0b1b4d;display:inline-block;">
-                        Открыть
-                    </a>
-                </td>
-            </tr>
-
-            <tr th:if="${#lists.isEmpty(rows)}">
-                <td colspan="6" style="padding:14px 8px;color:#6b7280;">
-                    У продавца пока нет доступных накладных.
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
 </main>
 
 <div th:replace="fragments/footer :: footer"></div>

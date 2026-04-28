@@ -2,7 +2,7 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
-    <title>Комбо</title>
+    <title th:text="${tpl.name}">Комбо</title>
     <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
 </head>
 <body>
@@ -10,78 +10,211 @@
 <div th:replace="~{fragments/header :: header}"></div>
 
 <main class="vk-page">
-    <section class="vk-hero">
-        <h1>Комбо-наборы</h1>
-        <p>Готовые наборы товаров для быстрого заказа. Выберите состав и добавьте комбо в корзину.</p>
-    </section>
 
-    <section class="vk-card vk-card-pad" style="margin-top:18px;">
-        <div th:if="${msg}" class="vk-alert vk-alert-success" th:text="${msg}">
-            Сообщение
-        </div>
+    <section class="vk-hero vk-combo-promo-hero">
+        <div class="vk-combo-promo-content">
+            <div class="vk-eyebrow">Настройка комбо</div>
 
-        <div th:if="${err}" class="vk-alert vk-alert-danger" th:text="${err}">
-            Ошибка
-        </div>
+            <h1 th:text="${tpl.name}">
+                Комбо-набор
+            </h1>
 
-        <div class="vk-toolbar" style="margin-bottom:16px;">
-            <div class="vk-muted">Готовые наборы товаров для быстрого заказа</div>
+            <p>
+                Выберите товары для каждого слота, укажите количество наборов и добавьте комбо в корзину.
+            </p>
 
-            <div class="vk-found">
-                Найдено: <span th:text="${#lists.size(combos)}">0</span>
+            <div class="vk-combo-promo-points">
+                <span>Настраиваемый состав</span>
+                <span th:text="'Слотов: ' + ${#lists.size(slotsSorted)}">Слотов: 0</span>
+                <span>Быстрое оформление</span>
             </div>
         </div>
 
-        <div th:if="${#lists.isEmpty(combos)}" class="vk-empty">
-            Комбо пока нет.
+        <div class="vk-combo-promo-card">
+            <div class="vk-combo-promo-icon">🍱</div>
+
+            <div class="vk-combo-promo-title">
+                Цена набора
+            </div>
+
+            <div class="vk-combo-promo-price"
+                 th:text="${#numbers.formatDecimal(tpl.basePrice, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                0,00 ₽
+            </div>
+
+            <div class="vk-combo-promo-text">
+                Итоговая сумма может измениться, если в выбранных позициях есть доплата.
+            </div>
+
+            <a class="vk-hero-action vk-combo-promo-btn" th:href="@{/combos}">
+                Назад к комбо
+            </a>
         </div>
+    </section>
 
-        <div th:if="${!#lists.isEmpty(combos)}" class="vk-grid">
-            <article th:each="c : ${combos}" class="combo-card">
-                <img th:if="${c.imageData != null}"
-                     class="combo-image"
-                     th:src="@{/combos/{id}/image(id=${c.id})}"
-                     alt="combo">
+    <div th:if="${msg}" class="vk-alert vk-alert-success">
+        <span th:text="${msg}">Сообщение</span>
+    </div>
 
-                <div th:unless="${c.imageData != null}" class="image-placeholder">
+    <div th:if="${err}" class="vk-alert vk-alert-danger">
+        <span th:text="${err}">Ошибка</span>
+    </div>
+
+    <section class="vk-combo-choice-layout">
+
+        <article class="vk-product-card vk-combo-choice-preview">
+
+            <div class="vk-product-image-box vk-combo-choice-image">
+                <img th:if="${tpl.imageData != null}"
+                     th:src="@{/combos/{id}/image(id=${tpl.id})}"
+                     alt="combo"
+                     class="vk-product-image">
+
+                <div th:if="${tpl.imageData == null}" class="vk-product-no-image">
+                    Нет изображения
+                </div>
+            </div>
+
+            <div class="vk-product-body">
+                <div class="vk-product-top">
                     <div>
-                        <div class="placeholder-title">Комбо</div>
-                        <div class="placeholder-subtitle">Готовый набор</div>
+                        <h2 class="vk-product-title" th:text="${tpl.name}">
+                            Комбо
+                        </h2>
+
+                        <div class="vk-product-category">
+                            Комбо-набор
+                        </div>
                     </div>
                 </div>
 
-                <div class="combo-body">
-                    <div class="combo-top">
-                        <div class="combo-title" th:text="${c.name}">
-                            Комбо
+                <div class="vk-badges">
+                    <span class="vk-badge vk-badge-primary">
+                        Готовый набор
+                    </span>
+
+                    <span class="vk-badge vk-badge-info">
+                        Настройка состава
+                    </span>
+                </div>
+
+                <div class="vk-product-description">
+                    Выберите по одному товару для каждого слота. Если у товара есть доплата,
+                    она будет указана прямо в списке выбора.
+                </div>
+
+                <div class="vk-combo-instruction">
+                    <div class="vk-combo-instruction-title">
+                        Как оформить
+                    </div>
+
+                    <ol>
+                        <li>выберите товар в каждом слоте;</li>
+                        <li>укажите количество наборов;</li>
+                        <li>нажмите кнопку добавления в корзину.</li>
+                    </ol>
+                </div>
+
+                <div class="vk-product-bottom">
+                    <div class="vk-price-box">
+                        <div class="vk-label">
+                            Базовая цена
                         </div>
 
-                        <span class="vk-badge vk-badge-primary">
-                            Набор
-                        </span>
+                        <div class="vk-price"
+                             th:text="${#numbers.formatDecimal(tpl.basePrice, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
+                            0.00 ₽
+                        </div>
                     </div>
 
-                    <div class="combo-description">
-                        Выберите состав набора и добавьте его в корзину одной кнопкой.
-                    </div>
+                    <a class="vk-btn vk-btn-light" th:href="@{/cart}">
+                        Корзина
+                    </a>
+                </div>
+            </div>
 
-                    <div class="combo-bottom">
+        </article>
+
+        <form class="vk-combo-choice-form"
+              th:action="@{/combos/{id}/add-to-cart(id=${tpl.id})}"
+              method="post">
+
+            <div class="vk-combo-choice-form-head">
+                <div>
+                    <div class="vk-eyebrow">Состав набора</div>
+
+                    <h2>
+                        Выберите позиции
+                    </h2>
+
+                    <p>
+                        Каждый слот обязателен для заполнения.
+                    </p>
+                </div>
+
+                <div class="vk-combo-choice-qty">
+                    <label for="qty">
+                        Кол-во
+                    </label>
+
+                    <input id="qty"
+                           type="number"
+                           name="qty"
+                           value="1"
+                           min="1">
+                </div>
+            </div>
+
+            <div class="vk-combo-slot-list">
+                <div th:each="s : ${slotsSorted}" class="vk-combo-slot-card">
+
+                    <div class="vk-combo-slot-head">
                         <div>
-                            <div class="vk-muted" style="font-size:13px;">Базовая цена</div>
-                            <div class="price"
-                                 th:text="${#numbers.formatDecimal(c.basePrice, 1, 'COMMA', 2, 'POINT')} + ' ₽'">
-                                0,00 ₽
+                            <div class="vk-combo-slot-title" th:text="${s.name}">
+                                Слот
+                            </div>
+
+                            <div class="vk-combo-slot-subtitle">
+                                Выберите одну позицию из списка
                             </div>
                         </div>
 
-                        <a class="vk-btn" th:href="@{/combos/{id}(id=${c.id})}">
-                            Выбрать
-                        </a>
+                        <span class="vk-badge vk-badge-accent">
+                            Обязательно
+                        </span>
                     </div>
+
+                    <select class="vk-select vk-combo-slot-select"
+                            th:name="${'slot_' + s.id}"
+                            required>
+                        <option value="" selected>
+                            Выберите товар
+                        </option>
+
+                        <option th:each="sp : ${s.products}"
+                                th:value="${sp.product.id}"
+                                th:text="${sp.product.name + (sp.extraPrice != null ? ' (+' + #numbers.formatDecimal(sp.extraPrice, 1, 'COMMA', 2, 'POINT') + ' ₽)' : '')}">
+                            Товар
+                        </option>
+                    </select>
+
                 </div>
-            </article>
-        </div>
+            </div>
+
+            <div class="vk-combo-choice-actions">
+                <button class="vk-btn" type="submit">
+                    Добавить комбо в корзину
+                </button>
+
+                <a class="vk-btn vk-btn-light" th:href="@{/combos}">
+                    Выбрать другое комбо
+                </a>
+            </div>
+
+        </form>
+
     </section>
+
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
