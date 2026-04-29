@@ -2,102 +2,540 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title th:text="${mode == 'edit' ? 'Редактирование товара' : 'Новый товар'}">Товар</title>
-    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${mode == 'edit' ? 'Редактирование товара' : 'Новый товар'}">
+        Товар
+    </title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
+    <style>
+        .product-form-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .product-form-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .product-form-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 42px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.05em;
+        }
+
+        .product-form-hero p {
+            max-width: 760px;
+            margin: 12px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .product-form-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .product-form-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .product-form-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .product-form-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 28px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .product-form-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+            line-height: 1.15;
+        }
+
+        .product-form-hero-text {
+            margin-top: 7px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .product-form-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .product-form-panel-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .product-form-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .product-form-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .product-form-id {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .product-form {
+            display: grid;
+            gap: 18px;
+            padding: 22px;
+        }
+
+        .product-form-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 220px;
+            gap: 14px;
+        }
+
+        .product-form-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .product-form-field.full {
+            grid-column: 1 / -1;
+        }
+
+        .product-form-field label,
+        .product-form-field span {
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .product-form-field input,
+        .product-form-field select,
+        .product-form-field textarea {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .product-form-field textarea {
+            min-height: 130px;
+            padding-top: 12px;
+            resize: vertical;
+            line-height: 1.45;
+        }
+
+        .product-form-field input[type="file"] {
+            padding: 10px;
+        }
+
+        .product-form-field input:focus,
+        .product-form-field select:focus,
+        .product-form-field textarea:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .product-form-field input::placeholder,
+        .product-form-field textarea::placeholder {
+            color: rgba(106, 123, 160, 0.58);
+            font-weight: 700;
+        }
+
+        .product-form-error {
+            color: #a2352a;
+            font-size: 12px;
+            font-weight: 850;
+            line-height: 1.35;
+        }
+
+        .product-form-hint {
+            color: #6a7ba0;
+            font-size: 12px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .product-form-check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #102a5c;
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .product-form-check input {
+            width: auto;
+            min-height: auto;
+        }
+
+        .product-current-image {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 20px;
+            background: #f8fbff;
+        }
+
+        .product-current-image-preview {
+            width: 90px;
+            height: 90px;
+            border: 1px solid #d8e1f0;
+            border-radius: 20px;
+            background: #ffffff;
+            object-fit: cover;
+        }
+
+        .product-form-note {
+            padding: 14px;
+            border: 1px solid #f4d294;
+            border-radius: 18px;
+            background: #fff4de;
+            color: #8a5a00;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.4;
+        }
+
+        .product-form-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 900px) {
+            .product-form-hero,
+            .product-form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .product-form-hero {
+                padding: 22px;
+            }
+
+            .product-form-hero h1 {
+                font-size: 34px;
+            }
+
+            .product-form-panel-head {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .product-form-actions,
+            .product-form-actions .vk-btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div th:replace="~{fragments/header :: header}"></div>
 
-<main class="container">
+<main class="vk-page">
+    <div class="product-form-page">
 
-    <div class="page-head">
-        <h1 th:text="${mode == 'edit' ? 'Редактирование товара' : 'Добавление товара'}"></h1>
-        <div class="actions">
-            <a class="btn btn-light" th:href="@{/admin_buffet/products}">← Назад</a>
-        </div>
-    </div>
+        <section class="product-form-hero">
+            <div>
+                <div class="vk-eyebrow">Администратор буфета</div>
 
-    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <h1 th:text="${mode == 'edit' ? 'Редактирование товара' : 'Добавление товара'}">
+                    Добавление товара
+                </h1>
 
-    <!-- ВАЖНО: multipart -->
-    <form class="card form"
-          method="post"
-          enctype="multipart/form-data"
-          th:action="${mode == 'edit'} ? @{/admin_buffet/products/{id}(id=${productId})} : @{/admin_buffet/products}"
-          th:object="${dto}">
+                <p>
+                    Заполните карточку товара: выберите категорию, укажите название,
+                    описание, цену, активность и загрузите фото для меню покупателя.
+                </p>
 
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
-        <!-- category -->
-        <div class="field">
-            <label class="label">Категория</label>
-            <select class="input" th:field="*{categoryId}">
-                <option value="" disabled th:selected="${dto.categoryId == null}">Выберите категорию</option>
-                <option th:each="c : ${categories}"
-                        th:value="${c.id}"
-                        th:text="${c.name}">
-                </option>
-            </select>
-            <div class="field-error" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
-        </div>
-
-        <!-- name -->
-        <div class="field">
-            <label class="label">Название</label>
-            <input class="input" type="text" th:field="*{name}" maxlength="200" placeholder="Например: Бургер"/>
-            <div class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
-        </div>
-
-        <!-- description -->
-        <div class="field">
-            <label class="label">Описание</label>
-            <textarea class="input" th:field="*{description}" rows="4" maxlength="1000"
-                      placeholder="Необязательно"></textarea>
-            <div class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
-        </div>
-
-        <!-- price -->
-        <div class="field">
-            <label class="label">Цена</label>
-            <input class="input" type="number" step="0.01" min="0" th:field="*{basePrice}" placeholder="0.00"/>
-            <div class="field-error" th:if="${#fields.hasErrors('basePrice')}" th:errors="*{basePrice}"></div>
-        </div>
-
-        <!-- active -->
-        <div class="field">
-            <label class="label">Активен</label>
-            <label style="display:flex; gap:10px; align-items:center;">
-                <input type="checkbox" th:field="*{active}"/>
-                <span class="muted">Показывать покупателям</span>
-            </label>
-        </div>
-
-        <!-- image -->
-        <div class="field">
-            <label class="label">Фото (необязательно)</label>
-
-            <div th:if="${mode == 'edit' and hasImage}" class="muted" style="margin-bottom:8px;">
-                Сейчас загружено фото.
-                <a th:href="@{/admin_buffet/products/{id}/image(id=${productId})}" target="_blank">Посмотреть</a>
-                <div class="muted">Чтобы заменить — выбери новый файл ниже.</div>
+                <div class="product-form-tags">
+                    <span class="product-form-tag">Карточка товара</span>
+                    <span class="product-form-tag">Фото</span>
+                    <span class="product-form-tag">Цена</span>
+                    <span class="product-form-tag">Показ в меню</span>
+                </div>
             </div>
 
-            <input class="input" type="file" th:field="*{image}" accept="image/*"/>
+            <div class="product-form-hero-card">
+                <div class="product-form-hero-icon">🥪</div>
+
+                <div class="product-form-hero-title">
+                    Товар в меню покупателя
+                </div>
+
+                <div class="product-form-hero-text">
+                    Если товар активен, он будет отображаться покупателям
+                    в меню выбранного буфета.
+                </div>
+            </div>
+        </section>
+
+        <div th:if="${error}" class="vk-alert vk-alert-danger">
+            <span th:text="${error}">Ошибка</span>
         </div>
 
-        <div class="btn-row" style="margin-top:16px;">
-            <button class="btn btn-primary" type="submit"
-                    th:text="${mode == 'edit' ? 'Сохранить' : 'Создать'}"></button>
+        <section class="product-form-panel">
+            <div class="product-form-panel-head">
+                <div>
+                    <h2 th:text="${mode == 'edit' ? 'Данные товара' : 'Новый товар'}">
+                        Новый товар
+                    </h2>
 
-            <a class="btn btn-light" th:href="@{/admin_buffet/products}">Отмена</a>
-        </div>
+                    <p>
+                        Поля с ошибками будут подсвечены после проверки формы.
+                    </p>
+                </div>
 
-    </form>
+                <div class="product-form-id" th:if="${mode == 'edit'}">
+                    ID:
+                    <span th:text="${productId}" style="margin-left: 4px;">1</span>
+                </div>
+            </div>
 
+            <form class="product-form"
+                  method="post"
+                  enctype="multipart/form-data"
+                  th:action="${mode == 'edit'} ? @{/admin-buffet/products/{id}(id=${productId})} : @{/admin-buffet/products}"
+                  th:object="${dto}">
+
+                <input th:if="${_csrf != null}"
+                       type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}"/>
+
+                <div class="product-form-grid">
+
+                    <label class="product-form-field">
+                        <span>Категория</span>
+
+                        <select th:field="*{categoryId}">
+                            <option value="" disabled th:selected="${dto.categoryId == null}">
+                                Выберите категорию
+                            </option>
+
+                            <option th:each="c : ${categories}"
+                                    th:value="${c.id}"
+                                    th:text="${c.parent != null ? (c.parent.name + ' → ' + c.name) : c.name}">
+                                Категория
+                            </option>
+                        </select>
+
+                        <div class="product-form-error"
+                             th:if="${#fields.hasErrors('categoryId')}"
+                             th:errors="*{categoryId}">
+                            Ошибка
+                        </div>
+                    </label>
+
+                    <label class="product-form-field">
+                        <span>Цена</span>
+
+                        <input type="number"
+                               step="0.01"
+                               min="0"
+                               th:field="*{basePrice}"
+                               placeholder="0.00">
+
+                        <div class="product-form-error"
+                             th:if="${#fields.hasErrors('basePrice')}"
+                             th:errors="*{basePrice}">
+                            Ошибка
+                        </div>
+                    </label>
+
+                    <label class="product-form-field full">
+                        <span>Название</span>
+
+                        <input type="text"
+                               th:field="*{name}"
+                               maxlength="200"
+                               placeholder="Например: Бургер">
+
+                        <div class="product-form-error"
+                             th:if="${#fields.hasErrors('name')}"
+                             th:errors="*{name}">
+                            Ошибка
+                        </div>
+                    </label>
+
+                    <label class="product-form-field full">
+                        <span>Описание</span>
+
+                        <textarea th:field="*{description}"
+                                  rows="4"
+                                  maxlength="1000"
+                                  placeholder="Необязательно"></textarea>
+
+                        <div class="product-form-error"
+                             th:if="${#fields.hasErrors('description')}"
+                             th:errors="*{description}">
+                            Ошибка
+                        </div>
+
+                        <div class="product-form-hint">
+                            Описание будет отображаться в карточке товара у покупателя.
+                        </div>
+                    </label>
+
+                    <div class="product-form-field full">
+                        <span>Активность</span>
+
+                        <label class="product-form-check">
+                            <input type="checkbox" th:field="*{active}">
+                            Показывать покупателям
+                        </label>
+                    </div>
+
+                    <div class="product-form-field full">
+                        <span>Фото товара</span>
+
+                        <div th:if="${mode == 'edit' and hasImage}" class="product-current-image">
+                            <img class="product-current-image-preview"
+                                 th:src="@{/admin-buffet/products/{id}/image(id=${productId})}"
+                                 alt="Фото товара">
+
+                            <div>
+                                <div class="product-form-hint">
+                                    Сейчас загружено фото. Чтобы заменить его, выберите новый файл ниже.
+                                </div>
+
+                                <a class="vk-btn vk-btn-light"
+                                   th:href="@{/admin-buffet/products/{id}/image(id=${productId})}"
+                                   target="_blank"
+                                   style="margin-top: 8px;">
+                                    Посмотреть фото
+                                </a>
+                            </div>
+                        </div>
+
+                        <input type="file"
+                               th:field="*{image}"
+                               accept="image/*">
+
+                        <div class="product-form-hint">
+                            Рекомендуется использовать горизонтальное изображение товара.
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="product-form-note">
+                    После сохранения товар появится в списке. Если включён флажок «Показывать покупателям»,
+                    товар будет доступен в меню выбранного буфета.
+                </div>
+
+                <div class="product-form-actions">
+                    <button class="vk-btn" type="submit"
+                            th:text="${mode == 'edit' ? 'Сохранить' : 'Создать'}">
+                        Сохранить
+                    </button>
+
+                    <a class="vk-btn vk-btn-light" th:href="@{/admin-buffet/products}">
+                        Отмена
+                    </a>
+
+                    <a class="vk-btn vk-btn-light" th:href="@{/admin-buffet/products}">
+                        Назад к товарам
+                    </a>
+                </div>
+            </form>
+        </section>
+
+    </div>
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+
 </body>
 </html>

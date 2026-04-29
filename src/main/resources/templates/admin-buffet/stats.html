@@ -1,105 +1,682 @@
 <!doctype html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Статистика буфета</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Админ буфета · Статистика</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        .wrap{max-width:1100px;margin:24px auto;font-family:system-ui,Segoe UI,Arial}
-        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,.06)}
-        .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-        .kpi{display:flex;gap:16px;flex-wrap:wrap}
-        .kpi .box{flex:1;min-width:220px;border:1px solid #e6e9ef;border-radius:14px;padding:12px;background:#fafbff}
-        table{width:100%;border-collapse:separate;border-spacing:0 8px}
-        td,th{padding:10px 12px;background:#fafbff;border:1px solid #eef1f6}
-        th{background:#f2f6ff;text-align:left}
-        .actions{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
-        .btn{display:inline-block;padding:10px 14px;border-radius:12px;border:1px solid #d6dcf0;background:#2b6fff;color:#fff;text-decoration:none;cursor:pointer}
-        .btn2{background:#fff;color:#2b6fff}
-        input{padding:8px 10px;border:1px solid #d6dcf0;border-radius:10px}
+        .stats-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .stats-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .stats-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 42px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.05em;
+        }
+
+        .stats-hero p {
+            max-width: 760px;
+            margin: 12px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .stats-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .stats-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .stats-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .stats-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 28px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .stats-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+            line-height: 1.15;
+        }
+
+        .stats-hero-text {
+            margin-top: 7px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .stats-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .stats-panel-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .stats-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .stats-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .stats-filter {
+            display: flex;
+            align-items: end;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 22px;
+        }
+
+        .stats-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .stats-field label,
+        .stats-field span {
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .stats-field input {
+            width: 190px;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .stats-field input:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .stats-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            padding: 0 22px 22px;
+        }
+
+        .stats-kpi {
+            position: relative;
+            overflow: hidden;
+            padding: 18px;
+            border: 1px solid #e2e8f3;
+            border-radius: 24px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.035)),
+                    #ffffff;
+        }
+
+        .stats-kpi::before {
+            content: "";
+            position: absolute;
+            right: -38px;
+            top: -38px;
+            width: 96px;
+            height: 96px;
+            border-radius: 999px;
+            background: rgba(243, 162, 26, 0.10);
+        }
+
+        .stats-kpi-label {
+            position: relative;
+            z-index: 1;
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stats-kpi-value {
+            position: relative;
+            z-index: 1;
+            margin-top: 8px;
+            color: #102a5c;
+            font-size: 26px;
+            font-weight: 950;
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            word-break: break-word;
+        }
+
+        .stats-kpi-hint {
+            position: relative;
+            z-index: 1;
+            margin-top: 7px;
+            color: #6a7ba0;
+            font-size: 12px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .stats-charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .stats-chart-box {
+            padding: 22px;
+        }
+
+        .stats-chart-wide {
+            grid-column: 1 / -1;
+        }
+
+        .stats-chart-title {
+            margin: 0;
+            color: #102a5c;
+            font-size: 24px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .stats-chart-subtitle {
+            margin-top: 6px;
+            margin-bottom: 18px;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .stats-chart-wrap {
+            position: relative;
+            min-height: 320px;
+        }
+
+        .stats-chart-wrap canvas {
+            width: 100% !important;
+            height: 320px !important;
+        }
+
+        .stats-table-wrap {
+            overflow-x: auto;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stats-table th {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e5ebf5;
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            background: #f8fbff;
+        }
+
+        .stats-table td {
+            padding: 16px;
+            border-bottom: 1px solid #edf1f7;
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 850;
+            vertical-align: middle;
+        }
+
+        .stats-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .stats-product-title {
+            color: #102a5c;
+            font-size: 16px;
+            font-weight: 950;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+        .stats-badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            min-height: 30px;
+            padding: 6px 10px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 12px;
+            font-weight: 950;
+            line-height: 1.15;
+            white-space: nowrap;
+        }
+
+        .stats-badge.money {
+            border-color: #f4d294;
+            background: #fff4de;
+            color: #9c6400;
+        }
+
+        .stats-empty {
+            padding: 42px 22px;
+            text-align: center;
+        }
+
+        .stats-empty-icon {
+            margin-bottom: 10px;
+            font-size: 44px;
+        }
+
+        .stats-empty-title {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.04em;
+        }
+
+        .stats-empty-text {
+            max-width: 540px;
+            margin: 8px auto 0;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        @media (max-width: 1180px) {
+            .stats-hero {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-kpi-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .stats-charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .stats-hero {
+                padding: 22px;
+            }
+
+            .stats-hero h1 {
+                font-size: 34px;
+            }
+
+            .stats-panel-head {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .stats-filter,
+            .stats-filter .vk-btn,
+            .stats-field,
+            .stats-field input {
+                width: 100%;
+            }
+
+            .stats-kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-chart-box {
+                padding: 16px;
+            }
+        }
     </style>
 </head>
 <body>
-<div class="wrap">
-    <div th:replace="~{fragments/header :: header}"></div>
 
-    <div class="card">
-        <h2 style="margin:0 0 12px 0">Статистика</h2>
+<div th:replace="~{fragments/header :: header}"></div>
 
-        <form class="actions" method="get" th:action="@{/admin-buffet/stats}">
+<main class="vk-page">
+    <div class="stats-page">
+
+        <section class="stats-hero">
             <div>
-                <div>С</div>
-                <input type="date" name="from" th:value="${from}">
-            </div>
-            <div>
-                <div>По</div>
-                <input type="date" name="to" th:value="${to}">
-            </div>
-            <button class="btn" type="submit">Показать</button>
+                <div class="vk-eyebrow">Администратор буфета</div>
 
-            <a class="btn btn2"
-               th:href="@{/admin-buffet/stats/export(from=${from},to=${to})}">
-                Выгрузить Excel
-            </a>
-        </form>
+                <h1>Статистика буфета</h1>
 
-        <div class="kpi" style="margin-top:14px">
-            <div class="box">
-                <div style="opacity:.7">Количество заказов</div>
-                <div style="font-size:24px;font-weight:700" th:text="${ordersTotal}">0</div>
+                <p>
+                    Анализируйте заказы, выручку, затраты по накладным, прибыльность
+                    и популярные товары за выбранный период.
+                </p>
+
+                <div class="stats-tags">
+                    <span class="stats-tag">Выручка</span>
+                    <span class="stats-tag">Прибыль</span>
+                    <span class="stats-tag">Заказы</span>
+                    <span class="stats-tag">Топ товаров</span>
+                </div>
             </div>
-            <div class="box">
-                <div style="opacity:.7">Выручка за период</div>
-                <div style="font-size:24px;font-weight:700" th:text="${revenueTotal}">0</div>
+
+            <div class="stats-hero-card">
+                <div class="stats-hero-icon">📊</div>
+
+                <div class="stats-hero-title">
+                    Управленческая аналитика
+                </div>
+
+                <div class="stats-hero-text">
+                    Данные помогают оценивать эффективность ассортимента,
+                    контролировать затраты и принимать решения по меню.
+                </div>
             </div>
-            <div class="box">
-                <div style="opacity:.7">Затраты по накладным</div>
-                <div style="font-size:24px;font-weight:700" th:text="${costsTotal}">0</div>
+        </section>
+
+        <section class="stats-panel">
+            <div class="stats-panel-head">
+                <div>
+                    <h2>Период отчёта</h2>
+
+                    <p>
+                        Выберите даты, чтобы пересчитать показатели и графики.
+                    </p>
+                </div>
             </div>
-            <div class="box">
-                <div style="opacity:.7">Прибыль за период</div>
-                <div style="font-size:24px;font-weight:700" th:text="${profitTotal}">0</div>
+
+            <form class="stats-filter"
+                  method="get"
+                  th:action="@{/admin-buffet/stats}">
+
+                <label class="stats-field">
+                    <span>С</span>
+
+                    <input type="date"
+                           name="from"
+                           th:value="${from}">
+                </label>
+
+                <label class="stats-field">
+                    <span>По</span>
+
+                    <input type="date"
+                           name="to"
+                           th:value="${to}">
+                </label>
+
+                <button class="vk-btn" type="submit">
+                    Показать
+                </button>
+
+                <a class="vk-btn vk-btn-light"
+                   th:href="@{/admin-buffet/stats/export(from=${from},to=${to})}">
+                    Выгрузить Excel
+                </a>
+            </form>
+
+            <div class="stats-kpi-grid">
+                <article class="stats-kpi">
+                    <div class="stats-kpi-label">
+                        Количество заказов
+                    </div>
+
+                    <div class="stats-kpi-value" th:text="${ordersTotal != null ? ordersTotal : 0}">
+                        0
+                    </div>
+
+                    <div class="stats-kpi-hint">
+                        Все оформленные заказы за период.
+                    </div>
+                </article>
+
+                <article class="stats-kpi">
+                    <div class="stats-kpi-label">
+                        Выручка
+                    </div>
+
+                    <div class="stats-kpi-value">
+                        <span th:text="${revenueTotal != null ? #numbers.formatDecimal(revenueTotal, 1, 'COMMA', 2, 'POINT') : '0.00'}">0.00</span>
+                        ₽
+                    </div>
+
+                    <div class="stats-kpi-hint">
+                        Сумма продаж за выбранный период.
+                    </div>
+                </article>
+
+                <article class="stats-kpi">
+                    <div class="stats-kpi-label">
+                        Затраты
+                    </div>
+
+                    <div class="stats-kpi-value">
+                        <span th:text="${costsTotal != null ? #numbers.formatDecimal(costsTotal, 1, 'COMMA', 2, 'POINT') : '0.00'}">0.00</span>
+                        ₽
+                    </div>
+
+                    <div class="stats-kpi-hint">
+                        Затраты по проведённым накладным.
+                    </div>
+                </article>
+
+                <article class="stats-kpi">
+                    <div class="stats-kpi-label">
+                        Прибыль
+                    </div>
+
+                    <div class="stats-kpi-value">
+                        <span th:text="${profitTotal != null ? #numbers.formatDecimal(profitTotal, 1, 'COMMA', 2, 'POINT') : '0.00'}">0.00</span>
+                        ₽
+                    </div>
+
+                    <div class="stats-kpi-hint">
+                        Разница между выручкой и затратами.
+                    </div>
+                </article>
             </div>
-        </div>
+        </section>
+
+        <section class="stats-charts-grid">
+            <article class="stats-panel stats-chart-wide">
+                <div class="stats-chart-box">
+                    <h2 class="stats-chart-title">
+                        Прибыльность по дням
+                    </h2>
+
+                    <div class="stats-chart-subtitle">
+                        Сравнение выручки, затрат и прибыли.
+                    </div>
+
+                    <div class="stats-chart-wrap">
+                        <canvas id="profitChart"></canvas>
+                    </div>
+                </div>
+            </article>
+
+            <article class="stats-panel">
+                <div class="stats-chart-box">
+                    <h2 class="stats-chart-title">
+                        Продажи по дням
+                    </h2>
+
+                    <div class="stats-chart-subtitle">
+                        Динамика выручки за выбранный период.
+                    </div>
+
+                    <div class="stats-chart-wrap">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </article>
+
+            <article class="stats-panel">
+                <div class="stats-chart-box">
+                    <h2 class="stats-chart-title">
+                        Количество заказов
+                    </h2>
+
+                    <div class="stats-chart-subtitle">
+                        Сколько заказов оформляли по дням.
+                    </div>
+
+                    <div class="stats-chart-wrap">
+                        <canvas id="ordersChart"></canvas>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="stats-panel">
+            <div class="stats-panel-head">
+                <div>
+                    <h2>Топ товаров</h2>
+
+                    <p>
+                        Самые продаваемые позиции за выбранный период.
+                    </p>
+                </div>
+
+                <div class="stats-badge">
+                    Позиций:
+                    <span th:text="${topProducts != null ? #lists.size(topProducts) : 0}" style="margin-left: 4px;">0</span>
+                </div>
+            </div>
+
+            <div th:if="${topProducts == null or #lists.isEmpty(topProducts)}" class="stats-empty">
+                <div class="stats-empty-icon">📭</div>
+
+                <h3 class="stats-empty-title">
+                    Продаж пока нет
+                </h3>
+
+                <div class="stats-empty-text">
+                    За выбранный период топ товаров не сформирован.
+                </div>
+            </div>
+
+            <div th:if="${topProducts != null and !#lists.isEmpty(topProducts)}" class="stats-table-wrap">
+                <table class="stats-table">
+                    <thead>
+                    <tr>
+                        <th>Товар</th>
+                        <th style="width: 140px;">Кол-во</th>
+                        <th style="width: 180px;">Выручка</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="t : ${topProducts}">
+                        <td>
+                            <div class="stats-product-title" th:text="${t.productName}">
+                                —
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="stats-badge" th:text="${t.qty}">
+                                0
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="stats-badge money">
+                                <span th:text="${t.revenue != null ? #numbers.formatDecimal(t.revenue, 1, 'COMMA', 2, 'POINT') : '0.00'}">0.00</span>
+                                ₽
+                            </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </div>
+</main>
 
-    <div class="card" style="margin-top:16px">
-        <h3 style="margin-top:0">Прибыльность по дням</h3>
-        <canvas id="profitChart"></canvas>
-    </div>
-
-    <div class="grid" style="margin-top:16px">
-        <div class="card">
-            <h3 style="margin-top:0">Продажи по дням (выручка)</h3>
-            <canvas id="salesChart"></canvas>
-        </div>
-        <div class="card">
-            <h3 style="margin-top:0">Количество заказов по дням</h3>
-            <canvas id="ordersChart"></canvas>
-        </div>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-        <h3 style="margin-top:0">Топ товаров</h3>
-        <table>
-            <thead>
-            <tr>
-                <th>Товар</th>
-                <th>Кол-во</th>
-                <th>Выручка</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="t : ${topProducts}">
-                <td th:text="${t.productName}">—</td>
-                <td th:text="${t.qty}">0</td>
-                <td th:text="${t.revenue}">0</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-
-</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
 
 <script th:inline="javascript">
     const daily = /*[[${daily}]]*/ [];
@@ -119,27 +696,81 @@
         data: {
             labels: profitLabels,
             datasets: [
-                { label: 'Выручка', data: profitRevenue },
-                { label: 'Затраты', data: costs },
-                { label: 'Прибыль', data: profit }
+                {
+                    label: 'Выручка',
+                    data: profitRevenue,
+                    tension: 0.35
+                },
+                {
+                    label: 'Затраты',
+                    data: costs,
+                    tension: 0.35
+                },
+                {
+                    label: 'Прибыль',
+                    data: profit,
+                    tension: 0.35
+                }
             ]
         },
         options: {
             responsive: true,
-            interaction: { mode: 'index', intersect: false }
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
         }
     });
 
     new Chart(document.getElementById('salesChart'), {
         type: 'line',
-        data: { labels, datasets: [{ label: 'Выручка', data: revenue }] },
-        options: { responsive: true }
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Выручка',
+                    data: revenue,
+                    tension: 0.35
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
     });
 
     new Chart(document.getElementById('ordersChart'), {
         type: 'bar',
-        data: { labels, datasets: [{ label: 'Заказы', data: orders }] },
-        options: { responsive: true }
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Заказы',
+                    data: orders
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
     });
 </script>
 

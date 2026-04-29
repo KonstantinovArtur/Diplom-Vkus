@@ -2,119 +2,583 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Товары</title>
-    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Админ буфета · Товары</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
+    <style>
+        .products-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .products-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .products-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 42px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.05em;
+        }
+
+        .products-hero p {
+            max-width: 760px;
+            margin: 12px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .products-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .products-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .products-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .products-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 28px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .products-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+            line-height: 1.15;
+        }
+
+        .products-hero-text {
+            margin-top: 7px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .products-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .products-panel-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .products-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .products-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .products-count {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .products-filter {
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr) auto;
+            gap: 12px;
+            align-items: end;
+            padding: 22px;
+            border-bottom: 1px solid #edf1f7;
+            background: #ffffff;
+        }
+
+        .products-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .products-field label,
+        .products-field span {
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .products-field input,
+        .products-field select {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .products-field input:focus,
+        .products-field select:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .products-field input::placeholder {
+            color: rgba(106, 123, 160, 0.58);
+            font-weight: 700;
+        }
+
+        .products-filter-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .products-list {
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+        }
+
+        .product-card {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr) 170px;
+            gap: 16px;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid #e2e8f3;
+            border-radius: 24px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.025), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .product-image {
+            width: 96px;
+            height: 96px;
+            border: 1px solid #d8e1f0;
+            border-radius: 22px;
+            background: #f8fbff;
+            object-fit: cover;
+        }
+
+        .product-image-placeholder {
+            display: grid;
+            place-items: center;
+            width: 96px;
+            height: 96px;
+            border: 1px dashed #cfd9ea;
+            border-radius: 22px;
+            background: #f8fbff;
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .product-main {
+            min-width: 0;
+            display: grid;
+            gap: 10px;
+        }
+
+        .product-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .product-title {
+            color: #102a5c;
+            font-size: 21px;
+            font-weight: 950;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            word-break: break-word;
+        }
+
+        .product-description {
+            max-width: 760px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.45;
+            word-break: break-word;
+        }
+
+        .product-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .product-badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            min-height: 30px;
+            padding: 6px 10px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 12px;
+            font-weight: 950;
+            line-height: 1.15;
+            white-space: normal;
+        }
+
+        .product-badge.active {
+            border-color: #bde8c9;
+            background: #e8f8ed;
+            color: #166534;
+        }
+
+        .product-badge.inactive {
+            border-color: #d8e1f0;
+            background: #f3f6fa;
+            color: #44557b;
+        }
+
+        .product-badge.price {
+            border-color: #f4d294;
+            background: #fff4de;
+            color: #9c6400;
+        }
+
+        .product-actions {
+            display: grid;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .product-actions .vk-btn {
+            width: 100%;
+            min-height: 42px;
+            padding: 9px 12px;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .products-empty {
+            padding: 42px 22px;
+            text-align: center;
+        }
+
+        .products-empty-icon {
+            margin-bottom: 10px;
+            font-size: 44px;
+        }
+
+        .products-empty-title {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.04em;
+        }
+
+        .products-empty-text {
+            max-width: 540px;
+            margin: 8px auto 0;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        @media (max-width: 980px) {
+            .products-hero,
+            .products-filter,
+            .product-card {
+                grid-template-columns: 1fr;
+            }
+
+            .product-actions {
+                max-width: 260px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .products-hero {
+                padding: 22px;
+            }
+
+            .products-hero h1 {
+                font-size: 34px;
+            }
+
+            .products-panel-head {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .products-filter-actions,
+            .products-filter-actions .vk-btn,
+            .product-actions,
+            .product-actions .vk-btn {
+                width: 100%;
+                max-width: none;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div th:replace="~{fragments/header :: header}"></div>
 
-<main class="container">
+<main class="vk-page">
+    <div class="products-page">
 
-    <div class="page-head">
-        <h1>Товары</h1>
-        <div class="actions">
-            <a class="btn btn-primary" th:href="@{/admin_buffet/products/new}">+ Добавить товар</a>
-        </div>
-    </div>
+        <section class="products-hero">
+            <div>
+                <div class="vk-eyebrow">Администратор буфета</div>
 
-    <!-- flash messages -->
-    <div th:if="${success != null}" class="alert alert-success" th:text="${success}"></div>
-    <div th:if="${error != null}" class="alert alert-danger" th:text="${error}"></div>
+                <h1>Товары</h1>
 
-    <!-- filters -->
-    <form class="card filters" method="get" th:action="@{/admin_buffet/products}">
-        <div class="row">
+                <p>
+                    Управляйте товарами выбранного буфета: добавляйте позиции меню,
+                    редактируйте описание, цену, категорию, активность и фото.
+                </p>
 
-            <div class="col">
-                <label class="label">Категория</label>
-                <select class="input" name="categoryId">
-                    <option value="" th:selected="${categoryId == null}">Все категории</option>
-                    <option th:each="c : ${categories}"
-                            th:value="${c.id}"
-                            th:selected="${categoryId != null and c.id == categoryId}"
-                            th:text="${c.name}">
-                    </option>
-                </select>
-            </div>
-
-            <div class="col">
-                <label class="label">Поиск по названию</label>
-                <input class="input"
-                       type="text"
-                       name="q"
-                       th:value="${q != null ? q : ''}"
-                       placeholder="например: бургер"/>
-            </div>
-
-            <div class="col col-actions">
-                <label class="label">&nbsp;</label>
-                <div class="btn-row">
-                    <button class="btn btn-secondary" type="submit">Применить</button>
-                    <a class="btn btn-light" th:href="@{/admin_buffet/products}">Сбросить</a>
+                <div class="products-tags">
+                    <span class="products-tag">Ассортимент</span>
+                    <span class="products-tag">Категории</span>
+                    <span class="products-tag">Фото товаров</span>
+                    <span class="products-tag">Меню покупателя</span>
                 </div>
             </div>
 
+            <div class="products-hero-card">
+                <div class="products-hero-icon">🥐</div>
+
+                <div class="products-hero-title">
+                    Карточки товаров
+                </div>
+
+                <div class="products-hero-text">
+                    Активные товары отображаются покупателю в меню.
+                    Скрытые товары остаются в базе, но не выводятся для заказа.
+                </div>
+            </div>
+        </section>
+
+        <div th:if="${success != null}" class="vk-alert vk-alert-success">
+            <span th:text="${success}">Сообщение</span>
         </div>
-    </form>
 
-    <!-- table -->
-    <div class="card">
-        <div class="table-wrap">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Категория</th>
-                    <th>Название</th>
-                    <th style="width:140px;">Цена</th>
-                    <th style="width:120px;">Активен</th>
-                    <th style="width:200px;">Действия</th>
-                </tr>
-                </thead>
+        <div th:if="${error != null}" class="vk-alert vk-alert-danger">
+            <span th:text="${error}">Ошибка</span>
+        </div>
 
-                <tbody>
-                <tr th:if="${items == null or #lists.isEmpty(items)}">
-                    <td colspan="5" class="muted">Пока нет товаров.</td>
-                </tr>
+        <section class="products-panel">
+            <div class="products-panel-head">
+                <div>
+                    <h2>Список товаров</h2>
 
-                <tr th:each="p : ${items}">
-                    <!-- если items это List<Product> -->
-                    <td>
-                        <div class="muted" th:text="${p.category != null and p.category.parent != null ? p.category.parent.name : ''}"></div>
-                        <div th:text="${p.category != null ? p.category.name : ''}"></div>
-                    </td>
+                    <p>
+                        Найдите товар по категории или названию.
+                    </p>
+                </div>
 
-                    <td>
-                        <div class="title" th:text="${p.name}"></div>
-                        <div class="muted" th:if="${p.description != null and !#strings.isEmpty(p.description)}"
-                             th:text="${p.description}"></div>
-                    </td>
+                <div class="products-count">
+                    Всего:
+                    <span th:text="${items != null ? #lists.size(items) : 0}" style="margin-left: 4px;">0</span>
+                </div>
+            </div>
 
-                    <td th:text="${#numbers.formatDecimal(p.basePrice, 1, 'COMMA', 2, 'POINT')} + ' ₽'"></td>
+            <form class="products-filter"
+                  method="get"
+                  th:action="@{/admin-buffet/products}">
 
-                    <td>
-                        <span th:if="${p.isActive}" class="badge badge-green">Да</span>
-                        <span th:if="${!p.isActive}" class="badge badge-gray">Нет</span>
-                    </td>
+                <label class="products-field">
+                    <span>Категория</span>
 
-                    <td>
-                        <div class="btn-row">
-                            <a class="btn btn-small"
-                               th:href="@{/admin_buffet/products/{id}/edit(id=${p.id})}">Редактировать</a>
+                    <select name="categoryId">
+                        <option value="" th:selected="${categoryId == null}">
+                            Все категории
+                        </option>
+
+                        <option th:each="c : ${categories}"
+                                th:value="${c.id}"
+                                th:selected="${categoryId != null and c.id == categoryId}"
+                                th:text="${c.parent != null ? (c.parent.name + ' → ' + c.name) : c.name}">
+                            Категория
+                        </option>
+                    </select>
+                </label>
+
+                <label class="products-field">
+                    <span>Поиск по названию</span>
+
+                    <input type="text"
+                           name="q"
+                           th:value="${q != null ? q : ''}"
+                           placeholder="например: бургер">
+                </label>
+
+                <div class="products-filter-actions">
+                    <button class="vk-btn" type="submit">
+                        Применить
+                    </button>
+
+                    <a class="vk-btn vk-btn-light" th:href="@{/admin-buffet/products}">
+                        Сбросить
+                    </a>
+
+                    <a class="vk-btn" th:href="@{/admin-buffet/products/new}">
+                        + Добавить
+                    </a>
+                </div>
+            </form>
+
+            <div th:if="${items == null or #lists.isEmpty(items)}" class="products-empty">
+                <div class="products-empty-icon">📭</div>
+
+                <h3 class="products-empty-title">
+                    Товаров пока нет
+                </h3>
+
+                <div class="products-empty-text">
+                    Создайте первый товар или измените параметры фильтра.
+                </div>
+            </div>
+
+            <div th:if="${items != null and !#lists.isEmpty(items)}" class="products-list">
+                <article th:each="p : ${items}" class="product-card">
+
+                    <div>
+                        <img class="product-image"
+                             th:if="${p.imageData != null}"
+                             th:src="@{/admin-buffet/products/{id}/image(id=${p.id})}"
+                             alt="Фото товара">
+
+                        <div class="product-image-placeholder" th:unless="${p.imageData != null}">
+                            Нет<br>фото
                         </div>
-                    </td>
-                </tr>
+                    </div>
 
-                <!-- ВАЖНО:
-                     Если у тебя items это List<InventoryItem>, то этот блок надо заменить на ii.product.
-                     (см. ниже) -->
+                    <div class="product-main">
+                        <div class="product-title-row">
+                            <div class="product-title" th:text="${p.name}">
+                                Товар
+                            </div>
 
-                </tbody>
-            </table>
-        </div>
+                            <span class="product-badge"
+                                  th:classappend="${p.isActive ? ' active' : ' inactive'}"
+                                  th:text="${p.isActive ? 'Активен' : 'Скрыт'}">
+                                Активен
+                            </span>
+                        </div>
+
+                        <div class="product-description"
+                             th:if="${p.description != null and !#strings.isEmpty(p.description)}"
+                             th:text="${p.description}">
+                            Описание
+                        </div>
+
+                        <div class="product-meta">
+                            <span class="product-badge"
+                                  th:text="${p.category != null and p.category.parent != null ? p.category.parent.name : 'Без раздела'}">
+                                Родительская категория
+                            </span>
+
+                            <span class="product-badge"
+                                  th:text="${p.category != null ? p.category.name : 'Без категории'}">
+                                Категория
+                            </span>
+
+                            <span class="product-badge price">
+                                <span th:text="${p.basePrice != null ? #numbers.formatDecimal(p.basePrice, 1, 'COMMA', 2, 'POINT') : '0.00'}">0.00</span>
+                                ₽
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="product-actions">
+                        <a class="vk-btn vk-btn-light"
+                           th:href="@{/admin-buffet/products/{id}/edit(id=${p.id})}">
+                            Редактировать
+                        </a>
+                    </div>
+
+                </article>
+            </div>
+        </section>
+
     </div>
-
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>

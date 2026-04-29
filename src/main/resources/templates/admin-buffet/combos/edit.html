@@ -1,154 +1,721 @@
 <!doctype html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title th:text="'Состав комбо: ' + ${t.name}">Состав комбо</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="'Состав комбо: ' + ${t.name}">Админ буфета · Состав комбо</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
     <style>
-        .wrap{max-width:1100px;margin:24px auto;font-family:system-ui,Segoe UI,Arial}
-        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,.06)}
-        .top{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
-        .btn{display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #d8deea;text-decoration:none;color:#0b1b4d;font-weight:700;background:#fff;cursor:pointer}
-        .btn:hover{border-color:#0b1b4d}
-        .btn.danger{border-color:#fecaca;color:#991b1b;background:#fff}
-        .btn.danger:hover{border-color:#991b1b}
-        .ok{background:#ecfdf5;border:1px solid #a7f3d0;padding:10px 12px;border-radius:12px;margin:12px 0;color:#065f46;font-weight:700}
-        .err{background:#fef2f2;border:1px solid #fecaca;padding:10px 12px;border-radius:12px;margin:12px 0;color:#991b1b;font-weight:700}
-        .muted{color:#667085;font-size:13px}
-        .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-        label{display:block;font-size:12px;font-weight:800;color:#0b1b4d;margin-bottom:6px}
-        input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;font:inherit}
-        .slot{border:1px solid #e6e9ef;border-radius:14px;padding:12px;margin-top:12px}
-        .slot-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-        .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid #e6e9ef;font-weight:800;font-size:12px}
-        .hr{border:none;border-top:1px solid #eef2f7;margin:16px 0}
-        table{width:100%;border-collapse:separate;border-spacing:0 8px}
-        th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;text-align:left;color:#425}
-        td{background:#fff;border:1px solid #e6e9ef;padding:10px 12px;vertical-align:middle}
-        tr td:first-child{border-radius:12px 0 0 12px}
-        tr td:last-child{border-radius:0 12px 12px 0}
-        .field-err{margin-top:6px;color:#991b1b;font-size:13px;font-weight:700}
+        .combo-edit-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .combo-edit-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .combo-edit-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 42px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.05em;
+        }
+
+        .combo-edit-hero p {
+            max-width: 760px;
+            margin: 12px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .combo-edit-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .combo-edit-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .combo-edit-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .combo-edit-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 28px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .combo-edit-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+            line-height: 1.15;
+        }
+
+        .combo-edit-hero-text {
+            margin-top: 7px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .combo-edit-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .combo-edit-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .combo-edit-panel-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .combo-edit-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .combo-edit-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .combo-edit-count {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .combo-edit-form-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 180px 140px auto;
+            gap: 12px;
+            align-items: end;
+            padding: 22px;
+        }
+
+        .combo-edit-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .combo-edit-field label,
+        .combo-edit-field span {
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .combo-edit-field input,
+        .combo-edit-field select {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .combo-edit-field input:focus,
+        .combo-edit-field select:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .combo-edit-field input::placeholder {
+            color: rgba(106, 123, 160, 0.58);
+            font-weight: 700;
+        }
+
+        .combo-edit-hint {
+            color: #6a7ba0;
+            font-size: 12px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .combo-edit-slots {
+            display: grid;
+            gap: 16px;
+            padding: 18px;
+        }
+
+        .combo-slot-card {
+            overflow: hidden;
+            border: 1px solid #e2e8f3;
+            border-radius: 26px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.025), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .combo-slot-head {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 16px;
+            align-items: center;
+            padding: 18px;
+            border-bottom: 1px solid #edf1f7;
+        }
+
+        .combo-slot-title {
+            color: #102a5c;
+            font-size: 22px;
+            font-weight: 950;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            word-break: break-word;
+        }
+
+        .combo-slot-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .combo-edit-badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            min-height: 30px;
+            padding: 6px 10px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 12px;
+            font-weight: 950;
+            line-height: 1.15;
+            white-space: normal;
+        }
+
+        .combo-edit-badge.accent {
+            border-color: #f4d294;
+            background: #fff4de;
+            color: #9c6400;
+        }
+
+        .combo-edit-danger {
+            border-color: #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+            box-shadow: none;
+        }
+
+        .combo-edit-danger:hover {
+            background: #ffe7e4;
+            color: #8f2b22;
+            box-shadow: none;
+        }
+
+        .combo-products-list {
+            display: grid;
+            gap: 10px;
+            padding: 18px;
+        }
+
+        .combo-product-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 130px 120px;
+            gap: 12px;
+            align-items: center;
+            padding: 14px;
+            border: 1px solid #e5ebf5;
+            border-radius: 20px;
+            background: #ffffff;
+        }
+
+        .combo-product-name {
+            color: #102a5c;
+            font-size: 16px;
+            font-weight: 950;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .combo-product-extra {
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 850;
+        }
+
+        .combo-add-product {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 220px auto;
+            gap: 12px;
+            align-items: end;
+            padding: 18px;
+            border-top: 1px solid #edf1f7;
+            background: #ffffff;
+        }
+
+        .combo-edit-empty {
+            padding: 42px 22px;
+            text-align: center;
+        }
+
+        .combo-edit-empty-icon {
+            margin-bottom: 10px;
+            font-size: 44px;
+        }
+
+        .combo-edit-empty-title {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.04em;
+        }
+
+        .combo-edit-empty-text {
+            max-width: 540px;
+            margin: 8px auto 0;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        @media (max-width: 1080px) {
+            .combo-edit-hero {
+                grid-template-columns: 1fr;
+            }
+
+            .combo-edit-form-grid,
+            .combo-add-product {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .combo-edit-form-grid .vk-btn,
+            .combo-add-product .vk-btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .combo-edit-hero {
+                padding: 22px;
+            }
+
+            .combo-edit-hero h1 {
+                font-size: 34px;
+            }
+
+            .combo-edit-panel-head,
+            .combo-slot-head {
+                align-items: stretch;
+                grid-template-columns: 1fr;
+                flex-direction: column;
+            }
+
+            .combo-edit-form-grid,
+            .combo-add-product,
+            .combo-product-row {
+                grid-template-columns: 1fr;
+            }
+
+            .combo-edit-actions,
+            .combo-edit-actions .vk-btn,
+            .combo-edit-form-grid .vk-btn,
+            .combo-add-product .vk-btn,
+            .combo-slot-head .vk-btn,
+            .combo-product-row .vk-btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="wrap">
-    <div th:replace="~{fragments/header :: header}"></div>
+<div th:replace="~{fragments/header :: header}"></div>
 
-    <div class="card">
-        <div class="top">
+<main class="vk-page">
+    <div class="combo-edit-page">
+
+        <section class="combo-edit-hero">
             <div>
-                <div style="font-size:20px;font-weight:900;color:#0b1b4d" th:text="'Состав комбо: ' + ${t.name}">Состав</div>
-                <div class="muted">
-                    Базовая цена: <b th:text="${t.basePrice}">0</b>
+                <div class="vk-eyebrow">Администратор буфета</div>
+
+                <h1 th:text="'Состав комбо: ' + ${t.name}">
+                    Состав комбо
+                </h1>
+
+                <p>
+                    Настройте слоты комбо-набора и добавьте товары, из которых покупатель
+                    сможет собрать свой вариант набора.
+                </p>
+
+                <div class="combo-edit-tags">
+                    <span class="combo-edit-tag">
+                        ID #<span th:text="${t.id}" style="margin-left: 4px;">1</span>
+                    </span>
+
+                    <span class="combo-edit-tag">
+                        Базовая цена:
+                        <span th:text="${t.basePrice != null ? #numbers.formatDecimal(t.basePrice, 1, 'COMMA', 2, 'POINT') : '0.00'}" style="margin-left: 4px;">0.00</span>
+                        ₽
+                    </span>
+
+                    <span class="combo-edit-tag">
+                        Слотов:
+                        <span th:text="${t.slots != null ? #lists.size(t.slots) : 0}" style="margin-left: 4px;">0</span>
+                    </span>
+                </div>
+
+                <div class="combo-edit-actions">
+                    <a class="vk-btn vk-btn-light" th:href="@{/admin-buffet/combos}">
+                        Назад к комбо
+                    </a>
                 </div>
             </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap">
-                <a class="btn" th:href="@{/admin-buffet/combos}">Назад</a>
-            </div>
-        </div>
 
-        <div th:if="${ok}" class="ok" th:text="${ok}">OK</div>
-        <div th:if="${err}" class="err" th:text="${err}">Ошибка</div>
-        <div th:if="${prodErr}" class="err" th:text="${prodErr}">Ошибка</div>
-        <div th:if="${slotErr}" class="err" th:text="${slotErr}">Ошибка</div>
+            <div class="combo-edit-hero-card">
+                <div class="combo-edit-hero-icon">🧩</div>
 
-        <div class="slot">
-            <div class="slot-title">
-                <div style="font-weight:900;color:#0b1b4d">Добавить слот (например “Еда”, “Напиток”)</div>
-            </div>
-
-            <form th:action="@{/admin-buffet/combos/{id}/slots/add(id=${t.id})}" method="post" th:object="${slotForm}">
-                <div class="grid">
-                    <div>
-                        <label>Название слота</label>
-                        <input type="text" th:field="*{name}" placeholder="Еда / Напиток">
-                    </div>
-                    <div>
-                        <label>Сколько нужно</label>
-                        <input type="text" value="1" readonly>
-                        <input type="hidden" th:field="*{requiredQty}" value="1">
-                    </div>
-                    <div>
-                        <label>Порядок</label>
-                        <input type="number" th:field="*{sortOrder}">
-                    </div>
-                    <div style="display:flex;align-items:flex-end">
-                        <button class="btn" type="submit">Добавить слот</button>
-                    </div>
+                <div class="combo-edit-hero-title">
+                    Слоты определяют структуру набора
                 </div>
-            </form>
+
+                <div class="combo-edit-hero-text">
+                    Например: слот «Еда» — один товар, слот «Напиток» — один напиток,
+                    слот «Десерт» — дополнительная позиция.
+                </div>
+            </div>
+        </section>
+
+        <div th:if="${ok}" class="vk-alert vk-alert-success">
+            <span th:text="${ok}">Сообщение</span>
         </div>
 
-        <div th:each="s : ${t.slots}" class="slot">
-            <div class="slot-title">
+        <div th:if="${err}" class="vk-alert vk-alert-danger">
+            <span th:text="${err}">Ошибка</span>
+        </div>
+
+        <div th:if="${prodErr}" class="vk-alert vk-alert-danger">
+            <span th:text="${prodErr}">Ошибка</span>
+        </div>
+
+        <div th:if="${slotErr}" class="vk-alert vk-alert-danger">
+            <span th:text="${slotErr}">Ошибка</span>
+        </div>
+
+        <section class="combo-edit-panel">
+            <div class="combo-edit-panel-head">
                 <div>
-                    <div style="font-weight:900;color:#0b1b4d" th:text="${s.name}">Слот</div>
-                    <div class="muted">
-                        requiredQty: <span class="pill" th:text="${s.requiredQty}">1</span>
-                        sortOrder: <span class="pill" th:text="${s.sortOrder}">0</span>
-                    </div>
-                </div>
+                    <h2>Добавить слот</h2>
 
-                <form th:action="@{/admin-buffet/combos/slots/{slotId}/delete(slotId=${s.id})}" method="post" style="margin:0">
-                    <input type="hidden" name="templateId" th:value="${t.id}">
-                    <button class="btn danger" type="submit" onclick="return confirm('Удалить слот?')">Удалить слот</button>
-                </form>
+                    <p>
+                        Слот — это обязательная часть комбо, например «Еда», «Напиток» или «Десерт».
+                    </p>
+                </div>
             </div>
 
-            <table>
-                <thead>
-                <tr>
-                    <th>Товар</th>
-                    <th>Доплата</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="sp : ${s.products}">
-                    <td th:text="${sp.product.name}">Товар</td>
-                    <td th:text="${sp.extraPrice != null ? sp.extraPrice : '—'}">—</td>
-                    <td style="text-align:right">
-                        <form th:action="@{/admin-buffet/combos/slots/{slotId}/products/remove(slotId=${s.id})}" method="post" style="margin:0">
-                            <input type="hidden" name="templateId" th:value="${t.id}">
-                            <input type="hidden" name="productId" th:value="${sp.product.id}">
-                            <button class="btn danger" type="submit" onclick="return confirm('Убрать товар из слота?')">Убрать</button>
-                        </form>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+            <form th:action="@{/admin-buffet/combos/{id}/slots/add(id=${t.id})}"
+                  method="post"
+                  th:object="${slotForm}"
+                  class="combo-edit-form-grid">
 
-            <hr class="hr">
+                <input th:if="${_csrf != null}"
+                       type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}"/>
 
-            <form th:action="@{/admin-buffet/combos/slots/{slotId}/products/add(slotId=${s.id})}" method="post"
-                  th:object="${slotProductForm}">
-                <input type="hidden" name="templateId" th:value="${t.id}">
-                <div class="grid">
-                    <div>
-                        <label>Добавить товар (только из ассортимента буфета)</label>
-                        <select th:field="*{productId}">
-                            <option value="" disabled selected>-- выберите товар --</option>
-                            <option th:each="p : ${products}" th:value="${p.id}" th:text="${p.name}"></option>
-                        </select>
+                <label class="combo-edit-field">
+                    <span>Название слота</span>
+
+                    <input type="text"
+                           th:field="*{name}"
+                           placeholder="Еда / Напиток / Десерт">
+                </label>
+
+                <label class="combo-edit-field">
+                    <span>Сколько нужно</span>
+
+                    <input type="text" value="1" readonly>
+
+                    <input type="hidden" th:field="*{requiredQty}" value="1">
+
+                    <div class="combo-edit-hint">
+                        Сейчас для каждого слота выбирается одна позиция.
                     </div>
-                    <div>
-                        <label>Доплата (необязательно)</label>
-                        <input type="text" th:field="*{extraPrice}" placeholder="например 20.00 (если этот вариант дороже)">
-                        <div class="muted">Если пусто — доплаты нет.</div>
-                    </div>
-                    <div style="display:flex;align-items:flex-end">
-                        <button class="btn" type="submit">Добавить товар</button>
-                    </div>
-                    <div></div>
-                </div>
+                </label>
+
+                <label class="combo-edit-field">
+                    <span>Порядок</span>
+
+                    <input type="number"
+                           th:field="*{sortOrder}"
+                           placeholder="0">
+                </label>
+
+                <button class="vk-btn" type="submit">
+                    Добавить слот
+                </button>
             </form>
+        </section>
 
-        </div>
+        <section class="combo-edit-panel">
+            <div class="combo-edit-panel-head">
+                <div>
+                    <h2>Слоты и товары</h2>
+
+                    <p>
+                        Добавляйте товары в каждый слот и указывайте доплату для более дорогих вариантов.
+                    </p>
+                </div>
+
+                <div class="combo-edit-count">
+                    Всего слотов:
+                    <span th:text="${t.slots != null ? #lists.size(t.slots) : 0}" style="margin-left: 4px;">0</span>
+                </div>
+            </div>
+
+            <div th:if="${t.slots == null or #lists.isEmpty(t.slots)}" class="combo-edit-empty">
+                <div class="combo-edit-empty-icon">📭</div>
+
+                <h3 class="combo-edit-empty-title">
+                    Слотов пока нет
+                </h3>
+
+                <div class="combo-edit-empty-text">
+                    Добавьте первый слот выше, а затем наполните его товарами из ассортимента буфета.
+                </div>
+            </div>
+
+            <div th:if="${t.slots != null and !#lists.isEmpty(t.slots)}" class="combo-edit-slots">
+
+                <article th:each="s : ${t.slots}" class="combo-slot-card">
+
+                    <div class="combo-slot-head">
+                        <div>
+                            <div class="combo-slot-title" th:text="${s.name}">
+                                Слот
+                            </div>
+
+                            <div class="combo-slot-meta">
+                                <span class="combo-edit-badge">
+                                    ID #<span th:text="${s.id}" style="margin-left: 4px;">1</span>
+                                </span>
+
+                                <span class="combo-edit-badge">
+                                    Нужно:
+                                    <span th:text="${s.requiredQty}" style="margin-left: 4px;">1</span>
+                                </span>
+
+                                <span class="combo-edit-badge accent">
+                                    Порядок:
+                                    <span th:text="${s.sortOrder}" style="margin-left: 4px;">0</span>
+                                </span>
+
+                                <span class="combo-edit-badge">
+                                    Товаров:
+                                    <span th:text="${s.products != null ? #lists.size(s.products) : 0}" style="margin-left: 4px;">0</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <form th:action="@{/admin-buffet/combos/slots/{slotId}/delete(slotId=${s.id})}"
+                              method="post"
+                              style="margin: 0;">
+
+                            <input th:if="${_csrf != null}"
+                                   type="hidden"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}"/>
+
+                            <input type="hidden" name="templateId" th:value="${t.id}">
+
+                            <button class="vk-btn combo-edit-danger"
+                                    type="submit"
+                                    onclick="return confirm('Удалить слот?')">
+                                Удалить слот
+                            </button>
+                        </form>
+                    </div>
+
+                    <div th:if="${s.products == null or #lists.isEmpty(s.products)}" class="combo-edit-empty">
+                        <div class="combo-edit-empty-icon">➕</div>
+
+                        <h3 class="combo-edit-empty-title">
+                            В слоте пока нет товаров
+                        </h3>
+
+                        <div class="combo-edit-empty-text">
+                            Добавьте товары ниже, чтобы покупатель мог выбрать позицию для этого слота.
+                        </div>
+                    </div>
+
+                    <div th:if="${s.products != null and !#lists.isEmpty(s.products)}" class="combo-products-list">
+                        <div th:each="sp : ${s.products}" class="combo-product-row">
+                            <div>
+                                <div class="combo-product-name"
+                                     th:text="${sp.product != null ? sp.product.name : '—'}">
+                                    Товар
+                                </div>
+                            </div>
+
+                            <div class="combo-product-extra">
+                                Доплата:
+                                <b th:text="${sp.extraPrice != null ? sp.extraPrice + ' ₽' : 'нет'}">нет</b>
+                            </div>
+
+                            <form th:action="@{/admin-buffet/combos/slots/{slotId}/products/remove(slotId=${s.id})}"
+                                  method="post"
+                                  style="margin: 0;">
+
+                                <input th:if="${_csrf != null}"
+                                       type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}"/>
+
+                                <input type="hidden" name="templateId" th:value="${t.id}">
+                                <input type="hidden" name="productId" th:value="${sp.product.id}">
+
+                                <button class="vk-btn combo-edit-danger"
+                                        type="submit"
+                                        onclick="return confirm('Убрать товар из слота?')">
+                                    Убрать
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <form th:action="@{/admin-buffet/combos/slots/{slotId}/products/add(slotId=${s.id})}"
+                          method="post"
+                          th:object="${slotProductForm}"
+                          class="combo-add-product">
+
+                        <input th:if="${_csrf != null}"
+                               type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}"/>
+
+                        <input type="hidden" name="templateId" th:value="${t.id}">
+
+                        <label class="combo-edit-field">
+                            <span>Добавить товар</span>
+
+                            <select th:field="*{productId}">
+                                <option value="" disabled selected>
+                                    -- выберите товар --
+                                </option>
+
+                                <option th:each="p : ${products}"
+                                        th:value="${p.id}"
+                                        th:text="${p.name}">
+                                    Товар
+                                </option>
+                            </select>
+
+                            <div class="combo-edit-hint">
+                                Показываются товары из ассортимента буфета.
+                            </div>
+                        </label>
+
+                        <label class="combo-edit-field">
+                            <span>Доплата</span>
+
+                            <input type="text"
+                                   th:field="*{extraPrice}"
+                                   placeholder="например 20.00">
+
+                            <div class="combo-edit-hint">
+                                Если пусто — доплаты нет.
+                            </div>
+                        </label>
+
+                        <button class="vk-btn" type="submit">
+                            Добавить товар
+                        </button>
+                    </form>
+
+                </article>
+
+            </div>
+        </section>
 
     </div>
+</main>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
-</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
 
 </body>
 </html>

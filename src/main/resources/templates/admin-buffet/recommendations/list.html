@@ -1,165 +1,795 @@
 <!doctype html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Рекомендуемые товары</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Админ буфета · Рекомендации</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
     <style>
-        .wrap{max-width:1100px;margin:24px auto;font-family:system-ui,Segoe UI,Arial}
-        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,.06)}
-        .top{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
-        table{width:100%;border-collapse:separate;border-spacing:0 8px}
-        th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;text-align:left;color:#425}
-        td{background:#fff;border:1px solid #e6e9ef;padding:10px 12px;vertical-align:middle}
-        tr td:first-child{border-radius:12px 0 0 12px}
-        tr td:last-child{border-radius:0 12px 12px 0}
-        .btn{display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #d8deea;text-decoration:none;color:#0b1b4d;font-weight:700;background:#fff;cursor:pointer}
-        .btn:hover{border-color:#0b1b4d}
-        .btn.danger{border-color:#fecaca;color:#991b1b}
-        .btn.danger:hover{border-color:#991b1b}
-        .btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-        .ok{background:#ecfdf5;border:1px solid #a7f3d0;padding:10px 12px;border-radius:12px;margin:12px 0;color:#065f46;font-weight:700}
-        .err{background:#fef2f2;border:1px solid #fecaca;padding:10px 12px;border-radius:12px;margin:12px 0;color:#991b1b;font-weight:700}
-        .grid{display:grid;grid-template-columns:1fr 1fr 160px;gap:12px}
-        label{display:block;font-size:12px;font-weight:800;color:#0b1b4d;margin-bottom:6px}
-        input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;font:inherit}
-        .muted{color:#667085;font-size:13px}
-        .chip{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid #e6e9ef;background:#fff;color:#0b1b4d;font-weight:800;font-size:12px}
-        .chip.off{opacity:.55}
-        .hr{border:none;border-top:1px solid #eef2f7;margin:16px 0}
-        .head-title{font-size:20px;font-weight:900;color:#0b1b4d}
-        .empty{padding:12px;border:1px dashed #d8deea;border-radius:12px;color:#667085}
-        .mini-input{width:90px;padding:8px 10px;border-radius:10px;border:1px solid #d8deea}
+        .recommendations-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .recommendations-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 300px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .recommendations-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 42px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.05em;
+        }
+
+        .recommendations-hero p {
+            max-width: 760px;
+            margin: 12px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .recommendations-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .recommendations-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .recommendations-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .recommendations-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 28px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .recommendations-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+            line-height: 1.15;
+        }
+
+        .recommendations-hero-text {
+            margin-top: 7px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .recommendations-layout {
+            display: grid;
+            grid-template-columns: 390px minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .recommendations-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .recommendations-panel-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .recommendations-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .recommendations-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .recommendations-count {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .recommendations-form {
+            display: grid;
+            gap: 14px;
+            padding: 22px;
+        }
+
+        .recommendations-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .recommendations-field label,
+        .recommendations-field span {
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .recommendations-field input,
+        .recommendations-field select {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .recommendations-field input:focus,
+        .recommendations-field select:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .recommendations-field input::placeholder {
+            color: rgba(106, 123, 160, 0.58);
+            font-weight: 700;
+        }
+
+        .recommendations-hint {
+            color: #6a7ba0;
+            font-size: 12px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .recommendations-note {
+            padding: 14px;
+            border: 1px solid #f4d294;
+            border-radius: 18px;
+            background: #fff4de;
+            color: #8a5a00;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.4;
+        }
+
+        .recommendations-side {
+            position: sticky;
+            top: 18px;
+        }
+
+        .recommendations-main {
+            display: grid;
+            gap: 20px;
+            min-width: 0;
+        }
+
+        .recommendations-add-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 150px 150px;
+            gap: 12px;
+            align-items: end;
+            padding: 22px;
+        }
+
+        .recommendations-list {
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+        }
+
+        .recommendation-card {
+            display: grid;
+            grid-template-columns: minmax(260px, 1fr) 260px 180px;
+            gap: 16px;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid #e2e8f3;
+            border-radius: 24px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.025), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .recommendation-main {
+            min-width: 0;
+            display: grid;
+            gap: 10px;
+        }
+
+        .recommendation-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .recommendation-title {
+            color: #102a5c;
+            font-size: 20px;
+            font-weight: 950;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            word-break: break-word;
+        }
+
+        .recommendation-category {
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.35;
+        }
+
+        .recommendation-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .recommendation-badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            min-height: 30px;
+            padding: 6px 10px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 12px;
+            font-weight: 950;
+            line-height: 1.15;
+            white-space: normal;
+        }
+
+        .recommendation-badge.active {
+            border-color: #bde8c9;
+            background: #e8f8ed;
+            color: #166534;
+        }
+
+        .recommendation-badge.inactive {
+            border-color: #d8e1f0;
+            background: #f3f6fa;
+            color: #44557b;
+        }
+
+        .recommendation-sort-form {
+            display: grid;
+            grid-template-columns: 82px minmax(0, 1fr);
+            gap: 8px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .recommendation-sort-form .vk-btn {
+            width: 100%;
+            min-height: 42px;
+            padding: 9px 12px;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .recommendation-sort-input {
+            width: 100%;
+            min-height: 42px;
+            padding: 0 10px;
+            border: 1px solid #c6d2e2;
+            border-radius: 14px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 900;
+            outline: none;
+        }
+
+        .recommendation-sort-input:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .recommendation-actions {
+            display: grid;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .recommendation-actions form {
+            margin: 0;
+        }
+
+        .recommendation-actions .vk-btn {
+            width: 100%;
+            min-height: 42px;
+            padding: 9px 12px;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .recommendation-danger {
+            border-color: #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+            box-shadow: none;
+        }
+
+        .recommendation-danger:hover {
+            background: #ffe7e4;
+            color: #8f2b22;
+            box-shadow: none;
+        }
+
+        .recommendations-empty {
+            padding: 42px 22px;
+            text-align: center;
+        }
+
+        .recommendations-empty-icon {
+            margin-bottom: 10px;
+            font-size: 44px;
+        }
+
+        .recommendations-empty-title {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.04em;
+        }
+
+        .recommendations-empty-text {
+            max-width: 540px;
+            margin: 8px auto 0;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        @media (max-width: 1180px) {
+            .recommendations-hero,
+            .recommendations-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .recommendations-side {
+                position: static;
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .recommendation-card {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+            }
+
+            .recommendation-sort-form {
+                max-width: 360px;
+            }
+
+            .recommendation-actions {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 760px) {
+            .recommendations-hero {
+                padding: 22px;
+            }
+
+            .recommendations-hero h1 {
+                font-size: 34px;
+            }
+
+            .recommendations-panel-head {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .recommendations-add-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .recommendation-sort-form,
+            .recommendation-actions {
+                grid-template-columns: 1fr;
+                max-width: none;
+            }
+
+            .recommendation-sort-form,
+            .recommendation-actions,
+            .recommendation-actions .vk-btn,
+            .recommendations-add-grid .vk-btn {
+                width: 100%;
+            }
+
+            .recommendation-sort-input {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="wrap">
-    <div th:replace="~{fragments/header :: header}"></div>
+<div th:replace="~{fragments/header :: header}"></div>
 
-    <div class="card">
-        <div class="top">
+<main class="vk-page">
+    <div class="recommendations-page">
+
+        <section class="recommendations-hero">
             <div>
-                <div class="head-title">Рекомендуемые товары</div>
-                <div class="muted">Настройка товаров, которые будут показываться покупателю после добавления товара в корзину.</div>
+                <div class="vk-eyebrow">Администратор буфета</div>
+
+                <h1>Рекомендуемые товары</h1>
+
+                <p>
+                    Настройте товары, которые покупатель увидит после добавления основного товара в корзину.
+                    Это помогает предлагать напитки, десерты и сопутствующие позиции.
+                </p>
+
+                <div class="recommendations-tags">
+                    <span class="recommendations-tag">Дополнительные продажи</span>
+                    <span class="recommendations-tag">Настройка порядка</span>
+                    <span class="recommendations-tag">Активность рекомендаций</span>
+                    <span class="recommendations-tag">Ассортимент буфета</span>
+                </div>
             </div>
+
+            <div class="recommendations-hero-card">
+                <div class="recommendations-hero-icon">✨</div>
+
+                <div class="recommendations-hero-title">
+                    Умные предложения
+                </div>
+
+                <div class="recommendations-hero-text">
+                    Например: к выпечке можно предложить кофе, к салату — напиток,
+                    а к горячему блюду — десерт.
+                </div>
+            </div>
+        </section>
+
+        <div th:if="${ok}" class="vk-alert vk-alert-success">
+            <span th:text="${ok}">Сообщение</span>
         </div>
 
-        <div th:if="${ok}" class="ok" th:text="${ok}">OK</div>
-        <div th:if="${err}" class="err" th:text="${err}">Ошибка</div>
-
-        <form method="get" th:action="@{/admin-buffet/recommendations}">
-            <label>Основной товар</label>
-            <div class="btn-row">
-                <select name="productId" style="max-width:420px">
-                    <option th:if="${#lists.isEmpty(products)}" value="">Нет товаров в ассортименте</option>
-                    <option th:each="p : ${products}"
-                            th:value="${p.id}"
-                            th:selected="${selectedProductId != null and p.id == selectedProductId}"
-                            th:text="${p.name}">
-                    </option>
-                </select>
-                <button type="submit" class="btn">Показать</button>
-            </div>
-        </form>
-
-        <hr class="hr">
-
-        <div th:if="${selectedProductId == null}" class="empty">
-            У текущего буфета пока нет товаров в ассортименте.
+        <div th:if="${err}" class="vk-alert vk-alert-danger">
+            <span th:text="${err}">Ошибка</span>
         </div>
 
-        <div th:if="${selectedProductId != null}">
-            <div style="font-weight:900;color:#0b1b4d;margin-bottom:10px">Добавить рекомендацию</div>
+        <section class="recommendations-layout">
 
-            <form th:action="@{/admin-buffet/recommendations/add}" method="post">
-                <input type="hidden" name="productId" th:value="${selectedProductId}">
-                <div class="grid">
+            <aside class="recommendations-panel recommendations-side">
+                <div class="recommendations-panel-head">
                     <div>
-                        <label>Рекомендуемый товар</label>
-                        <select name="recommendedProductId" required>
-                            <option value="" selected disabled>-- выберите товар --</option>
-                            <option th:each="p : ${candidateProducts}"
-                                    th:value="${p.id}"
-                                    th:text="${p.name}">
-                            </option>
-                        </select>
-                    </div>
+                        <h2>Основной товар</h2>
 
-                    <div>
-                        <label>Порядок</label>
-                        <input type="number" name="sortOrder" value="0">
-                    </div>
-
-                    <div>
-                        <label>&nbsp;</label>
-                        <button class="btn" type="submit">Добавить</button>
+                        <p>
+                            Сначала выберите товар, для которого нужно настроить рекомендации.
+                        </p>
                     </div>
                 </div>
-            </form>
 
-            <hr class="hr">
+                <form method="get"
+                      th:action="@{/admin-buffet/recommendations}"
+                      class="recommendations-form">
 
-            <table>
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Рекомендуемый товар</th>
-                    <th>Порядок</th>
-                    <th>Статус</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:if="${#lists.isEmpty(recommendations)}">
-                    <td colspan="5" class="muted">Для этого товара рекомендации пока не заданы.</td>
-                </tr>
+                    <label class="recommendations-field">
+                        <span>Товар</span>
 
-                <tr th:each="r : ${recommendations}">
-                    <td th:text="${r.id}">1</td>
+                        <select name="productId">
+                            <option th:if="${products == null or #lists.isEmpty(products)}" value="">
+                                Нет товаров в ассортименте
+                            </option>
 
-                    <td>
-                        <div style="font-weight:900;color:#0b1b4d" th:text="${r.recommendedProduct.name}">Кофе</div>
-                        <div class="muted" th:text="${r.recommendedProduct.category != null ? r.recommendedProduct.category.name : '—'}">Категория</div>
-                    </td>
+                            <option th:each="p : ${products}"
+                                    th:value="${p.id}"
+                                    th:selected="${selectedProductId != null and p.id == selectedProductId}"
+                                    th:text="${p.name}">
+                                Товар
+                            </option>
+                        </select>
 
-                    <td>
-                        <form class="btn-row"
-                              th:action="@{/admin-buffet/recommendations/{id}/sort(id=${r.id})}"
-                              method="post">
-                            <input type="hidden" name="productId" th:value="${selectedProductId}">
-                            <input class="mini-input" type="number" name="sortOrder" th:value="${r.sortOrder}">
-                            <button class="btn" type="submit">Сохранить</button>
-                        </form>
-                    </td>
-
-                    <td>
-                        <span class="chip" th:classappend="${r.isActive} ? '' : ' off'"
-                              th:text="${r.isActive} ? 'активна' : 'выключена'">активна</span>
-                    </td>
-
-                    <td>
-                        <div class="btn-row">
-                            <form th:action="@{/admin-buffet/recommendations/{id}/toggle(id=${r.id})}" method="post">
-                                <input type="hidden" name="productId" th:value="${selectedProductId}">
-                                <button class="btn" type="submit"
-                                        th:text="${r.isActive ? 'Отключить' : 'Включить'}">Отключить</button>
-                            </form>
-
-                            <form th:action="@{/admin-buffet/recommendations/{id}/delete(id=${r.id})}" method="post">
-                                <input type="hidden" name="productId" th:value="${selectedProductId}">
-                                <button class="btn danger" type="submit"
-                                        onclick="return confirm('Удалить рекомендацию?')">Удалить</button>
-                            </form>
+                        <div class="recommendations-hint">
+                            После выбора товара справа появится список его рекомендаций.
                         </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+                    </label>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
-</div>
+                    <button type="submit" class="vk-btn">
+                        Показать рекомендации
+                    </button>
+
+                    <a class="vk-btn vk-btn-light" th:href="@{/admin-buffet}">
+                        Назад
+                    </a>
+
+                    <div class="recommendations-note">
+                        Рекомендации показываются покупателю после добавления выбранного товара в корзину.
+                        Можно менять порядок, отключать и удалять рекомендации.
+                    </div>
+                </form>
+            </aside>
+
+            <div class="recommendations-main">
+
+                <section class="recommendations-panel" th:if="${selectedProductId == null}">
+                    <div class="recommendations-empty">
+                        <div class="recommendations-empty-icon">🛒</div>
+
+                        <h3 class="recommendations-empty-title">
+                            Выберите основной товар
+                        </h3>
+
+                        <div class="recommendations-empty-text">
+                            Пока товар не выбран, рекомендации настроить нельзя.
+                            Выберите позицию слева и нажмите «Показать рекомендации».
+                        </div>
+                    </div>
+                </section>
+
+                <section class="recommendations-panel" th:if="${selectedProductId != null}">
+                    <div class="recommendations-panel-head">
+                        <div>
+                            <h2>Добавить рекомендацию</h2>
+
+                            <p>
+                                Выберите сопутствующий товар и задайте порядок отображения.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form th:action="@{/admin-buffet/recommendations/add}"
+                          method="post"
+                          class="recommendations-add-grid">
+
+                        <input th:if="${_csrf != null}"
+                               type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}"/>
+
+                        <input type="hidden" name="productId" th:value="${selectedProductId}">
+
+                        <label class="recommendations-field">
+                            <span>Рекомендуемый товар</span>
+
+                            <select name="recommendedProductId" required>
+                                <option value="" selected disabled>
+                                    -- выберите товар --
+                                </option>
+
+                                <option th:each="p : ${candidateProducts}"
+                                        th:value="${p.id}"
+                                        th:text="${p.name}">
+                                    Товар
+                                </option>
+                            </select>
+
+                            <div class="recommendations-hint"
+                                 th:if="${candidateProducts == null or #lists.isEmpty(candidateProducts)}">
+                                Для выбранного товара нет доступных кандидатов.
+                            </div>
+                        </label>
+
+                        <label class="recommendations-field">
+                            <span>Порядок</span>
+
+                            <input type="number"
+                                   name="sortOrder"
+                                   value="0"
+                                   placeholder="0">
+                        </label>
+
+                        <button class="vk-btn" type="submit">
+                            Добавить
+                        </button>
+                    </form>
+                </section>
+
+                <section class="recommendations-panel" th:if="${selectedProductId != null}">
+                    <div class="recommendations-panel-head">
+                        <div>
+                            <h2>Список рекомендаций</h2>
+
+                            <p>
+                                Управляйте порядком, активностью и составом рекомендаций.
+                            </p>
+                        </div>
+
+                        <div class="recommendations-count">
+                            Всего:
+                            <span th:text="${recommendations != null ? #lists.size(recommendations) : 0}">
+                                0
+                            </span>
+                        </div>
+                    </div>
+
+                    <div th:if="${recommendations == null or #lists.isEmpty(recommendations)}"
+                         class="recommendations-empty">
+                        <div class="recommendations-empty-icon">📭</div>
+
+                        <h3 class="recommendations-empty-title">
+                            Рекомендаций пока нет
+                        </h3>
+
+                        <div class="recommendations-empty-text">
+                            Для выбранного товара рекомендации пока не заданы.
+                            Добавьте первый сопутствующий товар через форму выше.
+                        </div>
+                    </div>
+
+                    <div th:if="${recommendations != null and !#lists.isEmpty(recommendations)}"
+                         class="recommendations-list">
+
+                        <article th:each="r : ${recommendations}" class="recommendation-card">
+
+                            <div class="recommendation-main">
+                                <div class="recommendation-title-row">
+                                    <div class="recommendation-title"
+                                         th:text="${r.recommendedProduct != null ? r.recommendedProduct.name : '—'}">
+                                        Кофе
+                                    </div>
+
+                                    <span class="recommendation-badge"
+                                          th:classappend="${r.isActive ? ' active' : ' inactive'}"
+                                          th:text="${r.isActive ? 'Активна' : 'Выключена'}">
+                                        Активна
+                                    </span>
+                                </div>
+
+                                <div class="recommendation-category"
+                                     th:text="${r.recommendedProduct != null and r.recommendedProduct.category != null ? r.recommendedProduct.category.name : 'Без категории'}">
+                                    Категория
+                                </div>
+
+                                <div class="recommendation-meta">
+                                    <span class="recommendation-badge">
+                                        ID #<span th:text="${r.id}">1</span>
+                                    </span>
+
+                                    <span class="recommendation-badge">
+                                        Порядок:
+                                        <span th:text="${r.sortOrder}" style="margin-left: 4px;">0</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <form class="recommendation-sort-form"
+                                  th:action="@{/admin-buffet/recommendations/{id}/sort(id=${r.id})}"
+                                  method="post">
+
+                                <input th:if="${_csrf != null}"
+                                       type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}"/>
+
+                                <input type="hidden" name="productId" th:value="${selectedProductId}">
+
+                                <input class="recommendation-sort-input"
+                                       type="number"
+                                       name="sortOrder"
+                                       th:value="${r.sortOrder}">
+
+                                <button class="vk-btn vk-btn-light" type="submit">
+                                    Сохранить
+                                </button>
+                            </form>
+
+                            <div class="recommendation-actions">
+                                <form th:action="@{/admin-buffet/recommendations/{id}/toggle(id=${r.id})}"
+                                      method="post">
+
+                                    <input th:if="${_csrf != null}"
+                                           type="hidden"
+                                           th:name="${_csrf.parameterName}"
+                                           th:value="${_csrf.token}"/>
+
+                                    <input type="hidden" name="productId" th:value="${selectedProductId}">
+
+                                    <button class="vk-btn vk-btn-light"
+                                            type="submit"
+                                            th:text="${r.isActive ? 'Отключить' : 'Включить'}">
+                                        Отключить
+                                    </button>
+                                </form>
+
+                                <form th:action="@{/admin-buffet/recommendations/{id}/delete(id=${r.id})}"
+                                      method="post">
+
+                                    <input th:if="${_csrf != null}"
+                                           type="hidden"
+                                           th:name="${_csrf.parameterName}"
+                                           th:value="${_csrf.token}"/>
+
+                                    <input type="hidden" name="productId" th:value="${selectedProductId}">
+
+                                    <button class="vk-btn recommendation-danger"
+                                            type="submit"
+                                            onclick="return confirm('Удалить рекомендацию?')">
+                                        Удалить
+                                    </button>
+                                </form>
+                            </div>
+
+                        </article>
+
+                    </div>
+                </section>
+
+            </div>
+
+        </section>
+
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
 
 </body>
 </html>

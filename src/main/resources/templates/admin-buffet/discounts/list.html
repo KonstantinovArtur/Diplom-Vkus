@@ -2,182 +2,742 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Скидки на товары</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ буфета · Скидки на товары</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
     <style>
-        .wrap{max-width:1100px;margin:24px auto;font-family:system-ui,Segoe UI,Arial}
-        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,06)}
-        .top{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
-        table{width:100%;border-collapse:separate;border-spacing:0 8px}
-        th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;text-align:left;color:#425}
-        td{background:#fff;border:1px solid #e6e9ef;padding:10px 12px;vertical-align:middle}
-        tr td:first-child{border-radius:12px 0 0 12px}
-        tr td:last-child{border-radius:0 12px 12px 0}
-        .btn{display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #d8deea;text-decoration:none;color:#0b1b4d;font-weight:700;background:#fff;cursor:pointer}
-        .btn:hover{border-color:#0b1b4d}
-        .btn.danger{border-color:#fecaca;color:#991b1b;background:#fff}
-        .btn.danger:hover{border-color:#991b1b}
-        .ok{background:#ecfdf5;border:1px solid #a7f3d0;padding:10px 12px;border-radius:12px;margin:12px 0;color:#065f46;font-weight:700}
-        .err{background:#fef2f2;border:1px solid #fecaca;padding:10px 12px;border-radius:12px;margin:12px 0;color:#991b1b;font-weight:700}
-        .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-        label{display:block;font-size:12px;font-weight:800;color:#0b1b4d;margin-bottom:6px}
-        input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;font:inherit}
-        .muted{color:#667085;font-size:13px}
-        .actions{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
-        .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid #e6e9ef;background:#fff;color:#0b1b4d;font-weight:800;font-size:12px}
-        .chip.off{opacity:.55}
-        .row-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-        .hr{border:none;border-top:1px solid #eef2f7;margin:16px 0}
-        .hint{font-size:12px;color:#667085}
+        .discounts-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .discounts-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 300px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .discounts-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 42px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.05em;
+        }
+
+        .discounts-hero p {
+            max-width: 720px;
+            margin: 12px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .discounts-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .discounts-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .discounts-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .discounts-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 28px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .discounts-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+            line-height: 1.15;
+        }
+
+        .discounts-hero-text {
+            margin-top: 7px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .discounts-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 390px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .discounts-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .discounts-panel-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .discounts-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .discounts-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .discounts-count {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .discounts-toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 16px 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background: #ffffff;
+        }
+
+        .discounts-list {
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+        }
+
+        .discount-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 16px;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid #e2e8f3;
+            border-radius: 24px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.025), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .discount-card-main {
+            min-width: 0;
+            display: grid;
+            gap: 10px;
+        }
+
+        .discount-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .discount-title {
+            color: #102a5c;
+            font-size: 20px;
+            font-weight: 950;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            word-break: break-word;
+        }
+
+        .discount-category {
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.35;
+        }
+
+        .discount-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .discount-badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            min-height: 30px;
+            padding: 6px 10px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 12px;
+            font-weight: 950;
+            line-height: 1.15;
+            white-space: normal;
+        }
+
+        .discount-badge.active {
+            border-color: #bde8c9;
+            background: #e8f8ed;
+            color: #166534;
+        }
+
+        .discount-badge.inactive {
+            border-color: #d8e1f0;
+            background: #f3f6fa;
+            color: #44557b;
+        }
+
+        .discount-badge.percent {
+            border-color: #f4d294;
+            background: #fff4de;
+            color: #9c6400;
+        }
+
+        .discount-actions {
+            display: grid;
+            gap: 8px;
+            min-width: 150px;
+        }
+
+        .discount-actions .vk-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .discount-danger {
+            border-color: #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+            box-shadow: none;
+        }
+
+        .discount-danger:hover {
+            background: #ffe7e4;
+            color: #8f2b22;
+            box-shadow: none;
+        }
+
+        .discount-empty {
+            padding: 42px 22px;
+            text-align: center;
+        }
+
+        .discount-empty-icon {
+            margin-bottom: 10px;
+            font-size: 44px;
+        }
+
+        .discount-empty-title {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.04em;
+        }
+
+        .discount-empty-text {
+            max-width: 520px;
+            margin: 8px auto 0;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .discount-form {
+            display: grid;
+            gap: 14px;
+            padding: 22px;
+        }
+
+        .discount-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .discount-field label,
+        .discount-field span {
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .discount-field input,
+        .discount-field select {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .discount-field input:focus,
+        .discount-field select:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .discount-field input::placeholder {
+            color: rgba(106, 123, 160, 0.58);
+            font-weight: 700;
+        }
+
+        .discount-error {
+            color: #a2352a;
+            font-size: 12px;
+            font-weight: 850;
+        }
+
+        .discount-hint {
+            color: #6a7ba0;
+            font-size: 12px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .discount-note {
+            padding: 14px;
+            border: 1px solid #f4d294;
+            border-radius: 18px;
+            background: #fff4de;
+            color: #8a5a00;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.4;
+        }
+
+        .discount-form-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .discount-side {
+            position: sticky;
+            top: 18px;
+        }
+
+        @media (max-width: 1120px) {
+            .discounts-hero,
+            .discounts-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .discount-side {
+                position: static;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .discounts-hero {
+                padding: 22px;
+            }
+
+            .discounts-hero h1 {
+                font-size: 34px;
+            }
+
+            .discounts-panel-head {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .discount-card {
+                grid-template-columns: 1fr;
+            }
+
+            .discount-actions {
+                min-width: 0;
+            }
+
+            .discount-form-actions,
+            .discount-form-actions .vk-btn,
+            .discount-actions,
+            .discount-actions .vk-btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="wrap">
-    <div th:replace="~{fragments/header :: header}"></div>
+<div th:replace="~{fragments/header :: header}"></div>
 
-    <div class="card">
-        <div class="top">
+<main class="vk-page">
+    <div class="discounts-page">
+
+        <section class="discounts-hero">
             <div>
-                <div style="font-size:20px;font-weight:900;color:#0b1b4d">Скидки на товары</div>
-                <div class="muted">Акции для конкретных товаров (процент + период + активность).</div>
+                <div class="vk-eyebrow">Администратор буфета</div>
+
+                <h1>Скидки на товары</h1>
+
+                <p>
+                    Создавайте акции на конкретные товары, задавайте процент скидки,
+                    период действия и быстро отключайте устаревшие предложения.
+                </p>
+
+                <div class="discounts-tags">
+                    <span class="discounts-tag">Акции</span>
+                    <span class="discounts-tag">Товары</span>
+                    <span class="discounts-tag">Период действия</span>
+                    <span class="discounts-tag">Ассортимент буфета</span>
+                </div>
             </div>
-            <a class="btn" th:href="@{/admin-buffet/discounts}">Сбросить</a>
+
+            <div class="discounts-hero-card">
+                <div class="discounts-hero-icon">%</div>
+
+                <div class="discounts-hero-title">
+                    Управление скидками
+                </div>
+
+                <div class="discounts-hero-text">
+                    Скидка применяется к выбранному товару в период действия акции,
+                    если она находится в активном статусе.
+                </div>
+            </div>
+        </section>
+
+        <div th:if="${ok}" class="vk-alert vk-alert-success">
+            <span th:text="${ok}">Сообщение</span>
         </div>
 
-        <div th:if="${ok}" class="ok" th:text="${ok}">OK</div>
+        <section class="discounts-layout">
 
-        <table>
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Товар</th>
-                <th>%</th>
-                <th>Начало</th>
-                <th>Конец</th>
-                <th>Статус</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="d : ${discounts}">
-                <td th:text="${d.id}">1</td>
-
-                <td>
-                    <div style="font-weight:900;color:#0b1b4d" th:text="${d.product.name}">Товар</div>
-                    <div class="muted" th:text="${d.product.category != null ? d.product.category.name : '—'}">Категория</div>
-                </td>
-
-                <td th:text="${d.percent}">10</td>
-                <td th:text="${d.startAt}">2026-02-02</td>
-                <td th:text="${d.endAt != null ? d.endAt : '—'}">—</td>
-
-                <td>
-                    <span class="chip" th:classappend="${d.isActive} ? '' : ' off'"
-                          th:text="${d.isActive} ? 'активна' : 'выключена'">активна</span>
-                </td>
-
-                <td>
-                    <div class="row-actions">
-                        <a class="btn" th:href="@{/admin-buffet/discounts(edit=${d.id})}">Изменить</a>
-
-                        <form th:action="@{/admin-buffet/discounts/deactivate}" method="post" style="margin:0"
-                              th:if="${d.isActive}">
-                            <input type="hidden" name="id" th:value="${d.id}">
-                            <button class="btn danger" type="submit"
-                                    onclick="return confirm('Отключить скидку?')">Отключить</button>
-                        </form>
-
-                        <!-- если хочешь физическое удаление — оставь, иначе можно убрать -->
-                        <form th:action="@{/admin-buffet/discounts/delete}" method="post" style="margin:0">
-                            <input type="hidden" name="id" th:value="${d.id}">
-                            <button class="btn danger" type="submit"
-                                    onclick="return confirm('Удалить скидку полностью?')">Удалить</button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-
-        <hr class="hr">
-
-        <div>
-            <div style="display:flex;gap:12px;align-items:baseline;justify-content:space-between;margin-bottom:10px">
-                <div style="font-weight:900;color:#0b1b4d">
-                    <span th:text="${editId != null ? 'Редактирование скидки' : 'Создание скидки'}">Создание скидки</span>
-                </div>
-                <div class="muted" th:if="${editId != null}">
-                    ID: <span th:text="${editId}">1</span>
-                </div>
-            </div>
-
-            <form th:action="@{/admin-buffet/discounts/save}" method="post" th:object="${form}">
-                <input type="hidden" th:field="*{id}"/>
-
-                <div th:if="${#fields.hasGlobalErrors()}" class="err">
-                    <div th:each="e : ${#fields.globalErrors()}" th:text="${e}">Ошибка</div>
-                </div>
-
-                <div class="grid">
+            <section class="discounts-panel">
+                <div class="discounts-panel-head">
                     <div>
-                        <label>Товар (только из ассортимента буфета)</label>
+                        <h2>Список скидок</h2>
+
+                        <p>
+                            Все акции для товаров выбранного буфета.
+                        </p>
+                    </div>
+
+                    <div class="discounts-count">
+                        Всего: <span th:text="${discounts != null ? #lists.size(discounts) : 0}">0</span>
+                    </div>
+                </div>
+
+                <div class="discounts-toolbar">
+                    <a class="vk-btn vk-btn-light" th:href="@{/admin-buffet/discounts}">
+                        Сбросить
+                    </a>
+                </div>
+
+                <div th:if="${discounts == null or #lists.isEmpty(discounts)}" class="discount-empty">
+                    <div class="discount-empty-icon">📭</div>
+
+                    <h3 class="discount-empty-title">
+                        Скидок пока нет
+                    </h3>
+
+                    <div class="discount-empty-text">
+                        Создайте первую скидку через форму справа.
+                    </div>
+                </div>
+
+                <div th:if="${discounts != null and !#lists.isEmpty(discounts)}" class="discounts-list">
+                    <article th:each="d : ${discounts}" class="discount-card">
+                        <div class="discount-card-main">
+                            <div class="discount-title-row">
+                                <div class="discount-title" th:text="${d.product.name}">
+                                    Товар
+                                </div>
+
+                                <span class="discount-badge percent">
+                                    <span th:text="${#numbers.formatDecimal(d.percent, 1, 'COMMA', 2, 'POINT')}">10,00</span> %
+                                </span>
+
+                                <span class="discount-badge"
+                                      th:classappend="${d.isActive ? ' active' : ' inactive'}"
+                                      th:text="${d.isActive ? 'Активна' : 'Выключена'}">
+                                    Активна
+                                </span>
+                            </div>
+
+                            <div class="discount-category"
+                                 th:text="${d.product.category != null ? d.product.category.name : 'Без категории'}">
+                                Категория
+                            </div>
+
+                            <div class="discount-meta">
+                                <span class="discount-badge">
+                                    ID #<span th:text="${d.id}">1</span>
+                                </span>
+
+                                <span class="discount-badge">
+                                    Начало: <span th:text="${d.startAt}" style="margin-left:4px;">2026-02-02</span>
+                                </span>
+
+                                <span class="discount-badge">
+                                    Конец:
+                                    <span th:text="${d.endAt != null ? d.endAt : 'не задан'}" style="margin-left:4px;">—</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="discount-actions">
+                            <a class="vk-btn vk-btn-light"
+                               th:href="@{/admin-buffet/discounts(edit=${d.id})}">
+                                Изменить
+                            </a>
+
+                            <form th:action="@{/admin-buffet/discounts/deactivate}"
+                                  method="post"
+                                  th:if="${d.isActive}"
+                                  style="margin: 0;">
+
+                                <input th:if="${_csrf != null}"
+                                       type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}"/>
+
+                                <input type="hidden" name="id" th:value="${d.id}">
+
+                                <button class="vk-btn discount-danger"
+                                        type="submit"
+                                        onclick="return confirm('Отключить скидку?')">
+                                    Отключить
+                                </button>
+                            </form>
+
+                            <form th:action="@{/admin-buffet/discounts/delete}"
+                                  method="post"
+                                  style="margin: 0;">
+
+                                <input th:if="${_csrf != null}"
+                                       type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}"/>
+
+                                <input type="hidden" name="id" th:value="${d.id}">
+
+                                <button class="vk-btn discount-danger"
+                                        type="submit"
+                                        onclick="return confirm('Удалить скидку полностью?')">
+                                    Удалить
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <aside class="discounts-panel discount-side">
+                <div class="discounts-panel-head">
+                    <div>
+                        <h2 th:text="${editId != null ? 'Редактирование' : 'Создание'}">
+                            Создание
+                        </h2>
+
+                        <p>
+                            Заполните параметры скидки.
+                        </p>
+                    </div>
+
+                    <div class="discounts-count" th:if="${editId != null}">
+                        ID: <span th:text="${editId}">1</span>
+                    </div>
+                </div>
+
+                <form th:action="@{/admin-buffet/discounts/save}"
+                      method="post"
+                      th:object="${form}"
+                      class="discount-form">
+
+                    <input th:if="${_csrf != null}"
+                           type="hidden"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}"/>
+
+                    <input type="hidden" th:field="*{id}"/>
+
+                    <div th:if="${#fields.hasGlobalErrors()}" class="vk-alert vk-alert-danger">
+                        <div th:each="e : ${#fields.globalErrors()}" th:text="${e}">
+                            Ошибка
+                        </div>
+                    </div>
+
+                    <label class="discount-field">
+                        <span>Товар</span>
+
                         <select th:field="*{productId}">
-                            <option value="" disabled>-- выберите товар --</option>
+                            <option value="" disabled>
+                                -- выберите товар --
+                            </option>
+
                             <option th:each="p : ${products}"
                                     th:value="${p.id}"
                                     th:text="${p.name}">
+                                Товар
                             </option>
                         </select>
-                        <div class="muted" th:if="${#fields.hasErrors('productId')}"
-                             th:errors="*{productId}">Ошибка</div>
-                    </div>
 
-                    <div>
-                        <label>Статус</label>
+                        <small class="discount-error"
+                               th:if="${#fields.hasErrors('productId')}"
+                               th:errors="*{productId}">
+                            Ошибка
+                        </small>
+
+                        <div class="discount-hint">
+                            Показываются только товары из ассортимента выбранного буфета.
+                        </div>
+                    </label>
+
+                    <label class="discount-field">
+                        <span>Статус</span>
+
                         <select th:field="*{isActive}">
-                            <option th:value="true">активна</option>
-                            <option th:value="false">выключена</option>
+                            <option th:value="true">Активна</option>
+                            <option th:value="false">Выключена</option>
                         </select>
-                        <div class="muted" th:if="${#fields.hasErrors('isActive')}"
-                             th:errors="*{isActive}">Ошибка</div>
-                    </div>
 
-                    <div>
-                        <label>Процент</label>
-                        <input type="text" th:field="*{percent}" placeholder="например 10.00">
-                        <div class="muted" th:if="${#fields.hasErrors('percent')}"
-                             th:errors="*{percent}">Ошибка</div>
-                        <div class="hint">0.01–99.99</div>
-                    </div>
+                        <small class="discount-error"
+                               th:if="${#fields.hasErrors('isActive')}"
+                               th:errors="*{isActive}">
+                            Ошибка
+                        </small>
+                    </label>
 
-                    <div></div>
+                    <label class="discount-field">
+                        <span>Процент</span>
 
-                    <div>
-                        <label>Начало</label>
+                        <input type="text"
+                               th:field="*{percent}"
+                               placeholder="например 10.00">
+
+                        <small class="discount-error"
+                               th:if="${#fields.hasErrors('percent')}"
+                               th:errors="*{percent}">
+                            Ошибка
+                        </small>
+
+                        <div class="discount-hint">
+                            Допустимое значение: от 0.01 до 99.99.
+                        </div>
+                    </label>
+
+                    <label class="discount-field">
+                        <span>Начало</span>
+
                         <input type="datetime-local" th:field="*{startAt}">
-                        <div class="muted" th:if="${#fields.hasErrors('startAt')}"
-                             th:errors="*{startAt}">Ошибка</div>
-                    </div>
 
-                    <div>
-                        <label>Конец (необязательно)</label>
+                        <small class="discount-error"
+                               th:if="${#fields.hasErrors('startAt')}"
+                               th:errors="*{startAt}">
+                            Ошибка
+                        </small>
+                    </label>
+
+                    <label class="discount-field">
+                        <span>Конец</span>
+
                         <input type="datetime-local" th:field="*{endAt}">
-                        <div class="muted" th:if="${#fields.hasErrors('endAt')}"
-                             th:errors="*{endAt}">Ошибка</div>
-                    </div>
-                </div>
 
-                <div class="actions">
-                    <button class="btn" type="submit">Сохранить</button>
-                    <a class="btn" th:href="@{/admin-buffet/discounts}">Отмена</a>
-                </div>
-            </form>
-        </div>
+                        <small class="discount-error"
+                               th:if="${#fields.hasErrors('endAt')}"
+                               th:errors="*{endAt}">
+                            Ошибка
+                        </small>
+
+                        <div class="discount-hint">
+                            Можно оставить пустым, если акция действует без даты окончания.
+                        </div>
+                    </label>
+
+                    <div class="discount-note">
+                        Если у товара уже есть активная скидка, новая акция может заменить или конфликтовать с ней —
+                        проверьте период действия перед сохранением.
+                    </div>
+
+                    <div class="discount-form-actions">
+                        <button class="vk-btn" type="submit">
+                            Сохранить
+                        </button>
+
+                        <a class="vk-btn vk-btn-light" th:href="@{/admin-buffet/discounts}">
+                            Отмена
+                        </a>
+                    </div>
+                </form>
+            </aside>
+
+        </section>
 
     </div>
+</main>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
-</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
 
 </body>
 </html>

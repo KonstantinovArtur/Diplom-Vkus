@@ -1,87 +1,165 @@
 <!doctype html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Архив логов</title>
-    <style>
-        .wrap{max-width:1100px;margin:24px auto;font-family:system-ui,Segoe UI,Arial}
-        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,.06)}
-        .top{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
-        table{width:100%;border-collapse:separate;border-spacing:0 8px}
-        th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;text-align:left;color:#425}
-        td{background:#fff;border:1px solid #e6e9ef;padding:10px 12px;vertical-align:top}
-        tr td:first-child{border-radius:12px 0 0 12px}
-        tr td:last-child{border-radius:0 12px 12px 0}
-        .btn{display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #d8deea;text-decoration:none;color:#0b1b4d;font-weight:700;background:#fff;cursor:pointer}
-        .btn:hover{border-color:#0b1b4d}
-        .muted{color:#667085;font-size:13px}
-        .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-        .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid #e6e9ef;background:#fff;color:#0b1b4d;font-weight:800;font-size:12px}
-        .hr{border:none;border-top:1px solid #eef2f7;margin:16px 0}
-        .links a{text-decoration:none;color:#0b1b4d;font-weight:700}
-        .links a:hover{text-decoration:underline}
-    </style>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Админ БД · Архив логов</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+    <link rel="stylesheet" th:href="@{/css/vkus/admin-db.css}">
 </head>
 <body>
 
-<div class="wrap">
-    <div th:replace="~{fragments/header :: header}"></div>
+<div th:replace="fragments/header :: header"></div>
 
-    <div class="card">
-        <div class="top">
+<main class="vk-page">
+    <div class="admin-db-page">
+
+        <section class="admin-db-hero">
             <div>
-                <div style="font-size:20px;font-weight:900;color:#0b1b4d">Архив логов</div>
-                <div class="muted">Список архивных файлов журнала аудита.</div>
+                <div class="vk-eyebrow">Администратор базы данных</div>
+
+                <h1>Архив логов</h1>
+
+                <p>
+                    Просматривайте архивные файлы журнала аудита, открывайте JSON
+                    и скачивайте архивы для хранения или проверки.
+                </p>
+
+                <div class="admin-db-tags">
+                    <span class="admin-db-tag">Архив</span>
+                    <span class="admin-db-tag">JSON</span>
+                    <span class="admin-db-tag">Журнал аудита</span>
+                </div>
             </div>
-            <div class="actions">
-                <a class="btn" th:href="@{/admin-db/audit}">Назад к логам</a>
+
+            <div class="admin-db-hero-card">
+                <div class="admin-db-hero-icon">📦</div>
+
+                <div class="admin-db-hero-title">
+                    Архивирование
+                </div>
+
+                <div class="admin-db-hero-text">
+                    Старые записи аудита переносятся в архив для уменьшения размера основной таблицы.
+                </div>
             </div>
-        </div>
+        </section>
 
-        <hr class="hr">
+        <section class="admin-db-panel">
+            <div class="admin-db-panel-head">
+                <div>
+                    <h2>Список архивов</h2>
 
-        <table>
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Файл</th>
-                <th>Диапазон ID логов</th>
-                <th>Количество записей</th>
-                <th>Дата создания</th>
-                <th>Действия</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="f : ${files}">
-                <td th:text="${f.id}">1</td>
-                <td>
-                    <span class="chip" th:text="${f.fileName}">audit_xxx.json</span>
-                </td>
-                <td class="muted">
-                    <span th:text="${f.logFromId}">1</span>
-                    -
-                    <span th:text="${f.logToId}">300</span>
-                </td>
-                <td th:text="${f.recordsCount}">300</td>
-                <td th:text="${#temporals.format(f.createdAt, 'dd.MM.yyyy HH:mm:ss')}">31.03.2026 13:22:00</td>
-                <td class="links" style="white-space:nowrap;">
-                    <a th:href="@{/admin-db/audit-archive/preview/{id}(id=${f.id})}">Просмотр</a>
-                    &nbsp;|&nbsp;
-                    <a th:href="@{/admin-db/audit-archive/view/{id}(id=${f.id})}" target="_blank">JSON</a>
-                    &nbsp;|&nbsp;
-                    <a th:href="@{/admin-db/audit-archive/download/{id}(id=${f.id})}">Скачать</a>
-                </td>
-            </tr>
+                    <p>
+                        Архивные файлы журнала аудита.
+                    </p>
+                </div>
 
-            <tr th:if="${#lists.isEmpty(files)}">
-                <td colspan="6" class="muted" style="padding:14px 12px">Архивных файлов пока нет.</td>
-            </tr>
-            </tbody>
-        </table>
+                <div class="admin-db-count">
+                    Всего: <span th:text="${#lists.size(files)}">0</span>
+                </div>
+            </div>
+
+            <div class="admin-db-toolbar">
+                <a class="admin-db-btn admin-db-btn-light" th:href="@{/admin-db/audit}">
+                    Назад к логам
+                </a>
+            </div>
+
+            <div class="admin-db-table-wrap">
+                <table class="admin-db-table compact">
+                    <thead>
+                    <tr>
+                        <th style="width:70px;">ID</th>
+                        <th>Файл</th>
+                        <th style="width:170px;">Диапазон ID</th>
+                        <th style="width:140px;">Записей</th>
+                        <th style="width:190px;">Дата создания</th>
+                        <th style="width:300px;">Действия</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="f : ${files}">
+                        <td>
+                            <div class="admin-db-id">
+                                #<span th:text="${f.id}">1</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="admin-db-badge" th:text="${f.fileName}">
+                                audit_xxx.json
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="admin-db-muted">
+                                <span th:text="${f.logFromId}">1</span>
+                                -
+                                <span th:text="${f.logToId}">300</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="admin-db-badge" th:text="${f.recordsCount}">
+                                300
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="admin-db-muted"
+                                 th:text="${#temporals.format(f.createdAt, 'dd.MM.yyyy HH:mm:ss')}">
+                                31.03.2026 13:22:00
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="admin-db-actions">
+                                <a class="admin-db-btn admin-db-btn-light"
+                                   th:href="@{/admin-db/audit-archive/preview/{id}(id=${f.id})}">
+                                    Просмотр
+                                </a>
+
+                                <a class="admin-db-btn admin-db-btn-light"
+                                   th:href="@{/admin-db/audit-archive/view/{id}(id=${f.id})}"
+                                   target="_blank">
+                                    JSON
+                                </a>
+
+                                <a class="admin-db-btn"
+                                   th:href="@{/admin-db/audit-archive/download/{id}(id=${f.id})}">
+                                    Скачать
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(files)}">
+                        <td colspan="6">
+                            <div class="admin-db-empty">
+                                <div class="admin-db-empty-icon">📭</div>
+
+                                <h3 class="admin-db-empty-title">
+                                    Архивов пока нет
+                                </h3>
+
+                                <div class="admin-db-empty-text">
+                                    Когда система создаст архив логов, он появится в этом списке.
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </div>
+</main>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
-</div>
+<div th:replace="fragments/footer :: footer"></div>
 
 </body>
 </html>

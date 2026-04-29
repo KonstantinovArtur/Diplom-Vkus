@@ -1,112 +1,623 @@
 <!doctype html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Категории месяца</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Админ буфета · Скидки месяца</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
     <style>
-        .wrap{max-width:1000px;margin:24px auto;font-family:system-ui,Segoe UI,Arial}
-        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,0.06)}
-        .top{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
-        .btn{display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #d8deea;text-decoration:none;color:#0b1b4d;font-weight:700;background:#fff;cursor:pointer}
-        .btn:hover{border-color:#0b1b4d}
-        .ok{background:#ecfdf5;border:1px solid #a7f3d0;padding:10px 12px;border-radius:12px;margin:12px 0;color:#065f46;font-weight:700}
-        .err{background:#fef2f2;border:1px solid #fecaca;padding:10px 12px;border-radius:12px;margin:12px 0;color:#991b1b;font-weight:700}
-        .grid{display:grid;grid-template-columns:2fr 1fr;gap:12px;align-items:end}
-        label{display:block;font-size:12px;font-weight:800;color:#0b1b4d;margin-bottom:6px}
-        input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;font:inherit}
-        .row{border:1px solid #eef2f7;border-radius:14px;padding:12px;margin:10px 0}
-        .muted{color:#667085;font-size:13px}
-        .actions{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
-        .hint{font-size:12px;color:#667085}
+        .monthly-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .monthly-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 300px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .monthly-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 42px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.05em;
+        }
+
+        .monthly-hero p {
+            max-width: 760px;
+            margin: 12px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .monthly-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .monthly-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .monthly-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .monthly-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 28px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .monthly-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+            line-height: 1.15;
+        }
+
+        .monthly-hero-text {
+            margin-top: 7px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .monthly-layout {
+            display: grid;
+            grid-template-columns: 360px minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .monthly-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .monthly-panel-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .monthly-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .monthly-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .monthly-period-form {
+            display: grid;
+            gap: 14px;
+            padding: 22px;
+        }
+
+        .monthly-period-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .monthly-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .monthly-field label,
+        .monthly-field span {
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .monthly-field input,
+        .monthly-field select {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .monthly-field input:focus,
+        .monthly-field select:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .monthly-help {
+            padding: 14px;
+            border: 1px solid #f4d294;
+            border-radius: 18px;
+            background: #fff4de;
+            color: #8a5a00;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.4;
+        }
+
+        .monthly-current {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 22px 22px 0;
+            padding: 16px;
+            border: 1px solid #d8e1f0;
+            border-radius: 22px;
+            background: #f8fbff;
+        }
+
+        .monthly-current-label {
+            color: #7c8dac;
+            font-size: 12px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .monthly-current-value {
+            margin-top: 4px;
+            color: #102a5c;
+            font-size: 24px;
+            font-weight: 950;
+            letter-spacing: -0.04em;
+            line-height: 1;
+        }
+
+        .monthly-current-icon {
+            display: grid;
+            place-items: center;
+            width: 46px;
+            height: 46px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 22px;
+        }
+
+        .monthly-form {
+            display: grid;
+            gap: 16px;
+            padding: 22px;
+        }
+
+        .monthly-items {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .monthly-item {
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+            border: 1px solid #e2e8f3;
+            border-radius: 24px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.025), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .monthly-item::before {
+            content: "";
+            position: absolute;
+            right: -34px;
+            top: -34px;
+            width: 96px;
+            height: 96px;
+            border-radius: 999px;
+            background: rgba(243, 162, 26, 0.10);
+        }
+
+        .monthly-item-head {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .monthly-item-title {
+            color: #102a5c;
+            font-size: 20px;
+            font-weight: 950;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+        }
+
+        .monthly-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border: 1px solid #f4d294;
+            border-radius: 999px;
+            background: #fff4de;
+            color: #9c6400;
+            font-size: 14px;
+            font-weight: 950;
+            flex: 0 0 auto;
+        }
+
+        .monthly-item-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 150px;
+            gap: 12px;
+            align-items: start;
+        }
+
+        .monthly-error {
+            color: #a2352a;
+            font-size: 12px;
+            font-weight: 850;
+            line-height: 1.35;
+        }
+
+        .monthly-hint {
+            color: #6a7ba0;
+            font-size: 12px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .monthly-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .monthly-bottom-note {
+            padding: 0 22px 22px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .monthly-side {
+            position: sticky;
+            top: 18px;
+        }
+
+        @media (max-width: 1120px) {
+            .monthly-hero,
+            .monthly-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .monthly-side {
+                position: static;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .monthly-items {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .monthly-hero {
+                padding: 22px;
+            }
+
+            .monthly-hero h1 {
+                font-size: 34px;
+            }
+
+            .monthly-panel-head {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .monthly-period-grid,
+            .monthly-item-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .monthly-actions,
+            .monthly-actions .vk-btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="wrap">
-    <div th:replace="~{fragments/header :: header}"></div>
+<div th:replace="~{fragments/header :: header}"></div>
 
-    <div class="card">
-        <div class="top">
+<main class="vk-page">
+    <div class="monthly-page">
+
+        <section class="monthly-hero">
             <div>
-                <div style="font-size:20px;font-weight:900;color:#0b1b4d">Категории месяца</div>
-                <div class="muted">Админ выбирает 4 категории (1–3%). Покупатель выберет одну раз в месяц.</div>
+                <div class="vk-eyebrow">Администратор буфета</div>
+
+                <h1>Скидки месяца</h1>
+
+                <p>
+                    Настройте четыре категории месяца и процент скидки для каждой.
+                    Покупатель сможет выбрать одну категорию и пользоваться персональной скидкой в течение месяца.
+                </p>
+
+                <div class="monthly-tags">
+                    <span class="monthly-tag">4 категории</span>
+                    <span class="monthly-tag">Скидка 1–3%</span>
+                    <span class="monthly-tag">Один выбор покупателя</span>
+                    <span class="monthly-tag">Ежемесячное предложение</span>
+                </div>
             </div>
-            <a class="btn" th:href="@{/admin-buffet}">Назад</a>
+
+            <div class="monthly-hero-card">
+                <div class="monthly-hero-icon">%</div>
+
+                <div class="monthly-hero-title">
+                    Персональная скидка покупателя
+                </div>
+
+                <div class="monthly-hero-text">
+                    Покупатель выбирает одну из предложенных категорий.
+                    После выбора изменить категорию в текущем месяце нельзя.
+                </div>
+            </div>
+        </section>
+
+        <div th:if="${ok}" class="vk-alert vk-alert-success">
+            <span th:text="${ok}">Сообщение</span>
         </div>
 
-        <div th:if="${ok}" class="ok" th:text="${ok}">OK</div>
+        <section class="monthly-layout">
 
-        <form method="get" th:action="@{/admin-buffet/monthly-discount}">
-            <div class="grid">
-                <div>
-                    <label>Год</label>
-                    <input type="number" name="year" th:value="${year}" min="2000" max="2100"/>
-                </div>
-                <div>
-                    <label>Месяц</label>
-                    <input type="number" name="month" th:value="${month}" min="1" max="12"/>
-                </div>
-            </div>
-            <div class="actions">
-                <button class="btn" type="submit">Открыть</button>
-            </div>
-        </form>
-
-        <hr style="border:none;border-top:1px solid #eef2f7;margin:16px 0"/>
-
-        <form th:action="@{/admin-buffet/monthly-discount/save}" method="post" th:object="${form}">
-
-            <input type="hidden" th:field="*{year}"/>
-            <input type="hidden" th:field="*{month}"/>
-
-            <div th:if="${#fields.hasGlobalErrors()}" class="err">
-                <div th:each="e : ${#fields.globalErrors()}" th:text="${e}">Ошибка</div>
-            </div>
-
-            <div class="muted" style="margin-bottom:10px">
-                Месяц: <b th:text="*{month}">2</b> / <b th:text="*{year}">2026</b>
-            </div>
-
-            <div th:each="row, st : *{items}" class="row">
-                <div style="font-weight:900;color:#0b1b4d;margin-bottom:8px">
-                    Категория #<span th:text="${st.index + 1}">1</span>
-                </div>
-
-                <div class="grid">
+            <aside class="monthly-panel monthly-side">
+                <div class="monthly-panel-head">
                     <div>
-                        <label>Категория</label>
-                        <select th:field="*{items[__${st.index}__].categoryId}">
-                            <option value="" disabled>-- выберите категорию --</option>
-                            <option th:each="c : ${categories}"
-                                    th:value="${c.id}"
-                                    th:text="${c.name}">
-                            </option>
-                        </select>
-                        <div class="hint" th:if="${#fields.hasErrors('items[' + st.index + '].categoryId')}"
-                             th:errors="*{items[__${st.index}__].categoryId}">Ошибка</div>
-                    </div>
+                        <h2>Период</h2>
 
-                    <div>
-                        <label>Скидка, %</label>
-                        <input type="text" th:field="*{items[__${st.index}__].percent}" placeholder="1.00"/>
-                        <div class="hint" th:if="${#fields.hasErrors('items[' + st.index + '].percent')}"
-                             th:errors="*{items[__${st.index}__].percent}">Ошибка</div>
-                        <div class="hint">1.00–3.00</div>
+                        <p>
+                            Выберите месяц и год, для которых нужно открыть или изменить предложение.
+                        </p>
                     </div>
                 </div>
-            </div>
 
-            <div class="actions">
-                <button class="btn" type="submit">Сохранить 4 категории</button>
-            </div>
-        </form>
+                <form method="get"
+                      th:action="@{/admin-buffet/monthly-discount}"
+                      class="monthly-period-form">
 
-        <div class="muted" style="margin-top:10px">
-            Если на выбранный месяц оффер не был создан — система автоматически копирует последний оффер этого буфета.
-        </div>
+                    <div class="monthly-period-grid">
+                        <label class="monthly-field">
+                            <span>Год</span>
+
+                            <input type="number"
+                                   name="year"
+                                   th:value="${year}"
+                                   min="2000"
+                                   max="2100"/>
+                        </label>
+
+                        <label class="monthly-field">
+                            <span>Месяц</span>
+
+                            <input type="number"
+                                   name="month"
+                                   th:value="${month}"
+                                   min="1"
+                                   max="12"/>
+                        </label>
+                    </div>
+
+                    <button class="vk-btn" type="submit">
+                        Открыть период
+                    </button>
+
+                    <a class="vk-btn vk-btn-light" th:href="@{/admin-buffet}">
+                        Назад
+                    </a>
+
+                    <div class="monthly-help">
+                        Если предложение на выбранный месяц ещё не было создано,
+                        система автоматически скопирует последний оффер этого буфета.
+                    </div>
+                </form>
+            </aside>
+
+            <section class="monthly-panel">
+                <div class="monthly-panel-head">
+                    <div>
+                        <h2>Категории месяца</h2>
+
+                        <p>
+                            Заполните ровно четыре категории и задайте скидку от 1.00% до 3.00%.
+                        </p>
+                    </div>
+                </div>
+
+                <form th:action="@{/admin-buffet/monthly-discount/save}"
+                      method="post"
+                      th:object="${form}">
+
+                    <input th:if="${_csrf != null}"
+                           type="hidden"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}"/>
+
+                    <input type="hidden" th:field="*{year}"/>
+                    <input type="hidden" th:field="*{month}"/>
+
+                    <div class="monthly-current">
+                        <div>
+                            <div class="monthly-current-label">
+                                Настраиваемый период
+                            </div>
+
+                            <div class="monthly-current-value">
+                                <span th:text="*{month}">2</span>
+                                /
+                                <span th:text="*{year}">2026</span>
+                            </div>
+                        </div>
+
+                        <div class="monthly-current-icon">📅</div>
+                    </div>
+
+                    <div class="monthly-form">
+                        <div th:if="${#fields.hasGlobalErrors()}" class="vk-alert vk-alert-danger">
+                            <div th:each="e : ${#fields.globalErrors()}" th:text="${e}">
+                                Ошибка
+                            </div>
+                        </div>
+
+                        <div class="monthly-items">
+                            <article th:each="row, st : *{items}" class="monthly-item">
+                                <div class="monthly-item-head">
+                                    <div class="monthly-item-title">
+                                        Категория месяца
+                                    </div>
+
+                                    <div class="monthly-number">
+                                        #<span th:text="${st.index + 1}">1</span>
+                                    </div>
+                                </div>
+
+                                <div class="monthly-item-grid">
+                                    <label class="monthly-field">
+                                        <span>Категория</span>
+
+                                        <select th:field="*{items[__${st.index}__].categoryId}">
+                                            <option value="" disabled>
+                                                -- выберите категорию --
+                                            </option>
+
+                                            <option th:each="c : ${categories}"
+                                                    th:value="${c.id}"
+                                                    th:text="${c.name}">
+                                                Категория
+                                            </option>
+                                        </select>
+
+                                        <div class="monthly-error"
+                                             th:if="${#fields.hasErrors('items[' + st.index + '].categoryId')}"
+                                             th:errors="*{items[__${st.index}__].categoryId}">
+                                            Ошибка
+                                        </div>
+                                    </label>
+
+                                    <label class="monthly-field">
+                                        <span>Скидка, %</span>
+
+                                        <input type="text"
+                                               th:field="*{items[__${st.index}__].percent}"
+                                               placeholder="1.00"/>
+
+                                        <div class="monthly-error"
+                                             th:if="${#fields.hasErrors('items[' + st.index + '].percent')}"
+                                             th:errors="*{items[__${st.index}__].percent}">
+                                            Ошибка
+                                        </div>
+
+                                        <div class="monthly-hint">
+                                            От 1.00 до 3.00
+                                        </div>
+                                    </label>
+                                </div>
+                            </article>
+                        </div>
+
+                        <div class="monthly-actions">
+                            <button class="vk-btn" type="submit">
+                                Сохранить 4 категории
+                            </button>
+
+                            <a class="vk-btn vk-btn-light" th:href="@{/admin-buffet/monthly-discount}">
+                                Сбросить
+                            </a>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="monthly-bottom-note">
+                    После сохранения покупатели увидят эти категории на странице выбора месячной скидки.
+                    Каждый покупатель сможет выбрать только одну категорию на текущий месяц.
+                </div>
+            </section>
+
+        </section>
 
     </div>
-</div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
 
 </body>
 </html>

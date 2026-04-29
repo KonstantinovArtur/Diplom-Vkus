@@ -1,153 +1,773 @@
 <!doctype html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Партии и скидки по сроку</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Админ буфета · Скидки по партиям</title>
+
+    <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
+
     <style>
-        .wrap{max-width:1100px;margin:24px auto;font-family:system-ui,Segoe UI,Arial}
-        .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(10,20,60,06)}
-        .top{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
-        table{width:100%;border-collapse:separate;border-spacing:0 8px}
-        th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;text-align:left;color:#425}
-        td{background:#fff;border:1px solid #e6e9ef;padding:10px 12px;vertical-align:middle}
-        tr td:first-child{border-radius:12px 0 0 12px}
-        tr td:last-child{border-radius:0 12px 12px 0}
-        .btn{display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #d8deea;text-decoration:none;color:#0b1b4d;font-weight:700;background:#fff;cursor:pointer}
-        .btn:hover{border-color:#0b1b4d}
-        .btn.danger{border-color:#fecaca;color:#991b1b;background:#fff}
-        .btn.danger:hover{border-color:#991b1b}
-        .ok{background:#ecfdf5;border:1px solid #a7f3d0;padding:10px 12px;border-radius:12px;margin:12px 0;color:#065f46;font-weight:700}
-        .err{background:#fef2f2;border:1px solid #fecaca;padding:10px 12px;border-radius:12px;margin:12px 0;color:#991b1b;font-weight:700}
-        .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-        label{display:block;font-size:12px;font-weight:800;color:#0b1b4d;margin-bottom:6px}
-        input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d8deea;font:inherit}
-        .muted{color:#667085;font-size:13px}
-        .row-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-        .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid #e6e9ef;background:#fff;color:#0b1b4d;font-weight:800;font-size:12px}
-        .chip.off{opacity:.55}
-        .chip.warn{border-color:#fde68a}
-        .hint{font-size:12px;color:#667085}
+        .batch-page {
+            display: grid;
+            gap: 20px;
+        }
+
+        .batch-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 22px;
+            align-items: center;
+            padding: 28px;
+            border: 1px solid rgba(22, 47, 101, 0.10);
+            border-radius: 28px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.07), rgba(243, 162, 26, 0.05)),
+                    rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 40px rgba(15, 35, 85, 0.08);
+        }
+
+        .batch-hero h1 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 42px;
+            font-weight: 950;
+            line-height: 1.04;
+            letter-spacing: -0.05em;
+        }
+
+        .batch-hero p {
+            max-width: 760px;
+            margin: 12px 0 0;
+            color: #5f7196;
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .batch-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .batch-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 12px;
+            border: 1px solid #f6d499;
+            border-radius: 999px;
+            background: #fff3da;
+            color: #9a6500;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .batch-hero-card {
+            padding: 18px;
+            border: 1px solid #d8e1f0;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 10px 26px rgba(15, 35, 85, 0.06);
+        }
+
+        .batch-hero-icon {
+            display: grid;
+            place-items: center;
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #163067, #f3a21a);
+            color: #ffffff;
+            font-size: 28px;
+            box-shadow: 0 14px 30px rgba(22, 48, 103, 0.18);
+        }
+
+        .batch-hero-title {
+            margin-top: 14px;
+            color: #102a5c;
+            font-size: 18px;
+            font-weight: 950;
+            line-height: 1.15;
+        }
+
+        .batch-hero-text {
+            margin-top: 7px;
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .batch-panel {
+            overflow: hidden;
+            border: 1px solid #d8e1f0;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 30px rgba(15, 35, 85, 0.06);
+        }
+
+        .batch-panel-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px;
+            border-bottom: 1px solid #e5ebf5;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.035), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .batch-panel-head h2 {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.03em;
+        }
+
+        .batch-panel-head p {
+            margin: 6px 0 0;
+            color: #6a7ba0;
+            font-size: 14px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .batch-count {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 13px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .batch-filter-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 340px;
+            gap: 18px;
+            padding: 22px;
+        }
+
+        .batch-filter-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .batch-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .batch-field label,
+        .batch-field span {
+            color: #102a5c;
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .batch-field input,
+        .batch-field select {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 800;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        .batch-field input:focus,
+        .batch-field select:focus {
+            border-color: #162f65;
+            box-shadow: 0 0 0 4px rgba(22, 47, 101, 0.10);
+        }
+
+        .batch-field input::placeholder {
+            color: rgba(106, 123, 160, 0.58);
+            font-weight: 700;
+        }
+
+        .batch-check {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid #c6d2e2;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #102a5c;
+            font-size: 13px;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .batch-check input {
+            width: auto;
+            min-height: auto;
+        }
+
+        .batch-note {
+            padding: 14px;
+            border: 1px solid #f4d294;
+            border-radius: 18px;
+            background: #fff4de;
+            color: #8a5a00;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.4;
+        }
+
+        .batch-list {
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+            border-top: 1px solid #edf1f7;
+        }
+
+        .batch-card {
+            display: grid;
+            grid-template-columns: minmax(260px, 1fr) 210px 360px;
+            gap: 16px;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid #e2e8f3;
+            border-radius: 24px;
+            background:
+                    linear-gradient(135deg, rgba(22, 47, 101, 0.025), rgba(243, 162, 26, 0.025)),
+                    #ffffff;
+        }
+
+        .batch-main {
+            min-width: 0;
+            display: grid;
+            gap: 10px;
+        }
+
+        .batch-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .batch-title {
+            color: #102a5c;
+            font-size: 20px;
+            font-weight: 950;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            word-break: break-word;
+        }
+
+        .batch-category {
+            color: #6a7ba0;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.35;
+        }
+
+        .batch-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .batch-badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            min-height: 30px;
+            padding: 6px 10px;
+            border: 1px solid #d8e1f0;
+            border-radius: 999px;
+            background: #f8fbff;
+            color: #44557b;
+            font-size: 12px;
+            font-weight: 950;
+            line-height: 1.15;
+            white-space: normal;
+        }
+
+        .batch-badge.active {
+            border-color: #bde8c9;
+            background: #e8f8ed;
+            color: #166534;
+        }
+
+        .batch-badge.closed {
+            border-color: #d8e1f0;
+            background: #f3f6fa;
+            color: #44557b;
+        }
+
+        .batch-badge.discount {
+            border-color: #f4d294;
+            background: #fff4de;
+            color: #9c6400;
+        }
+
+        .batch-badge.danger {
+            border-color: #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+        }
+
+        .batch-info {
+            display: grid;
+            gap: 9px;
+        }
+
+        .batch-info-box {
+            padding: 12px;
+            border: 1px solid #e2e8f3;
+            border-radius: 18px;
+            background: #f8fbff;
+        }
+
+        .batch-info-label {
+            color: #7c8dac;
+            font-size: 11px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .batch-info-value {
+            margin-top: 4px;
+            color: #102a5c;
+            font-size: 16px;
+            font-weight: 950;
+            line-height: 1.2;
+        }
+
+        .batch-info-hint {
+            margin-top: 3px;
+            color: #6a7ba0;
+            font-size: 12px;
+            font-weight: 750;
+            line-height: 1.25;
+        }
+
+        .batch-discount-area {
+            display: grid;
+            gap: 10px;
+        }
+
+        .batch-discount-form {
+            display: grid;
+            grid-template-columns: 90px minmax(0, 1fr) 118px;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .batch-discount-form input,
+        .batch-discount-form select {
+            width: 100%;
+            min-height: 42px;
+            padding: 0 10px;
+            border: 1px solid #c6d2e2;
+            border-radius: 14px;
+            background: #ffffff;
+            color: #13294b;
+            font-size: 14px;
+            font-weight: 850;
+            outline: none;
+        }
+
+        .batch-discount-form .vk-btn {
+            width: 100%;
+            min-height: 42px;
+            padding: 9px 12px;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .batch-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .batch-actions form {
+            margin: 0;
+        }
+
+        .batch-danger {
+            border-color: #f3c7c2;
+            background: #fff2f0;
+            color: #a2352a;
+            box-shadow: none;
+        }
+
+        .batch-danger:hover {
+            background: #ffe7e4;
+            color: #8f2b22;
+            box-shadow: none;
+        }
+
+        .batch-empty {
+            padding: 42px 22px;
+            text-align: center;
+        }
+
+        .batch-empty-icon {
+            margin-bottom: 10px;
+            font-size: 44px;
+        }
+
+        .batch-empty-title {
+            margin: 0;
+            color: #102a5c;
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: -0.04em;
+        }
+
+        .batch-empty-text {
+            max-width: 540px;
+            margin: 8px auto 0;
+            color: #6a7ba0;
+            font-size: 15px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        @media (max-width: 1180px) {
+            .batch-hero,
+            .batch-filter-grid,
+            .batch-card {
+                grid-template-columns: 1fr;
+            }
+
+            .batch-discount-form {
+                max-width: 520px;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .batch-hero {
+                padding: 22px;
+            }
+
+            .batch-hero h1 {
+                font-size: 34px;
+            }
+
+            .batch-panel-head {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .batch-filter-form,
+            .batch-discount-form {
+                grid-template-columns: 1fr;
+                max-width: none;
+            }
+
+            .batch-check,
+            .batch-actions,
+            .batch-actions .vk-btn,
+            .batch-discount-form .vk-btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="wrap">
-    <div th:replace="~{fragments/header :: header}"></div>
+<div th:replace="~{fragments/header :: header}"></div>
 
-    <div class="card">
-        <div class="top">
+<main class="vk-page">
+    <div class="batch-page">
+
+        <section class="batch-hero">
             <div>
-                <div style="font-size:20px;font-weight:900;color:#0b1b4d">Партии и скидки по сроку</div>
-                <div class="muted">Скидка задаётся на конкретную партию. Когда партия закрывается — скидка выключится автоматически.</div>
+                <div class="vk-eyebrow">Администратор буфета</div>
+
+                <h1>Скидки по партиям</h1>
+
+                <p>
+                    Управляйте скидками на конкретные партии товаров. Это удобно для продукции,
+                    у которой скоро истекает срок годности: такая партия будет списываться первой.
+                </p>
+
+                <div class="batch-tags">
+                    <span class="batch-tag">Партии склада</span>
+                    <span class="batch-tag">Срок годности</span>
+                    <span class="batch-tag">Скидки</span>
+                    <span class="batch-tag">FIFO/FEFO</span>
+                </div>
             </div>
-            <a class="btn" th:href="@{/admin-buffet/batches}">Сбросить</a>
+
+            <div class="batch-hero-card">
+                <div class="batch-hero-icon">%</div>
+
+                <div class="batch-hero-title">
+                    Скидка привязана к партии
+                </div>
+
+                <div class="batch-hero-text">
+                    Когда партия закрывается, скидка по ней должна быть отключена автоматически.
+                    Покупателю будет применяться скидка именно на списываемую партию.
+                </div>
+            </div>
+        </section>
+
+        <div th:if="${ok}" class="vk-alert vk-alert-success">
+            <span th:text="${ok}">Сообщение</span>
         </div>
 
-        <div th:if="${ok}" class="ok" th:text="${ok}">OK</div>
-        <div th:if="${err}" class="err" th:text="${err}">ERR</div>
+        <div th:if="${err}" class="vk-alert vk-alert-danger">
+            <span th:text="${err}">Ошибка</span>
+        </div>
 
-        <div class="grid" style="margin-bottom:12px">
-            <form method="get" th:action="@{/admin-buffet/batches}">
-                <label>Фильтр: productId (опционально)</label>
-                <input type="text" name="productId" th:value="${productId}" placeholder="например 12">
-                <div class="hint">Можно оставить пустым</div>
-                <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
-                    <label style="margin:0;display:flex;gap:8px;align-items:center;font-weight:900;color:#0b1b4d">
-                        <input type="checkbox" name="onlyActive" th:checked="${onlyActive}"> только активные партии
+        <section class="batch-panel">
+            <div class="batch-panel-head">
+                <div>
+                    <h2>Фильтры</h2>
+
+                    <p>
+                        Можно отфильтровать партии по ID товара и оставить только активные партии.
+                    </p>
+                </div>
+
+                <div class="batch-count">
+                    Найдено:
+                    <span th:text="${rows != null ? #lists.size(rows) : 0}" style="margin-left: 4px;">0</span>
+                </div>
+            </div>
+
+            <div class="batch-filter-grid">
+                <form method="get"
+                      th:action="@{/admin-buffet/batches}"
+                      class="batch-filter-form">
+
+                    <label class="batch-field">
+                        <span>ID товара</span>
+
+                        <input type="text"
+                               name="productId"
+                               th:value="${productId}"
+                               placeholder="например 12">
                     </label>
-                    <button class="btn" type="submit">Применить</button>
-                </div>
-            </form>
 
-            <div>
-                <label>Быстрая подсказка</label>
-                <div class="muted">
-                    Списание идёт по ближайшему сроку годности.<br>
-                    Поэтому скидка на “скоро истекающую” партию будет применяться первой.
+                    <label class="batch-check">
+                        <input type="checkbox"
+                               name="onlyActive"
+                               th:checked="${onlyActive}">
+                        Только активные
+                    </label>
+
+                    <button class="vk-btn" type="submit">
+                        Применить
+                    </button>
+                </form>
+
+                <div class="batch-note">
+                    Списание идёт по ближайшему сроку годности. Поэтому скидка на партию,
+                    срок которой скоро истекает, будет применяться раньше остальных.
                 </div>
             </div>
-        </div>
+        </section>
 
-        <table>
-            <thead>
-            <tr>
-                <th>Batch</th>
-                <th>Товар</th>
-                <th>Срок годности</th>
-                <th>Остаток</th>
-                <th>Статус</th>
-                <th>Скидка по партии</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="r : ${rows}">
-                <td th:text="${r.batchId}">1</td>
+        <section class="batch-panel">
+            <div class="batch-panel-head">
+                <div>
+                    <h2>Партии товаров</h2>
 
-                <td>
-                    <div style="font-weight:900;color:#0b1b4d" th:text="${r.productName}">Товар</div>
-                    <div class="muted" th:text="${r.categoryName}">Категория</div>
-                    <div class="hint">productId: <span th:text="${r.productId}">1</span></div>
-                </td>
+                    <p>
+                        Смотрите остаток, срок годности, статус партии и настройте скидку.
+                    </p>
+                </div>
 
-                <td>
-                    <div th:text="${r.expiresAt != null ? r.expiresAt : '—'}">—</div>
-                    <div class="hint" th:if="${r.expiresAt != null}">
-                        до истечения: <span th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(today, r.expiresAt)}">0</span> дн.
+                <a class="vk-btn vk-btn-light" th:href="@{/admin-buffet/batches}">
+                    Сбросить
+                </a>
+            </div>
+
+            <div th:if="${rows == null or #lists.isEmpty(rows)}" class="batch-empty">
+                <div class="batch-empty-icon">📭</div>
+
+                <h3 class="batch-empty-title">
+                    Партий не найдено
+                </h3>
+
+                <div class="batch-empty-text">
+                    Измените фильтры или проверьте наличие активных партий на складе.
+                </div>
+            </div>
+
+            <div th:if="${rows != null and !#lists.isEmpty(rows)}" class="batch-list">
+                <article th:each="r : ${rows}" class="batch-card">
+
+                    <div class="batch-main">
+                        <div class="batch-title-row">
+                            <div class="batch-title" th:text="${r.productName}">
+                                Товар
+                            </div>
+
+                            <span th:if="${r.status == 'active'}" class="batch-badge active">
+                                Активная
+                            </span>
+
+                            <span th:if="${r.status == 'closed'}" class="batch-badge closed">
+                                Закрытая
+                            </span>
+
+                            <span th:if="${r.status != 'active' and r.status != 'closed'}"
+                                  class="batch-badge"
+                                  th:text="${r.status != null ? r.status : '—'}">
+                                —
+                            </span>
+                        </div>
+
+                        <div class="batch-category" th:text="${r.categoryName}">
+                            Категория
+                        </div>
+
+                        <div class="batch-meta">
+                            <span class="batch-badge">
+                                Партия #<span th:text="${r.batchId}" style="margin-left: 4px;">1</span>
+                            </span>
+
+                            <span class="batch-badge">
+                                Product ID:
+                                <span th:text="${r.productId}" style="margin-left: 4px;">1</span>
+                            </span>
+
+                            <span class="batch-badge discount" th:if="${r.discountId == null}">
+                                Скидки нет
+                            </span>
+
+                            <span class="batch-badge discount"
+                                  th:if="${r.discountId != null and r.discountActive == true}">
+                                Скидка:
+                                <span th:text="'-' + ${r.discountPercent} + '%'" style="margin-left: 4px;">-10%</span>
+                            </span>
+
+                            <span class="batch-badge closed"
+                                  th:if="${r.discountId != null and r.discountActive != true}">
+                                Скидка выключена:
+                                <span th:text="${r.discountPercent} + '%'" style="margin-left: 4px;">10%</span>
+                            </span>
+                        </div>
                     </div>
-                </td>
 
-                <td>
-                    <div style="font-weight:900;color:#0b1b4d">
-                        <span th:text="${r.qtyAvailable}">0</span> /
-                        <span class="muted" th:text="${r.qtyReceived}">0</span>
+                    <div class="batch-info">
+                        <div class="batch-info-box">
+                            <div class="batch-info-label">
+                                Срок годности
+                            </div>
+
+                            <div class="batch-info-value"
+                                 th:text="${r.expiresAt != null ? r.expiresAt : '—'}">
+                                —
+                            </div>
+
+                            <div class="batch-info-hint" th:if="${r.expiresAt != null}">
+                                До истечения:
+                                <span th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(today, r.expiresAt)}">0</span>
+                                дн.
+                            </div>
+                        </div>
+
+                        <div class="batch-info-box">
+                            <div class="batch-info-label">
+                                Остаток
+                            </div>
+
+                            <div class="batch-info-value">
+                                <span th:text="${r.qtyAvailable}">0</span>
+                                /
+                                <span th:text="${r.qtyReceived}">0</span>
+                            </div>
+
+                            <div class="batch-info-hint">
+                                Доступно / поступило
+                            </div>
+                        </div>
                     </div>
-                </td>
 
-                <td>
-                    <span class="chip" th:text="${r.status}">active</span>
-                </td>
+                    <div class="batch-discount-area">
+                        <form th:action="@{/admin-buffet/batches/discount/save}"
+                              method="post"
+                              class="batch-discount-form">
 
-                <td>
-                    <span class="chip" th:if="${r.discountId == null}" th:text="'нет'">нет</span>
-                    <span class="chip" th:if="${r.discountId != null}"
-                          th:classappend="${r.discountActive} ? '' : ' off'"
-                          th:text="${r.discountActive} ? ('-' + r.discountPercent + '%') : ('выкл ' + r.discountPercent + '%')">
-            -10%
-          </span>
-                </td>
+                            <input th:if="${_csrf != null}"
+                                   type="hidden"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}"/>
 
-                <td>
-                    <div class="row-actions">
-
-                        <form th:action="@{/admin-buffet/batches/discount/save}" method="post" style="margin:0;min-width:320px"
-                              th:object="${form}">
                             <input type="hidden" name="batchId" th:value="${r.batchId}">
-                            <input type="text" name="percent" placeholder="%" style="width:90px" th:value="${r.discountPercent != null ? r.discountPercent : ''}">
-                            <select name="isActive" style="width:140px">
-                                <option value="true" th:selected="${r.discountActive == null || r.discountActive}">активна</option>
-                                <option value="false" th:selected="${r.discountActive != null && !r.discountActive}">выключена</option>
+
+                            <input type="text"
+                                   name="percent"
+                                   placeholder="%"
+                                   th:value="${r.discountPercent != null ? r.discountPercent : ''}">
+
+                            <select name="isActive">
+                                <option value="true"
+                                        th:selected="${r.discountActive == null or r.discountActive == true}">
+                                    Активна
+                                </option>
+
+                                <option value="false"
+                                        th:selected="${r.discountActive != null and r.discountActive != true}">
+                                    Выключена
+                                </option>
                             </select>
-                            <button class="btn" type="submit">Сохранить</button>
+
+                            <button class="vk-btn" type="submit">
+                                Сохранить
+                            </button>
                         </form>
 
-                        <form th:if="${r.discountId != null && r.discountActive}" th:action="@{/admin-buffet/batches/discount/deactivate}"
-                              method="post" style="margin:0">
-                            <input type="hidden" name="batchId" th:value="${r.batchId}">
-                            <button class="btn danger" type="submit"
-                                    onclick="return confirm('Выключить скидку по партии?')">Отключить</button>
-                        </form>
+                        <div class="batch-actions">
+                            <form th:if="${r.discountId != null and r.discountActive == true}"
+                                  th:action="@{/admin-buffet/batches/discount/deactivate}"
+                                  method="post">
 
+                                <input th:if="${_csrf != null}"
+                                       type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}"/>
+
+                                <input type="hidden" name="batchId" th:value="${r.batchId}">
+
+                                <button class="vk-btn batch-danger"
+                                        type="submit"
+                                        onclick="return confirm('Выключить скидку по партии?')">
+                                    Отключить скидку
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+
+                </article>
+            </div>
+        </section>
 
     </div>
+</main>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
-</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
 
 </body>
 </html>
