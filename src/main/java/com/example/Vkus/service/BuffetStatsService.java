@@ -1,11 +1,13 @@
 package com.example.Vkus.service;
 
+import com.example.Vkus.repository.InventoryMovementRepository;
 import com.example.Vkus.repository.InvoiceItemRepository;
 import com.example.Vkus.repository.OrderItemRepository;
 import com.example.Vkus.repository.OrderRepository;
 import com.example.Vkus.web.dto.DailyProfitabilityRow;
 import com.example.Vkus.web.dto.DailySalesRow;
 import com.example.Vkus.web.dto.TopProductRow;
+import com.example.Vkus.web.dto.WriteoffProductRow;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -18,21 +20,25 @@ public class BuffetStatsService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final InvoiceItemRepository invoiceItemRepository;
+    private final InventoryMovementRepository inventoryMovementRepository;
 
     private static final List<String> SOLD_STATUSES = List.of("issued");
 
     public BuffetStatsService(OrderRepository orderRepository,
                               OrderItemRepository orderItemRepository,
-                              InvoiceItemRepository invoiceItemRepository) {
+                              InvoiceItemRepository invoiceItemRepository,
+                              InventoryMovementRepository inventoryMovementRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.invoiceItemRepository = invoiceItemRepository;
+        this.inventoryMovementRepository = inventoryMovementRepository;
     }
 
     public StatsResult getStats(Long buffetId, LocalDate from, LocalDate to) {
         List<DailySalesRow> daily = orderRepository.findDailySales(buffetId, from, to, SOLD_STATUSES);
         List<TopProductRow> top = orderItemRepository.findTopProducts(buffetId, from, to, SOLD_STATUSES);
         List<DailyProfitabilityRow> profitability = invoiceItemRepository.findDailyProfitability(buffetId, from, to);
+        List<WriteoffProductRow> writeoffProducts = inventoryMovementRepository.findTopWriteoffs(buffetId, from, to);
 
         long ordersTotal = daily.stream()
                 .mapToLong(x -> x.getOrdersCount() == null ? 0L : x.getOrdersCount())
@@ -62,7 +68,8 @@ public class BuffetStatsService {
                 profitTotal,
                 daily,
                 profitability,
-                top
+                top,
+                writeoffProducts
         );
     }
 
@@ -75,6 +82,7 @@ public class BuffetStatsService {
             BigDecimal profitTotal,
             List<DailySalesRow> daily,
             List<DailyProfitabilityRow> profitability,
-            List<TopProductRow> topProducts
+            List<TopProductRow> topProducts,
+            List<WriteoffProductRow> writeoffProducts
     ) {}
 }

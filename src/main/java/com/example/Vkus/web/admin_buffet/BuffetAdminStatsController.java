@@ -62,6 +62,7 @@ public class BuffetAdminStatsController {
         model.addAttribute("daily", res.daily());
         model.addAttribute("profitability", res.profitability());
         model.addAttribute("topProducts", res.topProducts());
+        model.addAttribute("writeoffProducts", res.writeoffProducts());
         return "admin-buffet/stats";
     }
 

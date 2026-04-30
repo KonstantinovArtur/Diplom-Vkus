@@ -279,6 +279,10 @@
             height: 320px !important;
         }
 
+        .stats-chart-wrap.writeoff-chart canvas {
+            height: 380px !important;
+        }
+
         .stats-table-wrap {
             overflow-x: auto;
         }
@@ -344,6 +348,12 @@
             color: #9c6400;
         }
 
+        .stats-badge.danger {
+            border-color: #ffd1d1;
+            background: #fff0f0;
+            color: #b42318;
+        }
+
         .stats-empty {
             padding: 42px 22px;
             text-align: center;
@@ -367,6 +377,18 @@
             margin: 8px auto 0;
             color: #6a7ba0;
             font-size: 15px;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .stats-note {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border: 1px solid #d8e1f0;
+            border-radius: 18px;
+            background: #f8fbff;
+            color: #5f7196;
+            font-size: 13px;
             font-weight: 750;
             line-height: 1.45;
         }
@@ -413,6 +435,10 @@
             .stats-chart-box {
                 padding: 16px;
             }
+
+            .stats-chart-wrap.writeoff-chart canvas {
+                height: 440px !important;
+            }
         }
     </style>
 </head>
@@ -430,8 +456,8 @@
                 <h1>Статистика буфета</h1>
 
                 <p>
-                    Анализируйте заказы, выручку, затраты по накладным, прибыльность
-                    и популярные товары за выбранный период.
+                    Анализируйте заказы, выручку, затраты по накладным, прибыльность,
+                    популярные товары и списания со склада за выбранный период.
                 </p>
 
                 <div class="stats-tags">
@@ -439,6 +465,7 @@
                     <span class="stats-tag">Прибыль</span>
                     <span class="stats-tag">Заказы</span>
                     <span class="stats-tag">Топ товаров</span>
+                    <span class="stats-tag">Списания</span>
                 </div>
             </div>
 
@@ -451,7 +478,7 @@
 
                 <div class="stats-hero-text">
                     Данные помогают оценивать эффективность ассортимента,
-                    контролировать затраты и принимать решения по меню.
+                    контролировать затраты, списания и принимать решения по закупкам.
                 </div>
             </div>
         </section>
@@ -462,7 +489,7 @@
                     <h2>Период отчёта</h2>
 
                     <p>
-                        Выберите даты, чтобы пересчитать показатели и графики.
+                        Выберите даты, чтобы пересчитать показатели, графики и списания.
                     </p>
                 </div>
             </div>
@@ -503,12 +530,13 @@
                         Количество заказов
                     </div>
 
-                    <div class="stats-kpi-value" th:text="${ordersTotal != null ? ordersTotal : 0}">
+                    <div class="stats-kpi-value"
+                         th:text="${ordersTotal != null ? ordersTotal : 0}">
                         0
                     </div>
 
                     <div class="stats-kpi-hint">
-                        Все оформленные заказы за период.
+                        Все выданные заказы за период.
                     </div>
                 </article>
 
@@ -607,6 +635,43 @@
                     </div>
                 </div>
             </article>
+
+            <article class="stats-panel stats-chart-wide">
+                <div class="stats-chart-box">
+                    <h2 class="stats-chart-title">
+                        Топ товаров по списаниям
+                    </h2>
+
+                    <div class="stats-chart-subtitle">
+                        Диаграмма показывает, какие товары чаще всего списывались со склада.
+                        Это помогает понять, какие позиции стоит закупать меньше или внимательнее контролировать.
+                    </div>
+
+                    <div th:if="${writeoffProducts == null or #lists.isEmpty(writeoffProducts)}"
+                         class="stats-empty">
+                        <div class="stats-empty-icon">📦</div>
+
+                        <h3 class="stats-empty-title">
+                            Списаний пока нет
+                        </h3>
+
+                        <div class="stats-empty-text">
+                            За выбранный период товары со склада не списывались.
+                        </div>
+                    </div>
+
+                    <div th:if="${writeoffProducts != null and !#lists.isEmpty(writeoffProducts)}"
+                         class="stats-chart-wrap writeoff-chart">
+                        <canvas id="writeoffChart"></canvas>
+                    </div>
+
+                    <div th:if="${writeoffProducts != null and !#lists.isEmpty(writeoffProducts)}"
+                         class="stats-note">
+                        Чем больше значение на диаграмме, тем чаще товар списывался.
+                        Такие позиции стоит проверять при планировании следующих закупок.
+                    </div>
+                </div>
+            </article>
         </section>
 
         <section class="stats-panel">
@@ -621,11 +686,13 @@
 
                 <div class="stats-badge">
                     Позиций:
-                    <span th:text="${topProducts != null ? #lists.size(topProducts) : 0}" style="margin-left: 4px;">0</span>
+                    <span th:text="${topProducts != null ? #lists.size(topProducts) : 0}"
+                          style="margin-left: 4px;">0</span>
                 </div>
             </div>
 
-            <div th:if="${topProducts == null or #lists.isEmpty(topProducts)}" class="stats-empty">
+            <div th:if="${topProducts == null or #lists.isEmpty(topProducts)}"
+                 class="stats-empty">
                 <div class="stats-empty-icon">📭</div>
 
                 <h3 class="stats-empty-title">
@@ -637,7 +704,8 @@
                 </div>
             </div>
 
-            <div th:if="${topProducts != null and !#lists.isEmpty(topProducts)}" class="stats-table-wrap">
+            <div th:if="${topProducts != null and !#lists.isEmpty(topProducts)}"
+                 class="stats-table-wrap">
                 <table class="stats-table">
                     <thead>
                     <tr>
@@ -650,13 +718,15 @@
                     <tbody>
                     <tr th:each="t : ${topProducts}">
                         <td>
-                            <div class="stats-product-title" th:text="${t.productName}">
+                            <div class="stats-product-title"
+                                 th:text="${t.productName}">
                                 —
                             </div>
                         </td>
 
                         <td>
-                            <span class="stats-badge" th:text="${t.qty}">
+                            <span class="stats-badge"
+                                  th:text="${t.qty}">
                                 0
                             </span>
                         </td>
@@ -673,6 +743,67 @@
             </div>
         </section>
 
+        <section class="stats-panel">
+            <div class="stats-panel-head">
+                <div>
+                    <h2>Списания товаров</h2>
+
+                    <p>
+                        Список товаров, которые чаще всего списывались со склада.
+                    </p>
+                </div>
+
+                <div class="stats-badge danger">
+                    Позиций:
+                    <span th:text="${writeoffProducts != null ? #lists.size(writeoffProducts) : 0}"
+                          style="margin-left: 4px;">0</span>
+                </div>
+            </div>
+
+            <div th:if="${writeoffProducts == null or #lists.isEmpty(writeoffProducts)}"
+                 class="stats-empty">
+                <div class="stats-empty-icon">✅</div>
+
+                <h3 class="stats-empty-title">
+                    Списаний нет
+                </h3>
+
+                <div class="stats-empty-text">
+                    За выбранный период список списанных товаров пуст.
+                </div>
+            </div>
+
+            <div th:if="${writeoffProducts != null and !#lists.isEmpty(writeoffProducts)}"
+                 class="stats-table-wrap">
+                <table class="stats-table">
+                    <thead>
+                    <tr>
+                        <th>Товар</th>
+                        <th style="width: 180px;">Списано</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="w : ${writeoffProducts}">
+                        <td>
+                            <div class="stats-product-title"
+                                 th:text="${w.productName}">
+                                —
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="stats-badge danger">
+                                <span th:text="${w.writeoffQty != null ? w.writeoffQty : 0}">0</span>
+                                шт.
+                            </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </div>
 </main>
 
@@ -681,97 +812,130 @@
 <script th:inline="javascript">
     const daily = /*[[${daily}]]*/ [];
     const profitability = /*[[${profitability}]]*/ [];
+    const writeoffProducts = /*[[${writeoffProducts}]]*/ [];
 
     const labels = daily.map(x => x.day);
-    const revenue = daily.map(x => Number(x.revenue));
-    const orders = daily.map(x => Number(x.ordersCount));
+    const revenue = daily.map(x => Number(x.revenue || 0));
+    const orders = daily.map(x => Number(x.ordersCount || 0));
 
     const profitLabels = profitability.map(x => x.day);
-    const costs = profitability.map(x => Number(x.costs));
-    const profitRevenue = profitability.map(x => Number(x.revenue));
-    const profit = profitability.map(x => Number(x.profit));
+    const costs = profitability.map(x => Number(x.costs || 0));
+    const profitRevenue = profitability.map(x => Number(x.revenue || 0));
+    const profit = profitability.map(x => Number(x.profit || 0));
 
-    new Chart(document.getElementById('profitChart'), {
-        type: 'line',
-        data: {
-            labels: profitLabels,
-            datasets: [
-                {
-                    label: 'Выручка',
-                    data: profitRevenue,
-                    tension: 0.35
-                },
-                {
-                    label: 'Затраты',
-                    data: costs,
-                    tension: 0.35
-                },
-                {
-                    label: 'Прибыль',
-                    data: profit,
-                    tension: 0.35
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false
+    const writeoffLabels = writeoffProducts.map(x => x.productName);
+    const writeoffQty = writeoffProducts.map(x => Number(x.writeoffQty || 0));
+
+    const defaultChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    };
+
+    const profitChartEl = document.getElementById('profitChart');
+
+    if (profitChartEl) {
+        new Chart(profitChartEl, {
+            type: 'line',
+            data: {
+                labels: profitLabels,
+                datasets: [
+                    {
+                        label: 'Выручка',
+                        data: profitRevenue,
+                        tension: 0.35
+                    },
+                    {
+                        label: 'Затраты',
+                        data: costs,
+                        tension: 0.35
+                    },
+                    {
+                        label: 'Прибыль',
+                        data: profit,
+                        tension: 0.35
+                    }
+                ]
             },
-            plugins: {
-                legend: {
-                    position: 'bottom'
+            options: {
+                ...defaultChartOptions,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
                 }
             }
-        }
-    });
+        });
+    }
 
-    new Chart(document.getElementById('salesChart'), {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [
-                {
-                    label: 'Выручка',
-                    data: revenue,
-                    tension: 0.35
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
-    });
+    const salesChartEl = document.getElementById('salesChart');
 
-    new Chart(document.getElementById('ordersChart'), {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [
-                {
-                    label: 'Заказы',
-                    data: orders
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
+    if (salesChartEl) {
+        new Chart(salesChartEl, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Выручка',
+                        data: revenue,
+                        tension: 0.35
+                    }
+                ]
+            },
+            options: defaultChartOptions
+        });
+    }
+
+    const ordersChartEl = document.getElementById('ordersChart');
+
+    if (ordersChartEl) {
+        new Chart(ordersChartEl, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Заказы',
+                        data: orders
+                    }
+                ]
+            },
+            options: defaultChartOptions
+        });
+    }
+
+    const writeoffChartEl = document.getElementById('writeoffChart');
+
+    if (writeoffChartEl) {
+        new Chart(writeoffChartEl, {
+            type: 'bar',
+            data: {
+                labels: writeoffLabels,
+                datasets: [
+                    {
+                        label: 'Списано, шт.',
+                        data: writeoffQty
+                    }
+                ]
+            },
+            options: {
+                ...defaultChartOptions,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 </script>
 
 </body>
