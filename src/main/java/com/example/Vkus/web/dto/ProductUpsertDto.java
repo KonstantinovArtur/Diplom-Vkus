@@ -11,10 +11,10 @@ public class ProductUpsertDto {
     private Long categoryId;
 
     @NotBlank(message = "Название обязательно")
-    @Size(max = 200, message = "Максимум 200 символов")
+    @Size(max = 25, message = "Максимум 25 символов")
     private String name;
 
-    @Size(max = 1000, message = "Максимум 1000 символов")
+    @Size(max = 55, message = "Описание слишком длинное (до 55 символов)")
     private String description;
 
     @NotNull(message = "Цена обязательна")

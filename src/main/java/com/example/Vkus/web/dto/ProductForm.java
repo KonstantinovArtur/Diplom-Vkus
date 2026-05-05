@@ -11,10 +11,10 @@ public class ProductForm {
     private Long categoryId;
 
     @NotBlank(message = "Название обязательно")
-    @Size(max = 200, message = "Название слишком длинное (до 200)")
+    @Size(max = 25, message = "Название слишком длинное (до 25 символов)")
     private String name;
 
-    @Size(max = 2000, message = "Описание слишком длинное (до 2000)")
+    @Size(max = 55, message = "Описание слишком длинное (до 55 символов)")
     private String description;
 
     @NotNull(message = "Цена обязательна")

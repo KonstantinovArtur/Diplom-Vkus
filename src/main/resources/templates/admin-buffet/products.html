@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Админ БД · Товары</title>
+    <title>Админ буфета · Товары</title>
 
     <link rel="stylesheet" th:href="@{/css/vkus/vkus.css}">
     <link rel="stylesheet" th:href="@{/css/vkus/admin-db.css}">
@@ -213,7 +213,7 @@
 
         <section class="admin-db-hero">
             <div>
-                <div class="vk-eyebrow">Администратор базы данных</div>
+                <div class="vk-eyebrow">Администратор буфета</div>
 
                 <h1>Товары</h1>
 
@@ -247,6 +247,10 @@
             Сообщение
         </div>
 
+        <div th:if="${err}" class="admin-db-alert err" th:text="${err}">
+            Ошибка
+        </div>
+
         <section class="admin-db-panel">
             <div class="admin-db-panel-head">
                 <div>
@@ -263,7 +267,7 @@
             </div>
 
             <div class="admin-db-toolbar">
-                <a class="admin-db-btn admin-db-btn-light" th:href="@{/admin-db/products}">
+                <a class="admin-db-btn admin-db-btn-light" th:href="@{/admin-buffet/products}">
                     Сбросить
                 </a>
             </div>
@@ -273,7 +277,7 @@
                     <div>
                         <img class="product-image"
                              th:if="${p.imageData != null}"
-                             th:src="@{/admin-db/products/{id}/image(id=${p.id})}"
+                             th:src="@{/admin-buffet/products/{id}/image(id=${p.id})}"
                              alt="Изображение товара">
 
                         <div class="product-image-placeholder" th:unless="${p.imageData != null}">
@@ -333,11 +337,11 @@
 
                     <div class="product-actions">
                         <a class="admin-db-btn admin-db-btn-light"
-                           th:href="@{/admin-db/products(edit=${p.id})}">
+                           th:href="@{/admin-buffet/products(edit=${p.id})}">
                             Изменить
                         </a>
 
-                        <form th:action="@{/admin-db/products/delete}"
+                        <form th:action="@{/admin-buffet/products/delete}"
                               method="post"
                               style="margin: 0;"
                               onsubmit="return confirm('Удалить товар?');">
@@ -387,7 +391,7 @@
                 </div>
             </div>
 
-            <form th:action="@{/admin-db/products/save}"
+            <form th:action="@{/admin-buffet/products/save}"
                   method="post"
                   th:object="${form}"
                   enctype="multipart/form-data"
@@ -505,7 +509,6 @@
                     <div class="admin-db-muted">
                         Максимум 25 символов.
                     </div>
-
                     <small class="admin-db-error"
                            th:if="${#fields.hasErrors('name')}"
                            th:errors="*{name}">
@@ -548,7 +551,7 @@
                     <span>Текущая картинка</span>
 
                     <div class="product-current-image">
-                        <img th:src="@{/admin-db/products/{id}/image(id=${editProduct.id})}"
+                        <img th:src="@{/admin-buffet/products/{id}/image(id=${editProduct.id})}"
                              alt="Текущая картинка">
 
                         <label class="remove-image-check">
@@ -571,14 +574,14 @@
                     </button>
 
                     <a class="admin-db-btn admin-db-btn-light"
-                       th:href="@{/admin-db/products}">
+                       th:href="@{/admin-buffet/products}">
                         Отмена
                     </a>
                 </div>
             </form>
 
             <div class="admin-db-toolbar" th:if="${editId != null}">
-                <form th:action="@{/admin-db/products/delete}"
+                <form th:action="@{/admin-buffet/products/delete}"
                       method="post"
                       style="margin: 0;"
                       onsubmit="return confirm('Удалить товар?');">
