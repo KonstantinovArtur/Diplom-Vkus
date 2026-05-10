@@ -171,7 +171,8 @@
                   Системный пользователь
                 </span>
 
-                <form th:action="@{/admin-db/users/{id}/delete(id=${u.id})}"
+                <form th:if="${!systemUser}"
+                      th:action="@{/admin-db/users/{id}/delete(id=${u.id})}"
                       method="post"
                       style="margin:0;"
                       onsubmit="return confirm('Удалить пользователя? Это удалит его роли и привязки входа.');">

@@ -180,7 +180,12 @@ public class DbAdminUsersController {
         User u = userRepository.findById(id).orElse(null);
 
         if (u == null) {
-            ra.addFlashAttribute("ok", "Пользователь не найден");
+            ra.addFlashAttribute("err", "Пользователь не найден");
+            return "redirect:/admin-db/users";
+        }
+
+        if (isSystemUser(u)) {
+            ra.addFlashAttribute("err", "Системного пользователя SYSTEM нельзя удалить");
             return "redirect:/admin-db/users";
         }
 
