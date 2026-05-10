@@ -48,15 +48,11 @@ public class BuffetAdminProductService {
                 .orElseThrow(() -> new IllegalStateException("Буфет не найден"));
 
         Product p = new Product();
-        // category ставишь сам через categoryRepository в другом сервисе или сюда добавь categoryRepository
-        // p.setCategory(...)
+
         p.setName(dto.getName().trim());
         p.setDescription(dto.getDescription());
         p.setBasePrice(dto.getBasePrice());
         p.setIsActive(dto.isActive());
-
-        // картинку применяешь отдельным методом (MultipartFile) — у тебя это уже было
-        // applyImageIfPresent(p, dto.getImage());
 
         productRepository.save(p);
 
@@ -72,27 +68,23 @@ public class BuffetAdminProductService {
 
     @Transactional
     public void updateProductOnlyIfOwned(Long buffetId, Long productId, ProductUpsertDto dto) {
-        // 1) проверка принадлежности
+
         getInventoryItemOrThrow(buffetId, productId);
 
-        // 2) обновление товара
+
         Product p = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Товар не найден"));
 
-        // p.setCategory(...) если разрешаешь менять категорию — проверяй
         p.setName(dto.getName().trim());
         p.setDescription(dto.getDescription());
         p.setBasePrice(dto.getBasePrice());
         p.setIsActive(dto.isActive());
-
-        // applyImageIfPresent(p, dto.getImage());
 
         productRepository.save(p);
     }
 
     @Transactional
     public void removeFromBuffet(Long buffetId, Long productId) {
-        // удаляем связь буфет-товар, а не сам товар
         inventoryItemRepository.deleteByBuffet_IdAndProduct_Id(buffetId, productId);
     }
 }

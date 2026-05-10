@@ -3,7 +3,6 @@ package com.example.Vkus.service;
 import com.example.Vkus.entity.User;
 import com.example.Vkus.repository.RoleRepository;
 import com.example.Vkus.repository.UserRepository;
-import com.example.Vkus.service.OAuthUserProvisioningService;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
@@ -13,7 +12,9 @@ import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,17 +54,35 @@ public class DbRolesOidcUserService extends OidcUserService {
 
         email = email.toLowerCase(Locale.ROOT);
 
-        provisioningService.provisionGoogleUser(email, name, sub);
+        try {
+            provisioningService.provisionGoogleUser(email, name, sub);
+        } catch (RuntimeException ex) {
+            if ("USER_BLOCKED".equalsIgnoreCase(ex.getMessage())) {
+                throw new OAuth2AuthenticationException(
+                        new OAuth2Error("user_blocked"),
+                        "Пользователь заблокирован"
+                );
+            }
+
+            throw ex;
+        }
 
         User user = userRepository.findByEmailIgnoreCase(email).orElseThrow();
 
+        if ("blocked".equalsIgnoreCase(user.getStatus())) {
+            throw new OAuth2AuthenticationException(
+                    new OAuth2Error("user_blocked"),
+                    "Пользователь заблокирован"
+            );
+        }
+
         List<String> roleCodes = roleRepository.findRoleCodesByUserId(user.getId());
+
         Set<GrantedAuthority> dbAuthorities = roleCodes.stream()
                 .map(code -> "ROLE_" + code.toUpperCase(Locale.ROOT))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
 
-        // Важно: возвращаем OidcUser, но с ДОБАВЛЕННЫМИ authorities
         return new org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser(
                 dbAuthorities,
                 oidcUser.getIdToken(),

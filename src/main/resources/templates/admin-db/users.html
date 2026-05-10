@@ -22,14 +22,15 @@
         <h1>Пользователи</h1>
 
         <p>
-          Просматривайте пользователей системы, изменяйте их роли и удаляйте записи при необходимости.
-          Основные данные аккаунта остаются неизменными.
+          Просматривайте пользователей системы, изменяйте их роли, блокируйте доступ
+          и удаляйте записи при необходимости.
         </p>
 
         <div class="admin-db-tags">
           <span class="admin-db-tag">Пользователи</span>
           <span class="admin-db-tag">Роли</span>
           <span class="admin-db-tag">Доступ</span>
+          <span class="admin-db-tag">Блокировка</span>
         </div>
       </div>
 
@@ -41,7 +42,8 @@
         </div>
 
         <div class="admin-db-hero-text">
-          На этой странице администратор БД может менять только роль пользователя.
+          Администратор БД может менять роль обычного пользователя, блокировать
+          или разблокировать его доступ. Системный пользователь SYSTEM защищён.
         </div>
       </div>
     </section>
@@ -83,9 +85,9 @@
             <th style="width:150px;">Создан</th>
             <th>Email</th>
             <th>ФИО</th>
-            <th style="width:120px;">Статус</th>
+            <th style="width:140px;">Статус</th>
             <th style="width:180px;">Роли</th>
-            <th style="width:240px;">Действия</th>
+            <th style="width:360px;">Действия</th>
           </tr>
           </thead>
 
@@ -116,25 +118,58 @@
             </td>
 
             <td>
-                            <span class="admin-db-badge"
-                                  th:classappend="${u.status == 'active'} ? ' ok' : ' off'"
-                                  th:text="${u.status == 'active'} ? 'Активен' : ${u.status}">
-                                active
-                            </span>
+              <span class="admin-db-badge"
+                    th:classappend="${u.status == 'active'} ? ' ok' : ' off'"
+                    th:text="${u.status == 'active'} ? 'Активен' : (${u.status == 'blocked'} ? 'Заблокирован' : ${u.status})">
+                active
+              </span>
             </td>
 
             <td>
-                            <span class="admin-db-badge" th:text="${u.roles}">
-                                buyer
-                            </span>
+              <span class="admin-db-badge" th:text="${u.roles}">
+                buyer
+              </span>
             </td>
 
             <td>
-              <div class="admin-db-actions">
+              <div class="admin-db-actions"
+                   th:with="
+                      systemUser=${(systemUserId != null and u.id == systemUserId)
+                        or (u.email != null and #strings.equalsIgnoreCase(u.email, 'SYSTEM'))
+                        or (u.fullName != null and #strings.equalsIgnoreCase(u.fullName, 'SYSTEM'))},
+                      blocked=${u.status != null and #strings.equalsIgnoreCase(u.status, 'blocked')}
+                   ">
+
                 <a class="admin-db-btn admin-db-btn-light"
+                   th:if="${!systemUser}"
                    th:href="@{/admin-db/users(edit=${u.id})}">
                   Изменить роль
                 </a>
+
+                <form th:if="${!systemUser and !blocked}"
+                      th:action="@{/admin-db/users/{id}/block(id=${u.id})}"
+                      method="post"
+                      style="margin:0;"
+                      onsubmit="return confirm('Заблокировать пользователя? Он больше не сможет войти в систему.');">
+                  <button class="admin-db-btn admin-db-btn-danger" type="submit">
+                    Заблокировать
+                  </button>
+                </form>
+
+                <form th:if="${!systemUser and blocked}"
+                      th:action="@{/admin-db/users/{id}/unblock(id=${u.id})}"
+                      method="post"
+                      style="margin:0;"
+                      onsubmit="return confirm('Разблокировать пользователя? Он снова сможет войти в систему.');">
+                  <button class="admin-db-btn admin-db-btn-light" type="submit">
+                    Разблокировать
+                  </button>
+                </form>
+
+                <span class="admin-db-badge off"
+                      th:if="${systemUser}">
+                  Системный пользователь
+                </span>
 
                 <form th:action="@{/admin-db/users/{id}/delete(id=${u.id})}"
                       method="post"
@@ -173,13 +208,22 @@
         <div>
           <h2>Изменение роли пользователя</h2>
 
-          <p>
+          <p th:if="${editUserIsSystem != true}">
             Выберите новую роль и сохраните изменения.
+          </p>
+
+          <p th:if="${editUserIsSystem == true}">
+            Пользователь SYSTEM является служебным аккаунтом системы, поэтому его роль изменять нельзя.
           </p>
         </div>
       </div>
 
-      <form th:action="@{/admin-db/users/save-role}"
+      <div th:if="${editUserIsSystem == true}" class="admin-db-alert err">
+        Роль системного пользователя SYSTEM нельзя изменять.
+      </div>
+
+      <form th:if="${editUserIsSystem != true}"
+            th:action="@{/admin-db/users/save-role}"
             method="post"
             th:object="${form}"
             class="admin-db-form">
@@ -222,6 +266,12 @@
           </a>
         </div>
       </form>
+
+      <div th:if="${editUserIsSystem == true}" class="admin-db-actions">
+        <a class="admin-db-btn admin-db-btn-light" th:href="@{/admin-db/users}">
+          Назад к списку
+        </a>
+      </div>
     </section>
 
   </div>

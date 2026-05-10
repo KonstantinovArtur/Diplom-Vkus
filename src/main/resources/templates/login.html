@@ -511,12 +511,18 @@
                 Используйте аккаунт, который был указан при регистрации или назначении роли в системе.
             </div>
 
-            <div class="login-alert login-alert-error" th:if="${param.error}">
-                <span th:if="${param.error[0] == 'blocked'}">
+            <div class="login-alert login-alert-error"
+                 th:if="${param.error != null or param.blocked != null}">
+
+                <span th:if="${param.blocked != null
+                    or (param.error != null and #strings.equalsIgnoreCase(param.error[0], 'blocked'))
+                    or (param.error != null and #strings.equalsIgnoreCase(param.error[0], 'user_blocked'))}">
                     Ваш аккаунт заблокирован. Обратитесь к администратору.
                 </span>
 
-                <span th:unless="${param.error[0] == 'blocked'}">
+                            <span th:unless="${param.blocked != null
+                    or (param.error != null and #strings.equalsIgnoreCase(param.error[0], 'blocked'))
+                    or (param.error != null and #strings.equalsIgnoreCase(param.error[0], 'user_blocked'))}">
                     Ошибка входа. Проверьте Google-аккаунт и попробуйте ещё раз.
                 </span>
             </div>
